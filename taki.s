@@ -92,8 +92,12 @@ EffectsTable = _EffectsTable - 2
 ;       later it will look up into a configuration string to use for
 ;       instantiating an effect with a particular configuration.
 EffectProfilesTable:
-    .byt 'F', EF_Flash_EDX
-    .byt 'I', EF_Inverse_EDX
+    scrcode 'F'
+    .byt EF_Flash_EDX
+
+    scrcode 'I'
+    .byt EF_Inverse_EDX
+
     .byt $00, $00
 
 ; EffectInstancesTable
