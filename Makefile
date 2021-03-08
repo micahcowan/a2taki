@@ -54,4 +54,4 @@ progstart.inc: Makefile
 .PHONY: clean
 clean:
 	rm -f *.add *.o *.list *.od *.raw $(DISK)
-	rm -f progstart.inc hello.bas
+	rm -f progstart.inc hello.bas HELLO
