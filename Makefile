@@ -4,8 +4,8 @@ DISK=TAKI.DSK
 
 # Start of taki (.ORG), in decimal
 
-# $C00
-PROGSTART := 3072
+# $D00
+PROGSTART := 3328
 HEXPROGSTART := $(shell printf '%02X\n' "$(PROGSTART)")
 
 PROGRAMS = taki
