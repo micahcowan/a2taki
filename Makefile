@@ -3,6 +3,8 @@
 DISK=TAKI.DSK
 
 # Start of taki (.ORG), in decimal
+
+# $C00
 PROGSTART := 3072
 HEXPROGSTART := $(shell printf '%02X\n' "$(PROGSTART)")
 
@@ -45,6 +47,8 @@ progstart.inc: Makefile
 	exec >| $@; \
 	echo '    ; Automatically generated from Makefile.';    \
 	echo '    ; DO NOT EDIT.';                              \
+	echo; \
+	echo 'TAKISTART = $$$(HEXPROGSTART)'; \
 	echo '    .org $$$(HEXPROGSTART)'
 
 .PHONY: clean
