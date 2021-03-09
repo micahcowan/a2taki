@@ -33,8 +33,8 @@ all: $(PROGRAMS_add)
 	touch $@
 
 $(DISK): empty.dsk HELLO
-	cp empty.dsk $(DISK)
-	dos33 -y $(DISK) SAVE A HELLO
+	cp $< $@
+	dos33 -y $@ SAVE A HELLO
 
 HELLO: hello.bas
 	tokenize_asoft < $< > $@ || { rm $@; exit 1; }
@@ -43,7 +43,7 @@ hello.bas: hello.bas.in Makefile taki.raw
 	TAKISZ=$$(stat -f '%z' taki.raw); \
 	TAKIEND=$$(( $(PROGSTART) + $$TAKISZ )); \
 	PAGE=$$(( $$TAKIEND / 256 + 1 )); \
-	sed >| $@ "s/@@PAGE@@/$${PAGE}/g" hello.bas.in
+	sed >| $@ "s/@@PAGE@@/$${PAGE}/g" $<
 
 %.od:
 %.od: %.raw
@@ -53,7 +53,7 @@ hello.bas: hello.bas.in Makefile taki.raw
 	ld65 -t none -o $@ $^
 
 %.o %.list: %.s progstart.inc
-	ca65 --listing $(basename $@).list $(basename $@).s
+	ca65 -I. -o $@ --listing $(subst .list,,$(subst .o,,$@)).list $<
 
 progstart.inc: Makefile
 	exec >| $@; \
