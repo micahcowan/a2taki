@@ -190,8 +190,9 @@ TakiPrintExit:
 EffectSelect:
     ; Look up the effect profile for the current character,
     ; And an instantiate that effect
-@FindEffect:
     LDX #$00
+    CLV
+@FindEffect:
       LDY EffectProfilesTable, X
       BEQ @NullEffectSelected   ; We didn't find the effect!
       CMP EffectProfilesTable, X
@@ -199,7 +200,7 @@ EffectSelect:
       ; Advance to next entry
       INX
       INX
-    JMP @FindEffect
+    BVC @FindEffect
 @NullEffectSelected:
     LDX #$00
 @Instantiate:
@@ -222,14 +223,14 @@ EffectText:
     CMP TakiSelectChar
     BEQ @EndText
     ; ...no. Still feeding text to the effect
-    STY EffectJump::Text
+    LDY #EffectJump::Text
     JSR RunCurrentEffect
     JMP TakiPrintExit
 @EndText:
-    ; exit text-feeeding
+    ; exit text-feeding
     LDA #State::Default
     STA vState
-    STY EffectJump::TextEnd
+    LDY #EffectJump::TextEnd
     JSR RunCurrentEffect
     JMP TakiPrintExit
 
