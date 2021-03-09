@@ -4,20 +4,32 @@ DISK=TAKI.DSK
 
 # Start of taki (.ORG), in decimal
 
-# $D00
-PROGSTART := 3328
-HEXPROGSTART := $(shell printf '%02X\n' "$(PROGSTART)")
-
-PROGRAMS = taki
+PROGRAMS = taki printer
 PROGRAMS_od = $(patsubst %,%.od,$(PROGRAMS))
 PROGRAMS_add = $(patsubst %,%.add,$(PROGRAMS))
+
+taki_START = 3328
+printer_START = 768
+
+#$(foreach prog,$(PROGRAMS),$(eval $(prog)_START_HEX = $(shell printf '%02X\n' "$($(prog)_START)")))
+define define_start
+$(1)_START_HEX = $$(shell printf '%02X\n' "$$($(1)_START)")
+#$$(info $(1)_START is $$($(1)_START))
+#$$(info $(1)_START_HEX is $$($(1)_START_HEX))
+endef
+$(foreach prog,$(PROGRAMS),$(eval $(call define_start,$(prog))))
+GETHEX=$($(subst .add,,$@)_START_HEX)
+
+# $D00
+PROGSTART = $(taki_START)
+HEXPROGSTART = $(taki_START_HEX)
 
 all: $(PROGRAMS_add)
 
 .SECONDARY:
 
 %.add: %.od $(DISK)
-	dos33 -y -a 0x$(HEXPROGSTART) $(DISK) BSAVE $(basename $@).raw $(shell echo $(basename $@) | tr '[:lower:]' '[:upper:]')
+	dos33 -y -a 0x$(GETHEX) $(DISK) BSAVE $(basename $@).raw $(shell echo $(basename $@) | tr '[:lower:]' '[:upper:]')
 	touch $@
 
 $(DISK): empty.dsk HELLO
