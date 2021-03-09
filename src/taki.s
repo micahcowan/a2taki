@@ -256,14 +256,23 @@ EF_Flash:
     .word   $0000
 
 EF_Flash_Init:
-EF_Flash_TextEnd:
 EF_Flash_Tick:
     RTS
 
 EF_Flash_Text:
+    ; Clear the "mask-out-flashing" flag from the monitor
+    LDX #$7F
+    STX MON_InvFlag
     ORA #$40    ; The "flash" bit
+    AND #$DF    ; no lowercase
     JMP (vOurCSWL)
     ; RTS not needed
+
+EF_Flash_TextEnd:
+    LDX #$FF
+    STX MON_InvFlag
+    RTS
+
 
 EF_Inverse:
     .word   EF_Flash_Init - 1
@@ -276,12 +285,12 @@ EF_Inverse_Text:
     ; Clear the "mask-out-inverse" flag from the monitor
     LDX #$3F
     STX MON_InvFlag
+    AND #$DF    ; no lowercase
     JMP (vOurCSWL)
     ; RTS not needed
 
 EF_Inverse_TextEnd:
     ; Set the "mask-out-inverse" flag from the monitor
-    LDX #$7F
+    LDX #$FF
     STX MON_InvFlag
-    JMP (vOurCSWL)
-    ;[L/H] RTS not needed
+    RTS
