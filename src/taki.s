@@ -47,6 +47,8 @@ zpCurrentEffectH = $07
 ; as TakiPrint's location could change from one version to another.
 CallInit:
     JMP Init
+CallInitNoInstall:
+    JMP InitNoInstall
 CallTakiPrint:
     JMP TakiPrint
 
@@ -120,6 +122,7 @@ Init:
     STA DOS_CSWL
     LDA #>TakiPrint
     STA DOS_CSWL+1
+InitNoInstall:
     ; Install ROM CSW as the underlying print routine we pass along to
     LDA #<MON_COut
     STA vOurCSWL

@@ -7,9 +7,11 @@ build/Makefile:
 	echo >|$@ VPATH=../src
 	echo >>$@ include ../src/Makefile
 
-TAKI.DSK: build/Makefile
+TAKI.DSK: src/TAKI.DSK
+	cp build/TAKI.DSK .
+
+src/TAKI.DSK: build/Makefile
 	cd build && make VPATH=../src all
-	mv build/TAKI.DSK .
 
 clean: build/Makefile
 	rm -f TAKI.DSK
