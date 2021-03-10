@@ -1,25 +1,27 @@
-PROGS = test zp
+$(D)PROGS = $(B)test $(B)zp
 
-.PHONY: all
-all: check
+.PHONY: $(D)all
+$(D)all: $(D)check
 
-.PHONY: check
-check: $(PROGS)
+.PHONY: $(D)check
+$(D)check: $($(D)PROGS)
 
-%: %.c
-%: %.s
+$(D)CC:=cc65
+$(D)AS:=ca65
+$(D)LD:=ld65
+$(D)LDFLAGS=--config $(D)test.cfg
 
-CC=cc65
-AS=ca65
-LD=ld65
-LDFLAGS=--config test.cfg
+.PHONY: $(D)clean
+$(D)clean:
+	rm -f $($(D)PROGS) $(B)*.s $(B)*.o
 
-.o:
-	$(LD) $(LDFLAGS) -o $@ $^ sim6502.lib
-.c.o:
-	$(CC) $<
-	$(AS) $(ASFLAGS) $(<:.c=.s)
+#$($(D)PROGS): $@.o
+$(B)%: $(B)%.o
+	$($(D)LD) $($(D)LDFLAGS) -o $@ $^ sim6502.lib
 
-.PHONY: clean
-clean:
-	rm -f $(PROGS) test.s zp.s *.o
+$(B)%.o: $(B)%.s
+	$($(D)AS) $($(D)ASFLAGS) $(@:.o=.s)
+
+#$(B)%.s: D := $D
+$(B)%.s: $(D)%.c $B
+	$($(D)CC) -o $(@:.o=.s) $<

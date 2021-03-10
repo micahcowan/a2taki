@@ -1,5 +1,27 @@
 .PHONY: all
 
+SUBDIRS=test
+
+BUILDDIR=build
+
+define SetupSubdirTargets
+D = $(1)/
+B = $$(BUILDDIR)/$$D
+
+$$(D)% $$(B)%: D := $$(D)
+$$(D)% $$(B)%: B := $$(B)
+
+.SECONDARY: $$(B)
+$$(B):
+	#mkdir -p $$(BUILDDIR)/$(1)/
+	mkdir -p $$(B)
+
+include $(1)/Makefile
+endef
+$(foreach dir,$(SUBDIRS),$(eval $(call SetupSubdirTargets,$(dir))))
+D := __XXX__
+B := __XXX__
+
 all: TAKI.DSK
 build/Makefile:
 	mkdir -p build
@@ -15,6 +37,6 @@ src/TAKI.DSK: build/Makefile
 
 clean: build/Makefile
 	rm -f TAKI.DSK
-	cd build && make VPATH=../src $@
-	rm -f build/Makefile
-	rmdir build
+	rm -fr build
+
+check: test/check
