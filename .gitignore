@@ -1,3 +1,14 @@
 TAKI.DSK
 build
-test/*.s
+*.add
+*.list
+*.raw
+*.o
+
+src/HELLO
+src/hello.bas
+src/progstart.inc
+
+src/test/test
+src/test/zp
+src/test/*.s

@@ -1,43 +1,31 @@
-.PHONY: all
-
-SUBDIRS=test
-
 BUILDDIR=build
 
+.PHONY: all
 all: TAKI.DSK
 
-define SetupSubdirTargets
-D = $(1)/
-B = $$(BUILDDIR)/$$D
-
-$$(D)% $$(B)%: D := $$(D)
-$$(D)% $$(B)%: B := $$(B)
-
-.SECONDARY: $$(B)
-$$(B): B := $$(B)
-$$(B):
-	mkdir -p $$(B)
-
-include $(1)/Makefile
-endef
-$(foreach dir,$(SUBDIRS),$(eval $(call SetupSubdirTargets,$(dir))))
-D := __XXX__
-B := __XXX__
-
-build/Makefile:
-	mkdir -p build
-	#ln -sf ../src/Makefile build/Makefile
-	echo >|$@ VPATH=../src
-	echo >>$@ include ../src/Makefile
-
-TAKI.DSK: build/TAKI.DSK
+TAKI.DSK: build/TAKI.DSK src/all
 	cp build/TAKI.DSK .
 
-build/TAKI.DSK: build/Makefile
-	cd build && make VPATH=../src all
-
-clean: build/Makefile
+clean:
 	rm -f TAKI.DSK
 	rm -fr build
 
-check: test/check
+check: src/check
+
+# ---- Include src/Makefile ----
+
+D := src/
+B := $(BUILDDIR)/
+
+$(D)% $(B)%: D := $(D)
+$(D)% $(B)%: B := $(B)
+
+.SECONDARY: $(B)
+$(B): B := $(B)
+$(B):
+	mkdir $(B)
+
+include $(D)Makefile
+
+D := __XXX__
+B := __XXX__
