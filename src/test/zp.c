@@ -7,6 +7,8 @@
 int main(void)
 {
     unsigned char *p = ZP;
+
+    puts("Zero page contents:\n\n");
     while (p - ZP != 255) {
         unsigned char col = (p - ZP) % 8;
         if (col != 0) {

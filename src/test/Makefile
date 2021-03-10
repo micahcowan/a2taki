@@ -1,10 +1,12 @@
 $(D)PROGS = $(B)test $(B)zp
+$(D)TESTS = $(B)zp
 
 .PHONY: $(D)all
 $(D)all: $(D)check
 
 .PHONY: $(D)check
-$(D)check: $($(D)PROGS)
+$(D)check: $($(D)TESTS)
+	@$(D)run-tests $($(D)TESTS)
 
 $(D)CC:=cc65
 $(D)AS:=ca65

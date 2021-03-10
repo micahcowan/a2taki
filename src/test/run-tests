@@ -1,0 +1,77 @@
+#!/bin/sh
+
+MAXCYCLES=100000000
+echo
+echo '***' Running tests...
+
+ISTTY=
+if [ -t 1 ]; then
+    ISTTY=yes
+fi
+
+main() {
+    run=0
+    pass=0
+    fail=0
+
+    for testpath # in args
+    do
+        test=$(basename "$testpath")
+        echo
+        printf '%s' "Running test: $test: "
+        capture=$(sim65 -x "$MAXCYCLES" "$testpath" 2>&1)
+        status=$?
+        run=$(( $run + 1 ))
+        if [ $status -eq 0 ]; then
+            green PASS
+            pass=$(( $pass + 1 ))
+        else
+            red FAIL...
+            fail=$(( $fail + 1 ))
+            echo
+            echo "Exit code $status"
+            echo
+            if [ -n "$capture" ]; then
+                echo "** Start of failed $test output ***"
+                printf '%s\n' "$capture" | sed 's/^/  /'
+                echo "** End of failed $test output ***"
+            fi
+        fi
+    done
+
+    #### Results! ####
+    echo
+    [ "$pass" -eq "$run" ]
+    r=$?
+    echo Final Results:
+    passfail "$r" "Tests run   : $run"
+    passfail "$r" "Tests passed: $pass"
+    passfail "$r" "Tests failed: $fail"
+}
+
+green() {
+    if [ -n "$ISTTY" ]; then
+        printf '\033[32;1m%s\033[m\n' "$*"
+    else
+        printf '%s\n' "$*"
+    fi
+}
+
+red() {
+    if [ -n "$ISTTY" ]; then
+        printf '\033[31m%s\033[m\n' "$*"
+    else
+        printf '%s\n' "$*"
+    fi
+}
+
+passfail() {
+    val=$1; shift
+    if [ "$val" -eq 0 ]; then
+        green "$*"
+    else
+        red   "$*"
+    fi
+}
+
+main "$@"

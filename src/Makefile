@@ -89,7 +89,7 @@ $(D)% $(B)%: B := $(B)
 $(B): B := $(B)
 $(B): OLD_B := $(OLD_B)
 $(B): $(OLD_B)
-	mkdir $(B)
+	mkdir -p $(B)
 
 include $(D)Makefile
 
