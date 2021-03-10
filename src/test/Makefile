@@ -17,7 +17,7 @@ $(D)LDFLAGS=--config $(D)test.cfg
 $(D)clean:
 	rm -f $($(D)PROGS) $(B)*.s $(B)*.o $(B)*.list
 
-$(B)%: $(B)%.o $B
+$(B)%: $(B)%.o $(D)test.cfg $B
 	$($(D)LD) $($(D)LDFLAGS) -o $@ $< sim6502.lib
 
 # The above rule gets applied once but
