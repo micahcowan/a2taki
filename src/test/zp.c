@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #define STR_(x) #x
 #define STR(x) STR_(x)
@@ -17,20 +18,31 @@ void callABunch(int depth, int var1, int var2, int var3, int var4, int var5, int
 }
 #endif
 
-int main(void)
+int main(int argc, char *argv[])
 {
-    unsigned char *p = ZP;
-    unsigned char *zpe = ZP + 0x100;
-    unsigned char *q = zpe;
+    unsigned char *zp;
+    unsigned char *p;
+    unsigned char *zpe;
+    unsigned char *q;
 
     //callABunch(30, 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16);
-    puts("Zero page contents:\n");
-    while (p - ZP != 255) {
-        unsigned char col = (p - ZP) % 8;
+    if (argc < 2) {
+        puts("Zero page contents:\n");
+        p = zp = ZP;
+    }
+    else {
+        zp = (unsigned char *)(strtoul(argv[1], NULL, 16) << 8);
+        p = zp;
+        printf("Displaying page starting $%04X:\n\n", (unsigned int)(zp - ZP));
+    }
+    q = zpe = zp + 0x0100;
+
+    while (p - zp != 255) {
+        unsigned char col = (p - zp) % 8;
         if (col != 0) {
             putchar(' ');
         }
-        else if (p != ZP) {
+        else if (p != zp) {
             putchar('\n');
         }
 
@@ -43,18 +55,22 @@ int main(void)
     PP;
     putchar('\n');
     putchar('\n');
+
+    if (zp != ZP)
+        return 0;   /* Not actually checking zero page. */
+
     if (q == zpe) {
         puts("NO detected use of the zero page.\n"
              "Test may need adjusting.");
         return 25;
     }
     else if ((unsigned int)q >= MIN_USE) {
-        printf("Success. First detected ZP use at 0x%02X, "
+        printf("Success. First detected zp use at 0x%02X, "
                "above the min (" STR(MIN_USE) ").\n", (unsigned int)q);
         return 0;
     }
     else {
-        printf("FAILURE. First detected ZP use at 0x%02X, "
+        printf("FAILURE. First detected zp use at 0x%02X, "
                "BELOW the min (" STR(MIN_USE) "). Fix test.cfg!\n", (unsigned int)q);
         return 1;
     }
