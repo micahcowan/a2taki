@@ -12,3 +12,4 @@ src/progstart.inc
 src/test/test
 src/test/zp
 src/test/*.s
+!src/test/testlib-asm.s
