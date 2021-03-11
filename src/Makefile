@@ -25,7 +25,7 @@ $(D)PROGSTART = $($(D)taki_START)
 $(D)HEXPROGSTART = $($(D)taki_START_HEX)
 
 .PHONY: $(D)all
-$(D)all: $($(D)PROGRAMS_add)
+$(D)all: $($(D)PROGRAMS_add) $(D)test/all
 
 .SECONDARY:
 

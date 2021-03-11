@@ -1,12 +1,13 @@
-$(D)TESTS = $(B)zp $(B)hello
-$(D)PROGS = $($(D)TESTS) $(B)test
+$(D)TESTS = $(B)hello
+$(D)CMDS  = $(B)test $(B)zp
+$(D)PROGS = $($(D)TESTS) $($(D)CMDS)
 
 ifndef D
     D := ./
 endif
 
 .PHONY: $(D)all
-$(D)all: $(D)check
+$(D)all: $($(D)CMDS)
 
 .PHONY: $(D)check
 $(D)check: $($(D)TESTS)
@@ -31,7 +32,7 @@ $(D)clean:
 # a workaround.
 define $(D)workaround
 $(1): $(1).o $(D)test.cfg $(B)testlib.o $(B)testlib-asm.o $$B
-	$$($(D)LD) $$($(D)LDFLAGS) -o $$@ $$< $(B)testlib.o $(B)testlib-asm.o sim6502.lib
+	$$($(D)LD) $$($(D)LDFLAGS) -o $$@ $$< $(B)testlib-asm.o $(B)testlib.o sim6502.lib
 endef
 $(foreach prog,$($(D)PROGS),$(eval $(call $(D)workaround,$(prog))))
 

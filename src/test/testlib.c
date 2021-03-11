@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "testlib.h"
 
 #define COUT    "FDED"
@@ -30,4 +33,9 @@ homePosition(void) {
 int
 verify40(const char *s) {
     return 0;
+}
+
+extern void brkHandler(void) {
+    puts("BRK encountered. Exiting.");
+    exit(42);
 }
