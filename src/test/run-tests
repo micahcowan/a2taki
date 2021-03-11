@@ -17,7 +17,6 @@ main() {
     for testpath # in args
     do
         test=$(basename "$testpath")
-        echo
         printf '%s' "Running test: $test: "
         capture=$(sim65 -x "$MAXCYCLES" "$testpath" 2>&1)
         status=$?

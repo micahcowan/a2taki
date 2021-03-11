@@ -18,6 +18,18 @@ void callABunch(int depth, int var1, int var2, int var3, int var4, int var5, int
 }
 #endif
 
+/* This fn returns true if the location in question is allowed
+   to have been initialized (was initialized by testlib-asm's
+   InitFirmware routine). */
+int exempt(unsigned int loc) {
+    switch (loc) {
+        case 0x36:
+        case 0x37:
+            return 1;
+    }
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     unsigned char *zp;
@@ -47,7 +59,7 @@ int main(int argc, char *argv[])
         }
 
         /* Look for the first value that's not 0xFF */
-        if (q == zpe && *p != 255)  q = p;
+        if (q == zpe && *p != 255 && !exempt(p - zp))  q = p;
 
         PP;
     }
@@ -70,8 +82,9 @@ int main(int argc, char *argv[])
         return 0;
     }
     else {
-        printf("FAILURE. First detected zp use at 0x%02X, "
-               "BELOW the min (" STR(MIN_USE) "). Fix test.cfg!\n", (unsigned int)q);
+        printf("FAILURE. First detected (non-exempt) zp use at 0x%02X,\n"
+               "BELOW the min (" STR(MIN_USE) "). Fix test.cfg, or add a\n"
+               "new exemption.\n", (unsigned int)q);
         return 1;
     }
 

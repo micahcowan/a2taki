@@ -1,5 +1,5 @@
-$(D)TESTS = $(B)hello
-$(D)CMDS  = $(B)test $(B)zp
+$(D)TESTS = $(B)zp $(B)hello
+$(D)CMDS  = $(B)test
 $(D)PROGS = $($(D)TESTS) $($(D)CMDS)
 
 ifndef D
