@@ -41,7 +41,8 @@ $(B)HELLO: $(B)hello.bas $B
 	tokenize_asoft < $< > $@ || { rm $@; exit 1; }
 
 $(B)hello.bas: $(D)hello.bas.in $(D)Makefile $(B)taki.raw $B
-	TAKISZ=$$(stat -f '%z' $(B)taki.raw); \
+	@set -x; \
+	TAKISZ=$$(ls -l $(B)taki.raw | awk '{print $$5}'); \
 	TAKIEND=$$(( $($(D)PROGSTART) + $$TAKISZ )); \
 	PAGE=$$(( $$TAKIEND / 256 + 1 )); \
 	sed >| $@ "s/@@PAGE@@/$${PAGE}/g" $<
