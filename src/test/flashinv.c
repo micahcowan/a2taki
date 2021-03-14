@@ -13,9 +13,9 @@ main(void) {
     dumpLine(1);
     homePosition();
     s |= verify40("Hello. There is some ");
-    s |= verify40("flashing");
+    s |= verify40flash("flashing");
     s |= verify40(" and ");
-    s |= verify40("inverse");
+    s |= verify40inv("inverse");
     s |= verify40(" text here.");
 
     return s;

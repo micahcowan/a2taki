@@ -51,28 +51,29 @@ putcTaki(const char c) {
 }
 
 int
-verify40(const char *s) {
+verify40mode(const char *s, unsigned char oradj, unsigned char mask) {
     int status = 0;
     const unsigned char *o = cursor(1);
     const unsigned char *p = (const unsigned char *)s;
 
-    fputs("Verifying text: ", stdout);
+    fputs("Verifying text: \"", stdout);
     printEscapedStr(s);
-    putchar('\n');
+    puts("\"");
 
     while (*p != '\0') {
+        const unsigned char c = ((*p | oradj) & mask);
         if (*p == '\r') {
             /* TODO: confirm only spaces to end of line. */
             CH = 0;
             CV += 1;
             o = cursor(1);
         }
-        else if (*o != SCRCODE(*p)) {
+        else if (*o != c) {
             status = 1;
             printf("MISMATCH: pos %u, '%c'. ",
                    (unsigned int)(p - s), (int)*p);
             printf("Expected %02X, got %02X.\n",
-                   (unsigned)(SCRCODE(*p)), (unsigned)*o);
+                   (unsigned)c, (unsigned)*o);
         }
 
         if (*p == '\r') {

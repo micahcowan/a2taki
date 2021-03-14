@@ -17,7 +17,10 @@ extern void homePosition(void);
 extern void __fastcall__ putcTakiRaw(const char c);
     /* ^ defined in testlib-asm.s */
 
-extern int  verify40(const char *s);
+extern int  verify40mode(const char *s, unsigned char orval, unsigned char mask);
+#define verify40(s) (verify40mode((s), 0x80, 0xff))
+#define verify40inv(s) (verify40mode((s), 0, 0x1f))
+#define verify40flash(s) (verify40mode((s), 0x40, 0x5f))
 
 extern void dumpLine(unsigned int);
 
