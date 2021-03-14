@@ -20,19 +20,23 @@ $(D)CFLAGS:=-Werror,-unused-param -I$(D)
 $(D)LDFLAGS=--config $(D)test.cfg
 $(D)LIBS=$(B)testlib.o
 
+%.o: %.c
+%.o: %.s
+
 .PHONY: $(D)clean
 $(D)clean:
 	rm -f $($(D)PROGS) $(B)*.s $(B)*.o $(B)*.list
 
-#$(B)%: $(B)%.o $(D)test.cfg $(B)testlib.o $(B)testlib-asm.o $(B)a2rom.o $B
-#	$($(D)LD) $($(D)LDFLAGS) -o $@ $< $(B)testlib.o sim6502.lib
+#$(B)%: $(B)%.o $(D)test.cfg $(B)patchhdr.o $(B)testlib.o $(B)testlib-asm.o $(B)a2rom.o
+#	mkdir -p $B
+#	$($(D)LD) $($(D)LDFLAGS) -o $@ $(B)patchhdr.o $< $(B)testlib-asm.o $(B)testlib.o $(B)a2rom.o sim6502.lib
 
 # The above rule gets applied once but
 # not to the next program (??). Here's
 # a workaround.
 define $(D)workaround
-$(1): $(1).o $(D)test.cfg $(B)testlib.o $(B)testlib-asm.o $(B)a2rom.o $$B
-	$$($(D)LD) $$($(D)LDFLAGS) -o $$@ $$< $(B)testlib-asm.o $(B)testlib.o $(B)a2rom.o sim6502.lib
+$(1): $(1).o $(B)patchhdr.o $(D)test.cfg $(B)testlib.o $(B)testlib-asm.o $(B)a2rom.o $$B
+	$$($(D)LD) $$($(D)LDFLAGS) -o $$@ $(B)patchhdr.o $$< $(B)testlib-asm.o $(B)testlib.o $(B)a2rom.o sim6502.lib
 endef
 $(foreach prog,$($(D)PROGS),$(eval $(call $(D)workaround,$(prog))))
 
