@@ -19,6 +19,14 @@ putsTaki(const char *s) {
 void __fastcall__
 putc40(const char c) {
     /* c should already be in A, because of fastcall. */
+    /* Set its high bet, so it confirms with Apple 2 chars in-memory. */
+    __asm__ ("ORA #$80");
+    __asm__ ("jsr _putc40raw");
+}
+
+void __fastcall__
+putc40raw(const char c) {
+    /* c should already be in A, because of fastcall. */
     __asm__ ("jsr $" COUT);
 }
 
