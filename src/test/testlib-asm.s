@@ -9,8 +9,10 @@ RESET   = $FA62
 _homePosition = HOME
 .export _homePosition
 
-.import _brkHandler
+.import _brkHandler, TakiInitNoInstall, TakiPrint
 brkHandler = _brkHandler
+_putcTaki = TakiPrint
+.export _putcTaki
 
 .CONSTRUCTOR InitFirmware
 
@@ -22,7 +24,10 @@ InitFirmware:
     STA $FFFF
 
     ; Run (patched) RESET code.
-    JMP RESET
+    JSR RESET
+
+    ; Init Taki
+    JMP TakiInitNoInstall
 
     ; RTS to caller
 

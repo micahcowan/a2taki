@@ -7,6 +7,9 @@ extern void __fastcall__ putc40(const char c);
 extern void __fastcall__ putc40raw(const char c);
 
 extern void homePosition();     /* defined in testlib-asm.s */
+extern void __fastcall__ putcTaki(const char c);
+    /* ^ defined in testlib-asm.s */
+
 extern int  verify40(const char *s);
 
 extern void dumpLineOne();

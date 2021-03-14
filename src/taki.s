@@ -9,6 +9,26 @@ DOS_CSWL    = $AA53
 CSWL        = $36
 
 .import __TAKI_START__
+.export TakiInit, TakiInitNoInstall, TakiPrint
+
+;; Public interfaces ;;;;;;;;;;;;;;;;;;;
+
+; The following calls are arranged in a stable order,
+; so that users will always know where to call them, even if the
+; "real" routines they jump to change location.
+;
+; Users should always use e.g. TakiPrint over Print,
+; as Print's location could change from one version to another.
+TakiInit:
+    JMP Init
+TakiInitNoInstall:
+    JMP InitNoInstall
+TakiPrint:
+    JMP Print
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 InstanceDataBuffer = __TAKI_START__ - $100
 
 zpCurrentEffectL = $06
@@ -37,21 +57,6 @@ zpCurrentEffectH = $07
 ; is captured for the effect until the next occurrence
 ; of TakiSelectChar.
 .define TakiSelectChar #CTRL('R')
-
-;; Public interfaces ;;;;;;;;;;;;;;;;;;;
-
-; The following calls are arranged in a stable order,
-; so that users will always know where to call them, even if the
-; "real" routines they jump to change location.
-;
-; Users should always use e.g. CallTakiPrint over TakiPrint,
-; as TakiPrint's location could change from one version to another.
-CallInit:
-    JMP Init
-CallInitNoInstall:
-    JMP InitNoInstall
-CallTakiPrint:
-    JMP TakiPrint
 
 ;; Vars
 RunOurCSW:
@@ -119,9 +124,9 @@ Init:
     ; TODO: support ProDOS, no-DOS (from tape)
     ; TODO: does the DOS_CSWL location depend on the memory in the
     ; machine (for e.g. a "master" DOS disk)?
-    LDA #<TakiPrint
+    LDA #<Print
     STA DOS_CSWL
-    LDA #>TakiPrint
+    LDA #>Print
     STA DOS_CSWL+1
 InitNoInstall:
     ; Install ROM CSW as the underlying print routine we pass along to
@@ -145,7 +150,7 @@ PageInit:
 
     RTS
 
-TakiPrint:
+Print:
     CLD         ; ProDOS wants this in any user routine it calls
     ; Save A, X, Y
     PHA
@@ -170,7 +175,7 @@ TakiPrint:
     ; It IS our special control. Enter effect name-parsing
     LDX #State::EffectSelect
     STX vState
-    BNE TakiPrintExit   ; ALWAYS
+    BNE PrintExit   ; ALWAYS
 StateChk:
     CPX #State::EffectSelect
     BEQ EffectSelect
@@ -180,7 +185,7 @@ StateChk:
     BRK
 CookedOutput:
     JSR RunOurCSW
-TakiPrintExit:
+PrintExit:
     PLA
     TAY
     PLA
@@ -217,7 +222,7 @@ EffectSelect:
     ; ...and set the state to "feeding text to the effect" mode
     LDY #State::EffectText
     STY vState
-    JMP TakiPrintExit
+    JMP PrintExit
 
 EffectText:
     ; Did we reach the end of the effect's text?
@@ -226,14 +231,14 @@ EffectText:
     ; ...no. Still feeding text to the effect
     LDY #EffectJump::Text
     JSR RunCurrentEffect
-    JMP TakiPrintExit
+    JMP PrintExit
 @EndText:
     ; exit text-feeding
     LDA #State::Default
     STA vState
     LDY #EffectJump::TextEnd
     JSR RunCurrentEffect
-    JMP TakiPrintExit
+    JMP PrintExit
 
 RunCurrentEffect:
     TAX

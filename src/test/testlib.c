@@ -14,6 +14,9 @@ puts40(const char *s) {
 
 void
 putsTaki(const char *s) {
+    while (*s != '\0') {
+        putcTaki(*s++);
+    }
 }
 
 void __fastcall__
