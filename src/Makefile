@@ -70,7 +70,7 @@ $(D)check: $(D)test/check
 .PHONY: $(D)clean
 $(D)clean: $(D)test/clean
 	rm -f *.add *.o *.list *.od *.raw $($(D)DISK)
-	rm -f progstart.inc hello.bas HELLO
+	rm -f progstart.inc hello.bas HELLO $($(D)TMPDISK)
 
 # ---- Include test/Makefile ----
 

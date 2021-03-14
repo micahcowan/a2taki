@@ -8,8 +8,9 @@ build
 src/HELLO
 src/hello.bas
 src/progstart.inc
+src/taki-tmp.dsk
 
 src/test/test
 src/test/zp
-src/test/*.s
-!src/test/testlib-asm.s
+src/test/hello
+src/test/testlib-asm.s

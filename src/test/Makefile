@@ -1,10 +1,10 @@
-$(D)TESTS = $(B)hello
-$(D)CMDS  = $(B)test $(B)zp
-$(D)PROGS = $($(D)TESTS) $($(D)CMDS)
-
 ifndef D
     D := ./
 endif
+
+$(D)TESTS = $(B)hello
+$(D)CMDS  = $(B)test $(B)zp
+$(D)PROGS = $($(D)TESTS) $($(D)CMDS)
 
 .PHONY: $(D)all
 $(D)all: $($(D)CMDS)
@@ -19,6 +19,9 @@ $(D)LD:=ld65
 $(D)CFLAGS:=-Werror,-unused-param -I$(D)
 $(D)LDFLAGS=--config $(D)test.cfg
 $(D)LIBS=$(B)testlib.o
+
+# Assumes we were invoked from ../Makefile
+$(D)TAKI_O = $(shell dirname $B)/taki.o
 
 %.o: %.c
 %.o: %.s
@@ -35,8 +38,8 @@ $(D)clean:
 # not to the next program (??). Here's
 # a workaround.
 define $(D)workaround
-$(1): $(1).o $(B)patchhdr.o $(D)test.cfg $(B)testlib.o $(B)testlib-asm.o $(B)a2rom.o $$B
-	$$($(D)LD) $$($(D)LDFLAGS) -o $$@ $(B)patchhdr.o $$< $(B)testlib-asm.o $(B)testlib.o $(B)a2rom.o sim6502.lib
+$(1): $(1).o $($(D)TAKI_O) $(B)patchhdr.o $(D)test.cfg $(B)testlib.o $(B)testlib-asm.o $(B)a2rom.o $$B
+	$$($(D)LD) $$($(D)LDFLAGS) -o $$@ $(B)patchhdr.o $($(D)TAKI_O) $$< $(B)testlib-asm.o $(B)testlib.o $(B)a2rom.o sim6502.lib
 endef
 $(foreach prog,$($(D)PROGS),$(eval $(call $(D)workaround,$(prog))))
 
