@@ -1,6 +1,6 @@
 ;; taki.s
 
-.include "progstart.inc"
+.segment "TAKI"
 .macpack apple2
 
 MON_COut    = $FDF0
@@ -8,7 +8,8 @@ MON_InvFlag = $32
 DOS_CSWL    = $AA53
 CSWL        = $36
 
-InstanceDataBuffer = TAKISTART - $100
+.import __TAKI_START__
+InstanceDataBuffer = __TAKI_START__ - $100
 
 zpCurrentEffectL = $06
 zpCurrentEffectH = $07

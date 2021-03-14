@@ -5,14 +5,14 @@
 .macpack apple2
 
 ;Mon_COUT = $FDED
-Taki_Init = $D03
-Taki_COUT = $D06
-
-    .org $300
+.import __TAKI_START__
+Taki_Init = __TAKI_START__ + $03
+Taki_COUT = __TAKI_START__ + $06
 
 Init:
     ; Call Taki's init w/o installing to CSW
-    JMP Taki_Init
+    JSR Taki_Init
+    JMP Printer
 
     .res 8, $00
 

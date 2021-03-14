@@ -1,41 +1,31 @@
 .PHONY: all
 
 $(D)DISK=$(B)TAKI.DSK
+$(D)TMPDISK=$(B)taki-tmp.dsk
 
 # Start of taki (.ORG), in decimal
 
 $(D)PROGRAMS = $(B)taki $(B)printer
-$(D)PROGRAMS_od = $(patsubst %,%.od,$(PROGRAMS))
-$(D)PROGRAMS_add = $(patsubst %,%.add,$(PROGRAMS))
-
-$(D)taki_START = 3328
-$(D)printer_START = 768
-
-#$(foreach prog,$(PROGRAMS),$(eval $(prog)_START_HEX = $(shell printf '%02X\n' "$($(prog)_START)")))
-define $(D)define_start
-$(D)$(1)_START_HEX = $$(shell printf '%02X\n' "$$($(D)$(1)_START)")
-#$$(info $(D)$(1)_START is $$($(D)$(1)_START))
-#$$(info $(D)$(1)_START_HEX is $$($(D)$(1)_START_HEX))
-endef
-$(foreach prog,$($(D)PROGRAMS),$(eval $(call $(D)define_start,$(notdir $(prog)))))
-$(D)GETHEX=$($(D)$(subst .add,,$@)_START_HEX)
-
-# $D00
-$(D)PROGSTART = $($(D)taki_START)
-$(D)HEXPROGSTART = $($(D)taki_START_HEX)
+$(D)PROGRAMS_od = $(patsubst %,%.od,$($(D)PROGRAMS))
+$(D)PROGRAMS_add := $(foreach PROG,$($(D)PROGRAMS),$(PROG).add)
 
 .PHONY: $(D)all
-$(D)all: $($(D)PROGRAMS_add) $(D)test/all
+$(D)all: $($(D)DISK) $(D)test/all
 
-.SECONDARY:
+$(D)TAKISTART = D00
+$(B)taki.add $(B)taki.raw $(B)hello.bas: GETHEX := $($(D)TAKISTART)
+$(B)printer.add $(B)printer.raw: GETHEX := 2000
 
-$(B)%.add: %.od $($(D)DISK)
-	dos33 -y -a 0x$($(D)GETHEX) $($(D)DISK) BSAVE $(basename $@).raw $(shell echo $(basename $@) | tr '[:lower:]' '[:upper:]')
+$(B)%.add: $(B)%.raw $($(D)TMPDISK) $(D)Makefile
+	dos33 -y -a 0x$(GETHEX) $($(D)TMPDISK) BSAVE $(basename $@).raw $(shell echo $(notdir $(basename $@)) | tr '[:lower:]' '[:upper:]')
 	touch $@
 
-$($(D)DISK): $(D)empty.dsk $(B)HELLO $B
+$($(D)TMPDISK): $(D)empty.dsk $(B)HELLO $B
 	cp $< $@
 	dos33 -y $@ SAVE A $(B)HELLO
+
+$($(D)DISK): $($(D)PROGRAMS_add)
+	cp $($(D)TMPDISK) $@
 
 $(B)HELLO: $(B)hello.bas $B
 	tokenize_asoft < $< > $@ || { rm $@; exit 1; }
@@ -43,7 +33,7 @@ $(B)HELLO: $(B)hello.bas $B
 $(B)hello.bas: $(D)hello.bas.in $(D)Makefile $(B)taki.raw $B
 	@set -x; \
 	TAKISZ=$$(ls -l $(B)taki.raw | awk '{print $$5}'); \
-	TAKIEND=$$(( $($(D)PROGSTART) + $$TAKISZ )); \
+	TAKIEND=$$(( 0 + 0x$(GETHEX) + $$TAKISZ )); \
 	PAGE=$$(( $$TAKIEND / 256 + 1 )); \
 	sed >| $@ "s/@@PAGE@@/$${PAGE}/g" $<
 
@@ -51,14 +41,19 @@ $(D)%.od:
 $(D)%.od: $(B)%.raw $B
 	od -t u1 $< >| $@
 
-$(B)%.raw: $(B)%.o
-	ld65 -t none -o $@ $^
+$(B)taki.raw: $(B)taki.o $(D)taki.cfg $(D)Makefile
+	ld65 -C $(D)taki.cfg -S '$$$(GETHEX)' -D __TAKI_START__='$$$($(D)TAKISTART)' -o $@ $<
 
-$(B)%.o $(B)%.list: $(D)%.s $(B)progstart.inc $B
+$(B)printer.raw: $(B)printer.o $(D)Makefile
+	ld65 -t none -S '$$$(GETHEX)' -D __TAKI_START__='$$$($(D)TAKISTART)' -o $@ $<
+
+$(B)%.o $(B)%.list: $(D)%.s
+	mkdir -p $B
 	INC=$(B); \
 	: $${INC:=.}; \
 	ca65 -I"$$INC" -o $@ --listing $(subst .list,,$(subst .o,,$@)).list $<
 
+ifdef NOTDEF
 $(B)progstart.inc: D := $D
 $(B)progstart.inc: $(D)Makefile $B
 	exec >| $@; \
@@ -67,6 +62,7 @@ $(B)progstart.inc: $(D)Makefile $B
 	echo; \
 	echo 'TAKISTART = $$$($(D)HEXPROGSTART)'; \
 	echo '    .org $$$($(D)HEXPROGSTART)'
+endif
 
 .PHONY: $(D)check
 $(D)check: $(D)test/check
