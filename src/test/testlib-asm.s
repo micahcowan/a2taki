@@ -6,13 +6,10 @@ COUT1   = $FDF0
 HOME    = $FC58
 RESET   = $FA62
 
-_homePosition = HOME
-.export _homePosition
-
 .import _brkHandler, TakiInitNoInstall, TakiPrint
 brkHandler = _brkHandler
-_putcTaki = TakiPrint
-.export _putcTaki
+_putcTakiRaw = TakiPrint
+.export _putcTakiRaw
 
 .CONSTRUCTOR InitFirmware
 
