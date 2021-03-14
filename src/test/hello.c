@@ -5,9 +5,10 @@ int main(void)
 {
     int status = 0;
 
-    testlibInit();
+    //testlibInit();
 
     puts40("Hello!\n");
+    dumpLineOne();
     putsTaki("Hello!\n");
     homePosition();
     status = verify40("Hello!\nHello!\n");

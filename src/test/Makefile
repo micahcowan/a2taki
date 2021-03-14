@@ -1,5 +1,5 @@
-$(D)TESTS = $(B)zp $(B)hello
-$(D)CMDS  = $(B)test
+$(D)TESTS = $(B)hello
+$(D)CMDS  = $(B)test $(B)zp
 $(D)PROGS = $($(D)TESTS) $($(D)CMDS)
 
 ifndef D
@@ -24,15 +24,15 @@ $(D)LIBS=$(B)testlib.o
 $(D)clean:
 	rm -f $($(D)PROGS) $(B)*.s $(B)*.o $(B)*.list
 
-#$(B)%: $(B)%.o $(D)test.cfg $(B)testlib.o $(B)testlib-asm.o $B
+#$(B)%: $(B)%.o $(D)test.cfg $(B)testlib.o $(B)testlib-asm.o $(B)a2rom.o $B
 #	$($(D)LD) $($(D)LDFLAGS) -o $@ $< $(B)testlib.o sim6502.lib
 
 # The above rule gets applied once but
 # not to the next program (??). Here's
 # a workaround.
 define $(D)workaround
-$(1): $(1).o $(D)test.cfg $(B)testlib.o $(B)testlib-asm.o $$B
-	$$($(D)LD) $$($(D)LDFLAGS) -o $$@ $$< $(B)testlib-asm.o $(B)testlib.o sim6502.lib
+$(1): $(1).o $(D)test.cfg $(B)testlib.o $(B)testlib-asm.o $(B)a2rom.o $$B
+	$$($(D)LD) $$($(D)LDFLAGS) -o $$@ $$< $(B)testlib-asm.o $(B)testlib.o $(B)a2rom.o sim6502.lib
 endef
 $(foreach prog,$($(D)PROGS),$(eval $(call $(D)workaround,$(prog))))
 

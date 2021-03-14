@@ -1,0 +1,28 @@
+#!/usr/bin/env perl -p
+
+# Takes copy/pastes from my source of disassembled Appple II ROM,
+# and cleans it up nice for use with ca65.
+
+use strict;
+use warnings;
+
+next if /^$/;
+
+s/^.{19}//; # Removes some initial location and literal-bytes info
+
+# Separate label from the rest, and adjust spacing
+my ($label, $rest) = /^([A-Z][^ ]*)? +(.*)/;
+if (defined $label) {
+    print "$label:\n";
+}
+
+$_ = $rest;
+
+# capitalize the mnemonic.
+s/^[^ ]+/ my $a = $&; $a =~ y:a-z:A-Z:; $a; /e;
+
+# Add four spaces to start.
+s/^/    /;
+
+$_ .= "\n";
+# Print it and loop back! (perl -p)
