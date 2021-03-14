@@ -266,7 +266,7 @@ EF_Flash_Tick:
     RTS
 
 EF_Flash_Text:
-    ; Clear the "mask-out-flashing" flag from the monitor
+    ; Set monitor's mask to clear "normal mode" bit.
     LDX #$7F
     STX MON_InvFlag
     ORA #$40    ; The "flash" bit
@@ -275,6 +275,7 @@ EF_Flash_Text:
     ; RTS not needed
 
 EF_Flash_TextEnd:
+    ; Reset monitor's mask to normal.
     LDX #$FF
     STX MON_InvFlag
     RTS
@@ -288,7 +289,7 @@ EF_Inverse:
     .word   $0000
 
 EF_Inverse_Text:
-    ; Clear the "mask-out-inverse" flag from the monitor
+    ; Set monitor's mask to clear "normal mode"/"not inverse" bits
     LDX #$3F
     STX MON_InvFlag
     AND #$DF    ; no lowercase
@@ -296,7 +297,7 @@ EF_Inverse_Text:
     ; RTS not needed
 
 EF_Inverse_TextEnd:
-    ; Set the "mask-out-inverse" flag from the monitor
+    ; Reset monitor's mask to normal.
     LDX #$FF
     STX MON_InvFlag
     RTS

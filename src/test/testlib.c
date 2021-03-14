@@ -65,7 +65,7 @@ verify40(const char *s) {
             /* TODO: confirm only spaces to end of line. */
             CH = 0;
             CV += 1;
-            o = cursor(1) - 1; /* so the ++o is correct */
+            o = cursor(1);
         }
         else if (*o != SCRCODE(*p)) {
             status = 1;
@@ -75,7 +75,19 @@ verify40(const char *s) {
                    (unsigned)(SCRCODE(*p)), (unsigned)*o);
         }
 
-        ++o, ++p;
+        if (*p == '\r') {
+            /* We already set o, CH above */
+        }
+        else if (CH < 40-1) {
+            ++o;
+            ++CH;
+        }
+        else {
+            CH = 0;
+            CV += 1;
+            o = cursor(1);
+        }
+        ++p;
         /* TODO: check for when we exceed the line?
            ...or just require caller to use \r appropriately? */
     }

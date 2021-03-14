@@ -2,7 +2,7 @@ ifndef D
     D := ./
 endif
 
-$(D)TESTS = $(B)hello
+$(D)TESTS = $(B)hello $(B)flashinv
 $(D)CMDS  = $(B)test $(B)zp
 $(D)PROGS = $($(D)TESTS) $($(D)CMDS)
 
