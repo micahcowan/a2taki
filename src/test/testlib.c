@@ -51,10 +51,11 @@ putcTaki(const char c) {
 }
 
 int
-verify40mode(const char *s, unsigned char oradj, unsigned char mask) {
+verify40mode(const char *s_, unsigned char oradj, unsigned char mask) {
     int status = 0;
     const unsigned char *o = cursor(1);
-    const unsigned char *p = (const unsigned char *)s;
+    const unsigned char *s = (const unsigned char *)s_;
+    const unsigned char *p = s;
 
     fputs("Verifying text: \"", stdout);
     printEscapedStr(s);
