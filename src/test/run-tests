@@ -24,17 +24,13 @@ main() {
         if [ $status -eq 0 ]; then
             green PASS
             pass=$(( $pass + 1 ))
+            if [ "${VERBOSE_TESTS-__none__}" != __none__ ]; then
+                blab
+            fi
         else
             red FAIL...
             fail=$(( $fail + 1 ))
-            echo
-            echo "Exit code $status"
-            echo
-            if [ -n "$capture" ]; then
-                echo "** Start of failed $test output ***"
-                printf '%s\n' "$capture" | sed 's/^/  /'
-                echo "** End of failed $test output ***"
-            fi
+            blab
         fi
     done
 
@@ -46,6 +42,19 @@ main() {
     passfail "$r" "Tests run   : $run"
     passfail "$r" "Tests passed: $pass"
     passfail "$r" "Tests failed: $fail"
+}
+
+blab() {
+    msg=failed
+    if [ "$status" -eq 0 ]; then msg=passed; fi
+    echo
+    echo "Exit code $status"
+    echo
+    if [ -n "$capture" ]; then
+        echo "** Start of $msg $test output ***"
+        printf '%s\n' "$capture" | sed 's/^/  /'
+        echo "** End of $msg $test output ***"
+    fi
 }
 
 green() {
