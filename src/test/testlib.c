@@ -58,7 +58,7 @@ verify40mode(const char *s_, unsigned char oradj, unsigned char mask) {
     const unsigned char *p = s;
 
     fputs("Verifying text: \"", stdout);
-    printEscapedStr(s);
+    printEscapedStr(s_);
     puts("\"");
 
     while (*p != '\0') {
