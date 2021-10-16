@@ -45,7 +45,7 @@ $(1): $(1).o $($(D)TAKI_O) $(B)patchhdr.o $(D)test.cfg $(B)testlib.o $(B)testlib
 endef
 $(foreach prog,$($(D)PROGS),$(eval $(call $(D)workaround,$(prog))))
 
-$(B)rndtest: rndtest.o rnd.o $B
+$(B)rndtest: $(B)rndtest.o $(B)rnd.o $B
 	$($(D)LD) -o $@ -t sim6502 $(B)rndtest.o $(B)rnd.o sim6502.lib
 
 $(B)%.o: $(D)%.s $B $(D)Makefile
