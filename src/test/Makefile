@@ -23,12 +23,14 @@ $(D)LIBS=$(B)testlib.o
 # Assumes we were invoked from ../Makefile
 $(D)TAKI_O = $(shell dirname $B)/taki.o
 
+$(D)BUILT_S = $(patsubst %.c,%.s,$(patsubst %/,$(B),$(wildcard $(D)*.c)))
+
 %.o: %.c
 %.o: %.s
 
 .PHONY: $(D)clean
 $(D)clean:
-	rm -f $($(D)PROGS) $(B)*.s $(B)*.o $(B)*.list
+	rm -f $($(D)PROGS) $($(D)BUILT_S) $(B)*.o $(B)*.list
 
 #$(B)%: $(B)%.o $(D)test.cfg $(B)patchhdr.o $(B)testlib.o $(B)testlib-asm.o $(B)a2rom.o
 #	mkdir -p $B
