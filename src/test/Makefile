@@ -7,7 +7,7 @@ $(D)CMDS  = $(B)test $(B)zp
 $(D)PROGS = $($(D)TESTS) $($(D)CMDS)
 
 .PHONY: $(D)all
-$(D)all: $($(D)CMDS)
+$(D)all: $($(D)CMDS) $(B)rndtest
 
 .PHONY: $(D)check
 $(D)check: $($(D)TESTS)
@@ -30,7 +30,7 @@ $(D)BUILT_S = $(patsubst %.c,%.s,$(patsubst %/,$(B),$(wildcard $(D)*.c)))
 
 .PHONY: $(D)clean
 $(D)clean:
-	rm -f $($(D)PROGS) $($(D)BUILT_S) $(B)*.o $(B)*.list
+	rm -f $($(D)PROGS) $($(D)BUILT_S) $(B)*.o $(B)*.list $(B)rndtest
 
 #$(B)%: $(B)%.o $(D)test.cfg $(B)patchhdr.o $(B)testlib.o $(B)testlib-asm.o $(B)a2rom.o
 #	mkdir -p $B
@@ -44,6 +44,9 @@ $(1): $(1).o $($(D)TAKI_O) $(B)patchhdr.o $(D)test.cfg $(B)testlib.o $(B)testlib
 	$$($(D)LD) $$($(D)LDFLAGS) -o $$@ $(B)patchhdr.o $($(D)TAKI_O) $$< $(B)testlib-asm.o $(B)testlib.o $(B)a2rom.o sim6502.lib
 endef
 $(foreach prog,$($(D)PROGS),$(eval $(call $(D)workaround,$(prog))))
+
+$(B)rndtest: rndtest.o rnd.o $B
+	$($(D)LD) -o $@ -t sim6502 $(B)rndtest.o $(B)rnd.o sim6502.lib
 
 $(B)%.o: $(D)%.s $B $(D)Makefile
 	$($(D)AS) $($(D)ASFLAGS) --listing $(@:.o=.list) -o $@ $<
