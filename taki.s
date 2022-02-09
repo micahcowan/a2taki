@@ -1,10 +1,9 @@
+;#link "taki-startup.s"
 ;#link "taki-cout.s"
 ;#link "taki-basic.s"
 ;#link "load-and-run-basic.s"
 ;#resource "taki.cfg"
 ;#define CFGFILE taki.cfg
-
-.import LoadAndRunBasic
 
 .include "taki-util.inc"
 
@@ -14,12 +13,6 @@ VARTAB	= $69
 PRGEND	= $AF
 CHRGET	= $B1
 CHRGOT	= $B7
-
-.segment "STARTUP"
-TakiStartup:
-	jmp LoadAndRunBasic
-        
-.segment "CODE"
 
 ; Stable entry points table
 PTakiMoveASoft:
