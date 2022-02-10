@@ -92,5 +92,5 @@ CLREOL2:sta     (Mon_BASL),y
 	bcc     CLREOL2
 	rts
 
-VTAB:	lda	Mon_CH
+VTAB:	lda	Mon_CV
 VTABZ:	jmp	Mon_VTABZ
