@@ -5,44 +5,64 @@ TakiOut:
 
 SavedCursor:
 	.byte $00
+SavedRealChar:
+	.byte $00
 ; Taki character input routine
 ; XXX: make this work with both text pages...
 ; XXX: does this work with //e cursors?
 TakiIn:
+        ; save real char
+        sta SavedRealChar
+        ; save $6, $7, use for BAS + $400
+        lda $6
+        pha
+        lda $7
+        pha
+        lda Mon_BASL
+        sta $6
+        lda Mon_BASH
+        and #($FF - $4)
+        ora #$08
+        sta $7
+        
+        ; save cursor, and set it on pg 2 as well
+        lda (Mon_BASL),y
+        sta SavedCursor
+        sta ($06),y
 KEYIN:	inc     Mon_RNDL
 	bne     KEYIN2
 	inc     Mon_RNDH
 KEYIN2:	bit     SS_KBD             ;read keyboard
 	bpl     KEYIN
         ; keypress available.
-        ; save cursor away in case
-        pha
-        lda	(Mon_BASL),y
-        sta	SavedCursor
-        pla
-        ; overwrite cursor with correct cell in A
-	sta     (Mon_BASL),y
 	lda     SS_KBD
         bit	SS_KBDSTRB
 .if DEBUG
         cmp	#$AF	; '/'
         bne	NoFS
         bit	$C055
-        jmp	RestoreCursor
+        jmp	KEYIN
 NoFS:	cmp	#$DC	; '\'
         bne	NoBS
         bit	$C054
-        jmp	RestoreCursor
+        jmp	KEYIN
 .endif ; DEBUG
 NoBS:	cmp #$9B	; ESC
         bne NoESC
-        jmp RestoreCursor
-NoESC:	rts
-RestoreCursor:
-	lda (Mon_BASL),y
-        lda SavedCursor
-        sta (Mon_BASL),y
         jmp KEYIN
+NoESC:
+@Done:	; Restore proper char (both pages),
+	; and $6/$7
+        sta SavedCursor	; temp save read key
+        lda SavedRealChar
+        sta (Mon_BASL),y
+        sta ($6),y
+	pla
+	sta $7
+        pla
+        sta $6
+        lda SavedCursor
+	rts
 
 Saved_CH:
 	.byte $00
