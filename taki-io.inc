@@ -248,7 +248,10 @@ VTABZ:	jsr     TakiBASCALC
 DrawBadge:
 	pha
           lda #$10	; 'P'
+          sta $400 + 38
           sta $800 + 38
+          lda #$31	; '1'
+          sta $400 + 39
           lda #$32	; '2'
           sta $800 + 39
         pla
