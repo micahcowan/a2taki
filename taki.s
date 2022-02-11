@@ -1,8 +1,12 @@
+;#resource "apple2.rom"
 ;#link "taki-startup.s"
 ;#link "taki-basic.s"
 ;#link "load-and-run-basic.s"
 ;#resource "taki.cfg"
 ;#define CFGFILE taki.cfg
+;#resource "TAKI-TODO"
+
+.define DEBUG	1
 
 .include "taki-util.inc"
 .include "a2-monitor.inc"
@@ -37,7 +41,7 @@ TakiMoveASoft:
 ; for special processing (and to send things to both
 ; text pages)
 TakiInit:
-	; Initialize & to skip to end of line and RTS
+	jsr TakiClearP2
         jmp TakiResume
 
 ; Pause Taki I/O processing, restoring any
@@ -49,6 +53,14 @@ TakiPause:
 ; Restore Taki I/O hooks, saving away current ones,
 ; resuming Taki processing 
 TakiResume:
+	lda #<TakiIn
+        sta Mon_KSWL
+        lda #>TakiIn
+        sta Mon_KSWL+1
+        lda #<TakiOut
+        sta Mon_CSWL
+        lda #>TakiOut
+        sta Mon_CSWL+1
 	rts
 
 .if 0

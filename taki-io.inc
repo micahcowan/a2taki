@@ -1,10 +1,133 @@
-;; Taki character output/processing routine
+; Taki character output/processing routine
 TakiOut:
-	jmp (Mon_CSWL)
+	cld
+	jmp TakiDoubledOut
 
-;; Taki character input routine
+SavedCursor:
+	.byte $00
+; Taki character input routine
+; XXX: make this work with both text pages...
+; XXX: does this work with //e cursors?
 TakiIn:
-	jmp (Mon_KSWL)
+KEYIN:	inc     Mon_RNDL
+	bne     KEYIN2
+	inc     Mon_RNDH
+KEYIN2:	bit     SS_KBD             ;read keyboard
+	bpl     KEYIN
+        ; keypress available.
+        ; save cursor away in case
+        pha
+        lda	(Mon_BASL),y
+        sta	SavedCursor
+        pla
+        ; overwrite cursor with correct cell in A
+	sta     (Mon_BASL),y
+	lda     SS_KBD
+        bit	SS_KBDSTRB
+.if DEBUG
+        cmp	#$AF	; '/'
+        bne	NoFS
+        bit	$C055
+        jmp	RestoreCursor
+NoFS:	cmp	#$DC	; '\'
+        bne	NoBS
+        bit	$C054
+        jmp	RestoreCursor
+.endif ; DEBUG
+NoBS:	cmp #$9B	; ESC
+        bne NoESC
+        jmp RestoreCursor
+NoESC:	rts
+RestoreCursor:
+	lda (Mon_BASL),y
+        lda SavedCursor
+        sta (Mon_BASL),y
+        jmp KEYIN
+
+Saved_CH:
+	.byte $00
+Saved_CV:
+	.byte $00
+Saved_BASL:
+	.byte $00, $00
+        
+; Taki's standard COUT-assigned routine.
+; Prints to both text pages at once, and
+; checks for Taki control character
+TakiDoubledOut:
+	cld
+	; Save CH, CV, BASL/H
+        pha
+        lda Mon_CH
+        sta Saved_CH
+        lda Mon_CV
+        sta Saved_CV
+        lda Mon_BASL
+        sta Saved_BASL
+        lda Mon_BASH
+        sta Saved_BASL+1
+        pla
+        
+        ; Do p1 COUT
+        jsr TakiCOUT
+        
+        ; Restore CH, CV, BASL/H
+        pha
+        lda Saved_CH
+        sta Mon_CH
+        lda Saved_CV
+        sta Mon_CV
+        lda Saved_BASL
+        sta Mon_BASL
+        lda Saved_BASL+1
+        clc
+        adc #04		; fix up for pg 2
+        sta Mon_BASH
+        ; and set BASCALC
+        lda #<TakiBASCALC_pageTwo
+        sta BASCALCfn
+        lda #>TakiBASCALC_pageTwo
+        sta BASCALCfn+1
+	pla
+        ; Do p2 COUT
+        ; NOTE: should arrive at same values for CH, CV again...
+        jsr TakiCOUT
+        ; Fix up BASL, and BASLCALC
+        pha
+        sec
+        lda Mon_BASH
+        sbc #04		; fix up for pg 1 again
+        sta Mon_BASH
+        lda #<TakiBASCALC_pageOne
+        sta BASCALCfn
+        lda #>TakiBASCALC_pageOne
+        sta BASCALCfn+1
+        pla
+        rts
+        
+TakiBASCALC:
+BASCALCfn = TakiBASCALC + 1
+	jmp TakiBASCALC_pageOne ; actual addr overwritten
+
+TakiBASCALC_pageOne = Mon_BASCALC
+
+; Same as monitor BASCALC, but calc for page 2 instead
+TakiBASCALC_pageTwo:
+	pha
+	lsr
+	and     #$03
+	ora     #$08	; page two
+	sta     Mon_BASH
+	pla
+	and     #$18
+	bcc     :+
+	adc     #$7f
+:	sta     Mon_BASL
+	asl
+        asl
+	ora     Mon_BASL
+	sta     Mon_BASL
+	rts
 
 YSAV1:
 	.byte $00
@@ -25,7 +148,7 @@ ADVANCE:inc     Mon_CH
 	lda     Mon_CH
 	cmp     Mon_WNDWDTH
 	bcs     CR
-RTS3:	rts
+	rts
 ;
 VIDOUT:	cmp     #$a0
 	bcs     STORADV
@@ -38,7 +161,7 @@ VIDOUT:	cmp     #$a0
 	cmp     #$88
 	bne     BELL1
 	dec     Mon_CH
-	bpl     RTS3
+	bpl     RTS4
 	lda     Mon_WNDWDTH
 	sta     Mon_CH
 	dec     Mon_CH
@@ -47,7 +170,7 @@ VIDOUT:	cmp     #$a0
 	bcs     RTS4
 	dec     Mon_CV
 	lda     Mon_CV
-	jsr     Mon_BASCALC
+	jsr     TakiBASCALC
 	adc     Mon_WNDLFT
 	sta     Mon_BASL
 RTS4:	rts
@@ -63,7 +186,7 @@ LF:	inc     Mon_CV
 	dec     Mon_CV
 SCROLL:	lda     Mon_WNDTOP
 	pha
-	jsr     Mon_VTABZ
+	jsr     VTABZ
 SCRL1:	lda     Mon_BASL
 	sta     Mon_BAS2L
 	lda     Mon_BASH
@@ -75,7 +198,7 @@ SCRL1:	lda     Mon_BASL
 	cmp     Mon_WNDBTM
 	bcs     SCRL3
 	pha
-	jsr     Mon_VTABZ
+	jsr     VTABZ
 SCRL2:	lda     (Mon_BASL),y
 	sta     (Mon_BAS2L),y
 	dey
@@ -93,4 +216,42 @@ CLREOL2:sta     (Mon_BASL),y
 	rts
 
 VTAB:	lda	Mon_CV
-VTABZ:	jmp	Mon_VTABZ
+VTABZ:	jsr     TakiBASCALC
+	adc     Mon_WNDLFT
+	sta     Mon_BASL
+	rts
+
+TakiClearP2:
+	lda $06
+        pha
+        lda $07
+        pha
+        tya
+        pha
+        txa
+        pha
+        
+        lda #$00
+        sta $06
+        lda #$08
+        sta $07
+        lda #$A0
+@nextPg:ldy #0
+:	sta ($06),y
+        iny
+        bne :-
+        inc $07
+        ldx $07
+        cpx #$0C
+        bne @nextPg
+        
+        pla
+        tax
+        pla
+        tay
+        pla
+        sta $07
+        pla
+        sta $06
+	rts
+	

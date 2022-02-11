@@ -1,5 +1,5 @@
 ;; a2-monitor.inc
-;;   entry points and ZP var locations
+;;   entry points, soft switches, and ZP var locations
 ;;   from the Apple ][ monitor/AppleSoft
 
 Mon_WNDLFT	= $20
@@ -15,6 +15,8 @@ Mon_BAS2H	= $2b
 Mon_INVFLG	= $32
 Mon_CSWL	= $36
 Mon_KSWL	= $38
+Mon_RNDL	= $4E
+Mon_RNDH	= $4F
 Mon_TEXTTAB	= $67
 Mon_VARTAB	= $69
 Mon_PRGEND	= $AF
@@ -27,3 +29,6 @@ Mon_VTAB	= $FC22
 Mon_VTABZ	= $FC24
 Mon_KEYIN	= $FD1B
 Mon_COUT1	= $FDF0
+
+SS_KBD		= $C000
+SS_KBDSTRB	= $C010
