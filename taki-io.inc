@@ -216,7 +216,7 @@ SCRL1:	lda     Mon_BASL
 	pla
 	adc     #$01
 	cmp     Mon_WNDBTM
-	bcs     SCRL3
+	bcs     Badge
 	pha
 	jsr     VTABZ
 SCRL2:	lda     (Mon_BASL),y
@@ -224,6 +224,10 @@ SCRL2:	lda     (Mon_BASL),y
 	dey
 	bpl     SCRL2
 	bmi     SCRL1
+Badge:
+.if DEBUG
+	jsr DrawBadge
+.endif
 SCRL3:	ldy     #$00
 	jsr     CLEOLZ
 	bcs     VTAB
@@ -240,6 +244,15 @@ VTABZ:	jsr     TakiBASCALC
 	adc     Mon_WNDLFT
 	sta     Mon_BASL
 	rts
+
+DrawBadge:
+	pha
+          lda #$10	; 'P'
+          sta $800 + 38
+          lda #$32	; '2'
+          sta $800 + 39
+        pla
+        rts
 
 TakiClearP2:
 	lda $06
@@ -273,5 +286,8 @@ TakiClearP2:
         sta $07
         pla
         sta $06
+.if DEBUG
+        jsr DrawBadge
+.endif
 	rts
 	
