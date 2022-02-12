@@ -72,6 +72,7 @@ SavedRealChar:
 ; XXX: make this work with both text pages...
 ; XXX: does this work with //e cursors?
 TakiIn:
+	jsr TakiCheckForGETLN
         ; save real char
         sta SavedRealChar
         ; save $6, $7, use for BAS + $400
@@ -111,8 +112,17 @@ NoFS:	cmp	#$DC	; '\'
 NoBS:	cmp #$9B	; ESC
         bne NoESC
         jmp KEYIN
-NoESC:  cmp #$8D	; CR - clear to EOL
+NoESC:  ; If GETLN gets a CR on input, it
+	; clears to the end of the line, but
+        ; since it doesn't use CSW to do this,
+        ; it'll only happen in page one.
+        ; So, as a hacky workaround, we check
+        ; to see if we were called from GETLN
+        ; and perform CLREOL in both pages if so.
+	cmp #$8D	; CR - clear to EOL...
 	bne NoCR
+	bit InGETLN	; ...but only if in GETLN
+        bpl NoCR
         writeWord TakiIndirectFn, CLREOL
         jsr TakiDoubleDo
         lda #$8D
@@ -128,6 +138,35 @@ NoCR:
         pla
         sta $6
         lda SavedCursor
+	rts
+
+InGETLN:
+	.byte $00 ; set to $FF when TakiIn
+                  ; called from GETLN
+TakiCheckForGETLN:
+	; The monitor GETLN routine, also used
+        ; by AppleSoft and assembly-language
+        ; programs, does special things we must
+        ; account for. Check to see if that's
+        ; our caller.
+        pha
+        txa
+        pha
+          tsx	; stack into X
+          lda $107,x ; check for return to $FD78
+          cmp #$77
+          bne @False
+          lda $108,x
+          cmp #$FD
+          bne @False
+          lda #$FF
+          sta InGETLN
+          bne @Done ; always
+@False: lda #$00
+	sta InGETLN
+@Done:  pla
+        tax
+        pla
 	rts
 
 Saved_CH:
