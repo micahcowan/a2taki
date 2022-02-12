@@ -1,6 +1,67 @@
+; A convenience routine: store an address
+; at TakiIndirectFn, then JSR to TakiIndirect.
+; A workaround for 6502's lack of indirect JSR
+TakiIndirect:
+TakiIndirectFn = TakiIndirect + 1
+	jmp $1000 ; addr overwritten by caller
+
+; Call a function twice, once with BAS -> pg 1,
+; and once with BAS -> pg 2.
+;
+; To invoke, first write the addr of the fn
+; you want called for each page to TakiIndirectFn,
+; then jsr TakiDoubleDo.
+TakiDoubleDo:
+	; Save CH, CV, BASL/H
+        pha
+        lda Mon_CH
+        sta Saved_CH
+        lda Mon_CV
+        sta Saved_CV
+        lda Mon_BASL
+        sta Saved_BAS
+        lda Mon_BASH
+        sta Saved_BAS+1
+        pla
+        
+        ; Do p1 job
+        jsr TakiIndirect
+        
+        ; Restore CH, CV, BASL/H
+        pha
+        lda Saved_CH
+        sta Mon_CH
+        lda Saved_CV
+        sta Mon_CV
+        lda Saved_BAS
+        sta Mon_BASL
+        lda Saved_BAS+1
+        clc
+        adc #04		; fix up for pg 2
+        sta Mon_BASH
+        ; and set BASCALC
+        lda #<TakiBASCALC_pageTwo
+        sta BASCALCfn
+        lda #>TakiBASCALC_pageTwo
+        sta BASCALCfn+1
+	pla
+        ; Do p2 job
+        jsr TakiIndirect
+        ; Fix up BASL, and BASLCALC
+        pha
+        sec
+        lda Mon_BASH
+        sbc #04		; fix up for pg 1 again
+        sta Mon_BASH
+        lda #<TakiBASCALC_pageOne
+        sta BASCALCfn
+        lda #>TakiBASCALC_pageOne
+        sta BASCALCfn+1
+        pla
+        rts
+
 ; Taki character output/processing routine
 TakiOut:
-	cld
 	jmp TakiDoubledOut
 
 SavedCursor:
@@ -50,7 +111,12 @@ NoFS:	cmp	#$DC	; '\'
 NoBS:	cmp #$9B	; ESC
         bne NoESC
         jmp KEYIN
-NoESC:
+NoESC:  cmp #$8D	; CR - clear to EOL
+	bne NoCR
+        writeWord TakiIndirectFn, CLREOL
+        jsr TakiDoubleDo
+        lda #$8D
+NoCR:
 @Done:	; Restore proper char (both pages),
 	; and $6/$7
         sta SavedCursor	; temp save read key
@@ -68,62 +134,8 @@ Saved_CH:
 	.byte $00
 Saved_CV:
 	.byte $00
-Saved_BASL:
+Saved_BAS:
 	.byte $00, $00
-        
-; Taki's standard COUT-assigned routine.
-; Prints to both text pages at once, and
-; checks for Taki control character
-TakiDoubledOut:
-	cld
-	; Save CH, CV, BASL/H
-        pha
-        lda Mon_CH
-        sta Saved_CH
-        lda Mon_CV
-        sta Saved_CV
-        lda Mon_BASL
-        sta Saved_BASL
-        lda Mon_BASH
-        sta Saved_BASL+1
-        pla
-        
-        ; Do p1 COUT
-        jsr TakiCOUT
-        
-        ; Restore CH, CV, BASL/H
-        pha
-        lda Saved_CH
-        sta Mon_CH
-        lda Saved_CV
-        sta Mon_CV
-        lda Saved_BASL
-        sta Mon_BASL
-        lda Saved_BASL+1
-        clc
-        adc #04		; fix up for pg 2
-        sta Mon_BASH
-        ; and set BASCALC
-        lda #<TakiBASCALC_pageTwo
-        sta BASCALCfn
-        lda #>TakiBASCALC_pageTwo
-        sta BASCALCfn+1
-	pla
-        ; Do p2 COUT
-        ; NOTE: should arrive at same values for CH, CV again...
-        jsr TakiCOUT
-        ; Fix up BASL, and BASLCALC
-        pha
-        sec
-        lda Mon_BASH
-        sbc #04		; fix up for pg 1 again
-        sta Mon_BASH
-        lda #<TakiBASCALC_pageOne
-        sta BASCALCfn
-        lda #>TakiBASCALC_pageOne
-        sta BASCALCfn+1
-        pla
-        rts
         
 TakiBASCALC:
 BASCALCfn = TakiBASCALC + 1
@@ -149,8 +161,20 @@ TakiBASCALC_pageTwo:
 	sta     Mon_BASL
 	rts
 
+; Taki's standard COUT-assigned routine.
+; Prints to both text pages at once, and
+; checks for Taki control character
+TakiDoubledOut:
+	cld
+        pha
+        writeWord TakiIndirectFn, TakiCOUT
+        pla
+        jmp TakiDoubleDo
+
 YSAV1:
 	.byte $00
+; A modified variant of Monitor's COUT1 routine
+; (standard PR#0 output routine)
 TakiCOUT:
 	cmp     #$a0
 	bcc     COUTZ
