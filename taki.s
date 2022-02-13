@@ -45,15 +45,8 @@ TakiMoveASoft:
 ; text pages)
 TakiInit:
 	jsr TakiClearP2
-	DebugPrint_ DbgInitMsg
+        DebugInit_
         jmp TakiResume
-
-.if DEBUG
-DbgInitMsg:
-	scrcode "TAKI STARTED", $0D
-;	scrcode "THREE",$0D,"FOUR",$0D,"FIVE",$0D
-	.byte $00
-.endif
 
 ; Pause Taki I/O processing, restoring any
 ; previous I/O hooks. Mostly useful for talking

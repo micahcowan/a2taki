@@ -7,7 +7,58 @@
   .endif
 .endmacro
 
+.macro DebugInit_
+  .if DEBUG
+    jsr DebugInit
+  .endif
+.endmacro
+
 .if DEBUG
+
+DebugNumLines	= 4 ; # lines to reserve at scr btm
+DebugNumRegLines= 24 - DebugNumLines
+
+DebugInit:
+	; If CV is in the reserved area, scroll
+        ; up (scrolling cursor along) until
+        ; it's not.
+@ScrollCheck:
+        lda Mon_CV
+	cmp #DebugNumRegLines
+        bcc @DoneScrolling
+        sbc #1	; carry is set/"borrow clear"
+        sta Mon_CV
+        jsr Mon_SCROLL	; use monitor's because
+        		; pg 2 already clear
+        jmp @ScrollCheck
+@DoneScrolling:
+	; Clear lines at screen bottom
+	lda #(24 - DebugNumLines)
+@ClrLoop:
+	cmp #24 ; total lines in screen
+        bcs @ClrDone
+        pha
+        jsr Mon_VTABZ
+        ldy #0
+        jsr Mon_CLEOLZ
+        pla
+        adc #0 ; carry is set, so "+ 1"
+        jmp @ClrLoop
+@ClrDone:
+	jsr Mon_VTAB
+        ; Reserve lines at scr bottom
+	lda #(24 - DebugNumLines)
+        sta Mon_WNDBTM
+        ; Print start msg
+        DebugPrint_ DbgInitMsg
+        rts
+
+DbgInitMsg:
+	scrcode "TAKI START", $0D
+;	scrcode "TWO",$0D,"THREE",$0D,"FOUR",$0D,"FIVE",$0D
+;	scrcode "SIX",$0D,"SEVEN",$0D
+        .byte $00
+
 
 DebugPrint:
 	jsr DebugPrSetup
@@ -76,11 +127,11 @@ DebugPrSetup:
         sta DebugSavedCH
         lda Mon_CV
         sta DebugSavedCV
-        lda #20
+        lda #DebugNumRegLines
         sta Mon_WNDTOP
-        lda #24
+        lda #24 ; total # lines on screen
         sta Mon_WNDBTM
-        lda #23
+        lda #23 ; last line #
         sta Mon_CV
         lda DebugCH
         sta Mon_CH

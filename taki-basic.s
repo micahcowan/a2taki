@@ -19,5 +19,9 @@ scrcode "140 ? ",'"',"SENTENCE INTERRUPTED BY INPUT",'"',';',$0D
 scrcode "150 HTAB(1):INPUT ",'"',"INPUT:",'"',";A$",$0D
 scrcode "160 ? ",'"',"SENTENCE INTERRUPTED BY GETKEY",'"',';',$0D
 scrcode "170 HTAB(1):?",'"',"GET",'"',";:GET A$",$0D
+; This bit is to ensure DebugInit happens
+; with junk left after CV, to test erasure
+scrcode $0D,$0D,$0D,"VTAB(16)",$0D
+
 scrcode "RUN",$0D
 ASoftEnd:
