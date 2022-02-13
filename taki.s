@@ -6,6 +6,8 @@
 ;#define CFGFILE taki.cfg
 ;#resource "TAKI-TODO"
 
+.macpack apple2
+
 .define DEBUG	1
 
 .include "taki-util.inc"
@@ -25,6 +27,7 @@ PTakiPause:
 PTakiResume:
 	jmp TakiResume
 
+.include "taki-debug.inc"
 .include "taki-io.inc"
 
 ; Reorganize where in memory a BASIC program is
@@ -42,7 +45,15 @@ TakiMoveASoft:
 ; text pages)
 TakiInit:
 	jsr TakiClearP2
+	DebugPrint_ DbgInitMsg
         jmp TakiResume
+
+.if DEBUG
+DbgInitMsg:
+	scrcode "TAKI STARTED", $0D
+;	scrcode "THREE",$0D,"FOUR",$0D,"FIVE",$0D
+	.byte $00
+.endif
 
 ; Pause Taki I/O processing, restoring any
 ; previous I/O hooks. Mostly useful for talking

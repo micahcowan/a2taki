@@ -10,6 +10,14 @@
 	writeByte {dst+1}, >src
 .endMacro
 
+; copy a word from one location to another
+.macro copyWord dst, src
+	lda src
+        sta dst
+        lda src+1
+        sta dst+1
+.endMacro
+
 
 .macro tstr str
 	.repeat .strlen (str)-1, i

@@ -109,7 +109,7 @@ NoFS:	cmp	#$DC	; '\'
         bit	$C054
         jmp	KEYIN
 .endif ; DEBUG
-NoBS:	cmp #$9B	; ESC
+NoBS:	cmp #$9B	; ESC - skip and get new keypress
         bne NoESC
         jmp KEYIN
 NoESC:  ; If GETLN gets a CR on input, it

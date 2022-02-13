@@ -28,6 +28,7 @@ Mon_BELL1	= $FBD9
 Mon_VTAB	= $FC22
 Mon_VTABZ	= $FC24
 Mon_KEYIN	= $FD1B
+Mon_COUT	= $FDED
 Mon_COUT1	= $FDF0
 Mon_MONZ	= $FF69
 
