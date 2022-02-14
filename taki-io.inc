@@ -1,15 +1,8 @@
-; A convenience routine: store an address
-; at TakiIndirectFn, then JSR to TakiIndirect.
-; A workaround for 6502's lack of indirect JSR
-TakiIndirect:
-TakiIndirectFn = TakiIndirect + 1
-	jmp $1000 ; addr overwritten by caller
-
 ; Call a function twice, once with BAS -> pg 1,
 ; and once with BAS -> pg 2.
 ;
 ; To invoke, first write the addr of the fn
-; you want called for each page to TakiIndirectFn,
+; you want called for each page to PTakiIndirectFn,
 ; then jsr TakiDoubleDo.
 TakiDoubleDo:
 	; Save CH, CV, BASL/H
@@ -121,9 +114,9 @@ NoESC:  ; If GETLN gets a CR on input, it
         ; and perform CLREOL in both pages if so.
 	cmp #$8D	; CR - clear to EOL...
 	bne NoCR
-	bit InGETLN	; ...but only if in GETLN
+	bit PTakiInGETLN	; ...but only if in GETLN
         bpl NoCR
-        writeWord TakiIndirectFn, CLREOL
+        writeWord PTakiIndirectFn, CLREOL
         jsr TakiDoubleDo
         lda #$8D
 NoCR:
@@ -140,9 +133,6 @@ NoCR:
         lda SavedCursor
 	rts
 
-InGETLN:
-	.byte $00 ; set to $FF when TakiIn
-                  ; called from GETLN
 TakiCheckForGETLN:
 	; The monitor GETLN routine, also used
         ; by AppleSoft and assembly-language
@@ -160,10 +150,10 @@ TakiCheckForGETLN:
           cmp #$FD
           bne @False
           lda #$FF
-          sta InGETLN
+          sta PTakiInGETLN
           bne @Done ; always
 @False: lda #$00
-	sta InGETLN
+	sta PTakiInGETLN
 @Done:  pla
         tax
         pla
@@ -206,7 +196,7 @@ TakiBASCALC_pageTwo:
 TakiDoubledOut:
 	cld
         pha
-        writeWord TakiIndirectFn, TakiCOUT
+        writeWord PTakiIndirectFn, TakiCOUT
         pla
         jmp TakiDoubleDo
 
@@ -320,7 +310,7 @@ DrawBadge:
         pla
         rts
 
-TakiClearP2:
+TakiClearPage2:
 	lda $06
         pha
         lda $07

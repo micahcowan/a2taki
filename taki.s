@@ -10,22 +10,59 @@
 
 .define DEBUG	1
 
+TakiStart:
+
 .include "taki-util.inc"
 .include "a2-monitor.inc"
 
-; Stable entry points table
-.export PTakiMoveASoft
-PTakiMoveASoft:
-	jmp TakiMoveASoft
-.export PTakiInit
-PTakiInit:
-	jmp TakiInit
-.export PTakiPause
-PTakiPause:
-	jmp TakiPause
-.export PTakiResume
-PTakiResume:
-	jmp TakiResume
+;;;;; PUBLIC FUNCTION ENTRY POINTS
+; Stable entry points table, so that programs
+; have a "known" offset they can use to call
+; a routine, that will not change
+; across releases.
+
+TakiPublic_ TakiMoveASoft
+;  TakiPublic_ takes a name like TakiMoveASoft
+;  and spits out code like:
+;
+;.export PTakiMoveASoft
+;PTakiMoveASoft:
+;	jmp TakiMoveASoft
+
+TakiPublic_ TakiInit
+TakiPublic_ TakiPause
+TakiPublic_ TakiResume
+TakiPublic_ TakiIn
+TakiPublic_ TakiOut
+;
+.export PTakiPageTwoBasCalc
+PTakiPageTwoBasCalc:
+ 	jmp TakiBASCALC_pageTwo
+;
+TakiPublic_ TakiClearPage2
+TakiPublic_ TakiDoubleDo
+TakiPublic_ TakiDoubledOut
+
+
+;;;;; PUBLIC VARIABLES AND FLAGS
+
+; Guarantee that they begin at $8080
+TakiPubFnEnd:
+
+.res TakiStart + $80 - *
+
+TakiFlagsStart:
+; A convenience routine: store an address
+; at TakiIndirectFn, then JSR to TakiIndirect.
+; A workaround for 6502's lack of indirect JSR
+; (this is in "flags and variables" because
+; a user doesn't call it, only writes to PTakiIndirect
+TakiIndirect:
+PTakiIndirectFn = TakiIndirect + 1
+	jmp $1000 ; addr overwritten by caller
+PTakiInGETLN:
+	.byte $00 ; set to $FF when TakiIn
+                  ; called from GETLN
 
 .include "taki-debug.inc"
 .include "taki-io.inc"
@@ -44,7 +81,7 @@ TakiMoveASoft:
 ; for special processing (and to send things to both
 ; text pages)
 TakiInit:
-	jsr TakiClearP2
+	jsr TakiClearPage2
         DebugInit_
         jmp TakiResume
 
