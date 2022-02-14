@@ -138,6 +138,35 @@ TakiExit:
         jsr TakiPause
 	rts
 
+TakiTickIter:
+	.byte $00
+TakiTickChars:
+	scrcode "I/-\"
+        .byte $00
+TakiTick:
+	pha
+        tya
+        pha
+        txa
+        pha
+        
+        ldy TakiTickIter
+        lda TakiTickChars,y
+        sta $7D0 + 38
+        sta $BD0 + 38
+        iny
+        cpy #4
+        bne :+
+        ldy #0
+:	sty TakiTickIter
+        
+        pla
+        tax
+        pla
+        tay
+        pla
+        rts
+
 .if 0
 ; not done writing this fn
 PrintStr:

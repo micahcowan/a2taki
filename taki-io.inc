@@ -113,6 +113,7 @@ TakiIn:
 KEYIN:	inc     Mon_RNDL
 	bne     KEYIN2
 	inc     Mon_RNDH
+        jsr TakiTick
 KEYIN2:	bit     SS_KBD             ;read keyboard
 	bpl     KEYIN
         ; keypress available.
