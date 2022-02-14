@@ -13,6 +13,12 @@
   .endif
 .endmacro
 
+.macro DebugExit_
+  .if DEBUG
+    jsr DebugExit
+  .endif
+.endmacro
+
 .if DEBUG
 
 DebugNumLines	= 4 ; # lines to reserve at scr btm
@@ -52,13 +58,30 @@ DebugInit:
         ; Print start msg
         DebugPrint_ DbgInitMsg
         rts
+        
+DebugExit:
+	DebugPrint_ DbgExitMsg
+        lda #24
+        sta Mon_WNDBTM
+        lda #0
+        sta Mon_CH
+        lda #23
+        sta Mon_CV
+        jsr Mon_VTABZ
+        lda #$8D
+        jsr Mon_COUT
+        lda #$8D
+        jsr Mon_COUT
+	rts
 
 DbgInitMsg:
 	scrcode "TAKI START", $0D
 ;	scrcode "TWO",$0D,"THREE",$0D,"FOUR",$0D,"FIVE",$0D
 ;	scrcode "SIX",$0D,"SEVEN",$0D
         .byte $00
-
+DbgExitMsg:
+	scrcode "TAKI EXIT", $0D
+        .byte $00
 
 DebugPrint:
 	jsr DebugPrSetup

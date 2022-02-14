@@ -57,6 +57,12 @@ TakiDoubleDo:
 TakiOut:
 	jmp TakiDoubledOut
 
+.if DEBUG
+PromptExitStr:
+	scrcode "!!EXIT VIA PROMPT DETECTED!!",$0D
+        .byte $00
+.endif
+
 SavedCursor:
 	.byte $00
 SavedRealChar:
@@ -65,9 +71,29 @@ SavedRealChar:
 ; XXX: make this work with both text pages...
 ; XXX: does this work with //e cursors?
 TakiIn:
-	jsr TakiCheckForGETLN
         ; save real char
         sta SavedRealChar
+	jsr TakiCheckForGETLN
+        bit PTakiInGETLN	; are we in GETLN?
+        bpl @NotExited		; no, skip ahead
+        cpx #00			; yes: are we in 2nd column?
+        bne @NotExited		; no, no further checks
+        lda PTakiExitPrompts	; yes, check ] prompt
+        beq @NotExited		; prompt check disabled!
+        cmp Mon_PROMPT		; PROMPT = ] (or P1)?
+        beq @Exited		; yes so exited.
+        lda PTakiExitPrompts+1
+        beq @NotExited		; 2nd prompt disabled
+        cmp Mon_PROMPT		; PROMPT = * (or P2)?
+        bne @NotExited		; no, not exited
+@Exited:lda SavedRealChar
+	sta (Mon_BASL),y
+	DebugPrint_ PromptExitStr
+	jsr TakiExit
+	lda SavedRealChar
+        jmp Mon_GETLN		; hand control to
+        			;  pre-Taki I/O processor
+@NotExited:
         ; save $6, $7, use for BAS + $400
         lda $6
         pha
