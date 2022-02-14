@@ -19,6 +19,18 @@
   .endif
 .endmacro
 
+.macro DebugDrawBadge_
+  .if DEBUG
+    jsr DebugDrawBadge
+  .endif
+.endmacro
+
+.macro DebugUndrawBadge_
+  .if DEBUG
+    jsr DebugUndrawBadge
+  .endif
+.endmacro
+
 .if DEBUG
 
 DebugNumLines	= 4 ; # lines to reserve at scr btm
@@ -174,6 +186,26 @@ DebugPrTeardown:
         lda DebugSavedCV
         sta Mon_CV
         jsr Mon_VTAB
+        rts
+        
+DebugUndrawBadge:
+	pha
+          lda #$A0	; SPACE
+          sta $400 + 38
+          sta $400 + 39
+        pla
+        rts
+        
+DebugDrawBadge:
+	pha
+          lda #$10	; 'P'
+          sta $400 + 38
+          sta $800 + 38
+          lda #$31	; '1'
+          sta $400 + 39
+          lda #$32	; '2'
+          sta $800 + 39
+        pla
         rts
 
 .endif ; DEBUG

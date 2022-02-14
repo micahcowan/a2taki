@@ -304,9 +304,7 @@ SCRL2:	lda     (Mon_BASL),y
 	bpl     SCRL2
 	bmi     SCRL1
 Badge:
-.if DEBUG
-	jsr DrawBadge
-.endif
+	DebugDrawBadge_
 SCRL3:	ldy     #$00
 	jsr     CLEOLZ
 	bcs     VTAB
@@ -323,18 +321,6 @@ VTABZ:	jsr     TakiBASCALC
 	adc     Mon_WNDLFT
 	sta     Mon_BASL
 	rts
-
-DrawBadge:
-	pha
-          lda #$10	; 'P'
-          sta $400 + 38
-          sta $800 + 38
-          lda #$31	; '1'
-          sta $400 + 39
-          lda #$32	; '2'
-          sta $800 + 39
-        pla
-        rts
 
 TakiClearPage2:
 	lda $06
@@ -368,8 +354,6 @@ TakiClearPage2:
         sta $07
         pla
         sta $06
-.if DEBUG
-        jsr DrawBadge
-.endif
+        DebugDrawBadge_
 	rts
 	

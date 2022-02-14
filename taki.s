@@ -120,6 +120,8 @@ TakiInit:
 ; previous I/O hooks. Mostly useful for talking
 ; to a DOS
 TakiPause:
+        bit $C054	; force page one
+	DebugUndrawBadge_
 	copyWord Mon_CSWL, PTakiOrigCSW
         copyWord Mon_KSWL, PTakiOrigKSW
 	rts
