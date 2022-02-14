@@ -54,6 +54,11 @@ TakiPubFnEnd:
 
 TakiFlagsStart:
 
+; Release version: if high bit of first byte is
+; set, this is an unstable/unreleased version
+PTakiReleaseVersion:
+	.byte $FF, $FF
+
 ; Original (pre-Taki init) I/O routines
 ; (could be from PR#0, more likely from a DOS)
 ; saved away for restoration on exit
@@ -140,6 +145,8 @@ TakiExit:
 
 TakiTickIter:
 	.byte $00
+TakiTickCounter:
+	.byte $01
 TakiTickChars:
 	scrcode "I/-\"
         .byte $00
@@ -150,15 +157,20 @@ TakiTick:
         txa
         pha
         
+        ldx TakiTickCounter
+        dex
+        bne @StX
+        ldx #$20
         ldy TakiTickIter
         lda TakiTickChars,y
         sta $7D0 + 38
         sta $BD0 + 38
         iny
         cpy #4
-        bne :+
+        bne @StY
         ldy #0
-:	sty TakiTickIter
+@StY:	sty TakiTickIter
+@StX:	stx TakiTickCounter
         
         pla
         tax
