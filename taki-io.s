@@ -42,8 +42,7 @@ TakiDoubleDo:
         lda Saved_BAS
         sta Mon_BASL
         lda Saved_BAS+1
-        clc
-        adc #04		; fix up for pg 2
+        eor #$0C
         sta Mon_BASH
         ; and set BASCALC
         lda #<TakiBASCALC_pageTwo
@@ -55,9 +54,8 @@ TakiDoubleDo:
         jsr TakiIndirect
         ; Fix up BASL, and BASLCALC
         pha
-        sec
         lda Mon_BASH
-        sbc #04		; fix up for pg 1 again
+        eor #$0C
         sta Mon_BASH
         lda #<TakiBASCALC_pageOne
         sta BASCALCfn
@@ -115,8 +113,9 @@ TakiIn:
         lda Mon_BASL
         sta $6
         lda Mon_BASH
-        and #($FF - $4)
-        ora #$08
+        ;and #($FF - $4)
+        ;ora #$08
+        eor #$0C
         sta $7
         
         ; save cursor, and set it on pg 2 as well
@@ -164,7 +163,23 @@ NoESC:  ; If GETLN gets a CR on input, it
 	bit PTakiInGETLN	; ...but only if in GETLN
         bpl NoCR
         writeWord PTakiIndirectFn, CLREOL
+        
+        ; CLREOL changes y reg, so save/restore
+        pha
+        tya
+        pha
         jsr TakiDoubleDo
+        pla
+        tay
+        pla
+        
+        ; "Saved char" will be written to both pages,
+        ; AFTER we did a CLREOL, and then GETLN
+        ; will clear again. This leaves the "saved"
+        ; char on the screen in page 2 but not page 1.
+        ; So set "saved char" to SPACE, to compensate.
+        lda #$A0
+        sta SavedRealChar
         lda #$8D
 NoCR:
 @Done:	; Restore proper char (both pages),
