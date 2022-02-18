@@ -16,12 +16,14 @@
 
 .import DebugInit, DebugExit, DebugPrint, DebugDrawBadge, DebugUndrawBadge
 
-TakiStart:
 
 .include "taki-util.inc"
 .include "a2-monitor.inc"
 .include "taki-debug.inc"
 
+.segment "PUBLIC"
+
+TakiStart:
 ;;;;; PUBLIC FUNCTION ENTRY POINTS
 ; Stable entry points table, so that programs
 ; have a "known" offset they can use to call
