@@ -1,12 +1,13 @@
 .export TakiDoubleDo, TakiDoubledOut, TakiClearPage2
-.export TakiBASCALC_pageTwo, TakiOut, TakiIn
+.export TakiBASCALC_pageTwo, TakiOut, TakiIn, TakiIOPageFlip
 
 .include "a2-monitor.inc"
 .include "taki-debug.inc"
 
 .import DebugInit, DebugExit, DebugPrint, DebugPrintStr, DebugDrawBadge, DebugUndrawBadge
 .import PTakiIndirectFn, TakiTick, TakiExit, PTakiExitPrompts
-.import PTakiInGETLN, TakiIndirect
+.import PTakiInGETLN, TakiIndirect, PTakiCurPageBase, PTakiNextPageBase
+.import PTakiPaused
 
 .macpack apple2
 
@@ -125,24 +126,31 @@ TakiIn:
 KEYIN:	inc     Mon_RNDL
 	bne     KEYIN2
 	inc     Mon_RNDH
+        bit PTakiPaused
+        bne @Paused
         jsr TakiTick
+@Paused:
 KEYIN2:	bit     SS_KBD             ;read keyboard
 	bpl     KEYIN
         ; keypress available.
 	lda     SS_KBD
         bit	SS_KBDSTRB
 .if DEBUG
-        cmp	#$AF	; '/'
-        bne	NoFS
-        bit	$C055
-        jmp	KEYIN
-NoFS:	cmp	#$DC	; '\'
-        bne	NoBS
-        bit	$C054
+        cmp	#$C0	; '@' ?
+        bne	NoBS	; no: skip
+        pha
+        lda #$FF
+        sta PTakiPaused
+        pla
+        jsr	TakiIOPageFlip
         jmp	KEYIN
 .endif ; DEBUG
-NoBS:	cmp #$9B	; ESC - skip and get new keypress
+NoBS:	cmp #$9B	; ESC - unpause and get new keypress
         bne NoESC
+        pha
+        lda #$00
+        sta PTakiPaused
+        pla
         jmp KEYIN
 NoESC:  ; If GETLN gets a CR on input, it
 	; clears to the end of the line, but
@@ -369,4 +377,25 @@ TakiClearPage2:
         sta $06
         DebugDrawBadge_
 	rts
+
+TakiIOPageFlip:
+	lda PTakiCurPageBase	; what's cur page?
+        cmp #$08		; p2: go handle that
+        beq @PageTwo		; otherwise, handle p1 here
+        lda #$08
+        sta PTakiCurPageBase
+        lda #$04
+        sta PTakiNextPageBase
+        bit SS_SEL_TEXT_P2	; switch to p2
+        rts
+@PageTwo:
+	lda #$04
+        sta PTakiCurPageBase
+        lda #$08
+        sta PTakiNextPageBase
+        bit SS_SEL_TEXT_P1	; switch to p1
+        ;lda #$FF
+        ;sta PTakiPaused
+        ;jmp Mon_MONZ
+        rts
 	

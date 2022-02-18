@@ -11,7 +11,7 @@
 .macpack apple2
 
 .import TakiDoubleDo, TakiDoubledOut, TakiClearPage2
-.import TakiBASCALC_pageTwo, TakiOut, TakiIn
+.import TakiBASCALC_pageTwo, TakiOut, TakiIn, TakiIOPageFlip
 
 .import DebugInit, DebugExit, DebugPrint, DebugDrawBadge, DebugUndrawBadge
 
@@ -92,7 +92,7 @@ PTakiOrigKSW:
 .export PTakiExitPrompts
 PTakiExitPrompts:
 	.byte $DD
-        .byte $AA
+        .byte $00 ; $AA
         
 ; A convenience routine: store an address
 ; at TakiIndirectFn, then JSR to TakiIndirect.
@@ -109,6 +109,26 @@ PTakiInGETLN:
 	.byte $00 ; set to $FF when TakiIn
                   ; called from GETLN
 
+
+; PTakiCurPageBase: contains $04 if page one is the
+; currently shown page, $08 if page two.
+; PTakiNextPageBase: reverse of the above.
+	.byte $00
+.export PTakiCurPageBase
+PTakiCurPageBase:
+	.byte $04
+	.byte $00
+.export PTakiNextPageBase
+PTakiNextPageBase:
+	.byte $08
+
+.export PTakiPaused
+PTakiPaused:
+	.byte $00
+
+
+;;;;; END OF PUBLIC INTERFACE
+
 ; Reorganize where in memory a BASIC program is
 ; located (to move it out of the way of the
 ; second text page - to $C01)
@@ -123,6 +143,7 @@ TakiMoveASoft:
 ; for special processing (and to send things to both
 ; text pages)
 TakiInit:
+	jsr Mon_HOME
 	jsr TakiClearPage2
         DebugInit_
         ; save away CSW, KSW
@@ -169,19 +190,24 @@ TakiTick:
         pha
         
         ldx TakiTickCounter
+        ldy TakiTickIter
         dex
         bne @StX
         ldx #$20
-        ldy TakiTickIter
-        lda TakiTickChars,y
-        sta $7D0 + 38
-        sta $BD0 + 38
         iny
         cpy #4
         bne @StY
         ldy #0
 @StY:	sty TakiTickIter
 @StX:	stx TakiTickCounter
+
+        lda PTakiNextPageBase
+        ora #$03
+        sta @DrawSta+2	; modify upcoming sta dest
+        lda TakiTickChars,y
+@DrawSta:
+        sta $7F6
+	jsr TakiIOPageFlip
         
         pla
         tax
