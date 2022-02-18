@@ -11,7 +11,8 @@
 .macpack apple2
 
 .import TakiDoubleDo, TakiDoubledOut, TakiClearPage2
-.import TakiBASCALC_pageTwo, TakiOut, TakiIn, TakiIOPageFlip
+.import TakiBASCALC_pageTwo, TakiOut, TakiIn, TakiIoPageFlip
+.import TakiIoSetPageOne, TakiIoSetPageTwo
 
 .import DebugInit, DebugExit, DebugPrint, DebugDrawBadge, DebugUndrawBadge
 
@@ -122,8 +123,8 @@ PTakiCurPageBase:
 PTakiNextPageBase:
 	.byte $08
 
-.export PTakiPaused
-PTakiPaused:
+.export PTakiTicksPaused
+PTakiTicksPaused:
 	.byte $00
 
 
@@ -149,6 +150,9 @@ TakiInit:
         ; save away CSW, KSW
         copyWord PTakiOrigCSW, Mon_CSWL
         copyWord PTakiOrigKSW, Mon_KSWL
+        lda #$00
+        sta PTakiTicksPaused
+        jsr TakiIoSetPageOne
         jmp TakiResume
 
 ; Pause Taki I/O processing, restoring any
@@ -207,7 +211,7 @@ TakiTick:
         lda TakiTickChars,y
 @DrawSta:
         sta $7F6
-	jsr TakiIOPageFlip
+	jsr TakiIoPageFlip
         
         pla
         tax

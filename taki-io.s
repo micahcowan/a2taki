@@ -1,5 +1,6 @@
 .export TakiDoubleDo, TakiDoubledOut, TakiClearPage2
-.export TakiBASCALC_pageTwo, TakiOut, TakiIn, TakiIOPageFlip
+.export TakiBASCALC_pageTwo, TakiOut, TakiIn, TakiIoPageFlip
+.export TakiIoSetPageOne, TakiIoSetPageTwo
 
 .include "a2-monitor.inc"
 .include "taki-debug.inc"
@@ -7,7 +8,7 @@
 .import DebugInit, DebugExit, DebugPrint, DebugPrintStr, DebugDrawBadge, DebugUndrawBadge
 .import PTakiIndirectFn, TakiTick, TakiExit, PTakiExitPrompts
 .import PTakiInGETLN, TakiIndirect, PTakiCurPageBase, PTakiNextPageBase
-.import PTakiPaused
+.import PTakiTicksPaused
 
 .macpack apple2
 
@@ -125,7 +126,7 @@ TakiIn:
 KEYIN:	inc     Mon_RNDL
 	bne     KEYIN2
 	inc     Mon_RNDH
-        bit PTakiPaused
+        bit PTakiTicksPaused
         bne @Paused
         jsr TakiTick
 @Paused:
@@ -136,20 +137,21 @@ KEYIN2:	bit     SS_KBD             ;read keyboard
         bit	SS_KBDSTRB
 .if DEBUG
         cmp	#$C0	; '@' ?
-        bne	NoBS	; no: skip
+        bne	NoAT	; no: skip
         pha
         lda #$FF
-        sta PTakiPaused
+        sta PTakiTicksPaused
         pla
-        jsr	TakiIOPageFlip
+        jsr	TakiIoPageFlip
         jmp	KEYIN
 .endif ; DEBUG
-NoBS:	cmp #$9B	; ESC - unpause and get new keypress
-        bne NoESC
+NoAT:	; Any key other than @ will resume ticks
         pha
         lda #$00
-        sta PTakiPaused
+        sta PTakiTicksPaused
         pla
+	cmp #$9B	; ESC - skip and get new keypress
+        bne NoESC
         jmp KEYIN
 NoESC:  ; If GETLN gets a CR on input, it
 	; clears to the end of the line, but
@@ -393,24 +395,22 @@ TakiClearPage2:
         DebugDrawBadge_
 	rts
 
-TakiIOPageFlip:
+TakiIoPageFlip:
 	lda PTakiCurPageBase	; what's cur page?
         cmp #$08		; p2: go handle that
-        beq @PageTwo		; otherwise, handle p1 here
-        lda #$08
+        beq TakiIoSetPageTwo	; otherwise, handle p1 here
+TakiIoSetPageOne:
+	lda #$08
         sta PTakiCurPageBase
         lda #$04
         sta PTakiNextPageBase
         bit SS_SEL_TEXT_P2	; switch to p2
         rts
-@PageTwo:
+TakiIoSetPageTwo:
 	lda #$04
         sta PTakiCurPageBase
         lda #$08
         sta PTakiNextPageBase
         bit SS_SEL_TEXT_P1	; switch to p1
-        ;lda #$FF
-        ;sta PTakiPaused
-        ;jmp Mon_MONZ
         rts
 	
