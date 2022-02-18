@@ -10,10 +10,27 @@ LD65=ld65
 
 main() {
     SOURCES="${MAINFILE} $(get_sources "${MAINFILE}")"
+
+    if test "${1-}" = watch; then
+        shift
+        do_watch "$@"
+        exit 0
+    fi
     OBJECTS=$(get_objects $SOURCES)
 
     compile $SOURCES
     link "$BINROM" $(get_config "$MAINFILE") $OBJECTS
+}
+
+do_watch() {
+    while true; do
+        if $0 "$@"; then
+            echo "Success ($?)"
+        else
+            echo "Failure ($?)"
+        fi
+        inotifywait -q $SOURCES
+    done
 }
 
 get_sources() {
