@@ -7,15 +7,15 @@
 ;#link "load-and-run-basic.s"
 ;#resource "taki.cfg"
 ;#define CFGFILE taki.cfg
-;#resource "TAKI-TODO"
+;#resource "NAMING.md"
 
 .macpack apple2
 
-.import PTakiNextPageBase, PTakiTicksPaused, PTakiOrigKSW, PTakiOrigCSW
+.import TakiVarNextPageBase, TakiVarTicksPaused, TakiVarOrigKSW, TakiVarOrigCSW
 
-.import TakiDoubleDo, TakiDoubledOut, TakiClearPage2
-.import TakiBASCALC_pageTwo, TakiOut, TakiIn, TakiIoPageFlip
-.import TakiIoSetPageOne, TakiIoSetPageTwo
+.import _TakiIoDoubleDo, _TakiIoDoubledOut, _TakiIoClearPageTwo
+.import _TakiIoPageTwoBasCalc, _TakiOut, _TakiIn, _TakiIoPageFlip
+.import _TakiIoSetPageOne, _TakiIoSetPageTwo
 
 .import DebugInit, DebugExit, DebugPrint, DebugDrawBadge, DebugUndrawBadge
 
@@ -26,8 +26,8 @@
 ; Reorganize where in memory a BASIC program is
 ; located (to move it out of the way of the
 ; second text page - to $C01)
-.export TakiMoveASoft
-TakiMoveASoft:
+.export _TakiMoveASoft
+_TakiMoveASoft:
 	lda #$0C
         sta Mon_TEXTTAB+1
         sta Mon_VARTAB+1
@@ -37,61 +37,61 @@ TakiMoveASoft:
 ; Initialize Taki, hijacking input and output
 ; for special processing (and to send things to both
 ; text pages)
-.export TakiInit
-TakiInit:
+.export _TakiInit
+_TakiInit:
 	jsr Mon_HOME
-	jsr TakiClearPage2
+	jsr _TakiIoClearPageTwo
         DebugInit_
         ; save away CSW, KSW
-        copyWord PTakiOrigCSW, Mon_CSWL
-        copyWord PTakiOrigKSW, Mon_KSWL
+        copyWord TakiVarOrigCSW, Mon_CSWL
+        copyWord TakiVarOrigKSW, Mon_KSWL
         lda #$00
-        sta PTakiTicksPaused
-        jsr TakiIoSetPageOne
-        jmp TakiResume
+        sta TakiVarTicksPaused
+        jsr _TakiIoSetPageOne
+        jmp _TakiResume
 
 ; Pause Taki I/O processing, restoring any
 ; previous I/O hooks. Mostly useful for talking
 ; to a DOS
-.export TakiPause
-TakiPause:
+.export _TakiPause
+_TakiPause:
         bit $C054	; force page one
 	DebugUndrawBadge_
-	copyWord Mon_CSWL, PTakiOrigCSW
-        copyWord Mon_KSWL, PTakiOrigKSW
+	copyWord Mon_CSWL, TakiVarOrigCSW
+        copyWord Mon_KSWL, TakiVarOrigKSW
 	rts
 
 ; Restore Taki I/O hooks, saving away current ones,
 ; resuming Taki processing 
-.export TakiResume
-TakiResume:
-	writeWord Mon_KSWL, TakiIn
-        writeWord Mon_CSWL, TakiOut
+.export _TakiResume
+_TakiResume:
+	writeWord Mon_KSWL, _TakiIn
+        writeWord Mon_CSWL, _TakiOut
 	rts
 
-.export TakiExit
-TakiExit:
+.export _TakiExit
+_TakiExit:
 	DebugExit_
-        jsr TakiPause
+        jsr _TakiPause
 	rts
 
-TakiTickIter:
+pvTickIter:
 	.byte $00
-TakiTickCounter:
+pvTickCounter:
 	.byte $01
-TakiTickChars:
+pvTickChars:
 	scrcode "I/-\"
         .byte $00
-.export TakiTick
-TakiTick:
+.export _TakiTick
+_TakiTick:
 	pha
         tya
         pha
         txa
         pha
         
-        ldx TakiTickCounter
-        ldy TakiTickIter
+        ldx pvTickCounter
+        ldy pvTickIter
         dex
         bne @StX
         ldx #$20
@@ -99,16 +99,16 @@ TakiTick:
         cpy #4
         bne @StY
         ldy #0
-@StY:	sty TakiTickIter
-@StX:	stx TakiTickCounter
+@StY:	sty pvTickIter
+@StX:	stx pvTickCounter
 
-        lda PTakiNextPageBase
+        lda TakiVarNextPageBase
         ora #$03
         sta @DrawSta+2	; modify upcoming sta dest
-        lda TakiTickChars,y
+        lda pvTickChars,y
 @DrawSta:
         sta $7F6
-	jsr TakiIoPageFlip
+	jsr _TakiIoPageFlip
         
         pla
         tax
@@ -116,14 +116,3 @@ TakiTick:
         tay
         pla
         rts
-
-.if 0
-; not done writing this fn
-PrintStr:
-PrintStrAddr = PrintStr+1
-	lda #1000	; Overwritten before call.
-        		; Load next str char. Is NUL?
-        beq PSDone	; yes: exit
-PSDone: rts
-.endif
-        

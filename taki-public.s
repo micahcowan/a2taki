@@ -1,16 +1,16 @@
 .segment "PUBLIC"
 
-.import TakiMoveASoft, TakiInit, TakiPause, TakiResume, TakiExit
+.import _TakiMoveASoft, _TakiInit, _TakiPause, _TakiResume, _TakiExit
 
-.import TakiIn, TakiOut, TakiBASCALC_pageTwo, TakiClearPage2
-.import TakiDoubleDo, TakiDoubledOut
+.import _TakiIn, _TakiOut, _TakiIoPageTwoBasCalc, _TakiIoClearPageTwo
+.import _TakiIoDoubleDo, _TakiIoDoubledOut
 
 TakiStart:
 
 .macro TakiPublic_ subname
-	.export .ident(.concat("P", .string(subname)))
-	.ident(.concat("P", .string(subname))):
-        jmp subname
+        .export subname
+        subname:
+        jmp .ident(.concat("_", .string(subname)))
 .endmacro
 
 ;;;;; PUBLIC FUNCTION ENTRY POINTS
@@ -23,9 +23,9 @@ TakiPublic_ TakiMoveASoft
 ;  TakiPublic_ takes a name like TakiMoveASoft
 ;  and spits out code like:
 ;
-;.export PTakiMoveASoft
-;PTakiMoveASoft:
-;	jmp TakiMoveASoft
+;.export TakiMoveASoft
+;TakiMoveASoft:
+;	jmp _TakiMoveASoft
 
 TakiPublic_ TakiInit
 TakiPublic_ TakiPause
@@ -33,14 +33,10 @@ TakiPublic_ TakiResume
 TakiPublic_ TakiExit
 TakiPublic_ TakiIn
 TakiPublic_ TakiOut
-;
-.export PTakiPageTwoBasCalc
-PTakiPageTwoBasCalc:
- 	jmp TakiBASCALC_pageTwo
-;
-TakiPublic_ TakiClearPage2
-TakiPublic_ TakiDoubleDo
-TakiPublic_ TakiDoubledOut
+TakiPublic_ TakiIoPageTwoBasCalc
+TakiPublic_ TakiIoClearPageTwo
+TakiPublic_ TakiIoDoubleDo
+TakiPublic_ TakiIoDoubledOut
 
 
 ;;;;; PUBLIC VARIABLES AND FLAGS
@@ -50,21 +46,21 @@ TakiPubFnEnd:
 
 .res TakiStart + $80 - *
 
-TakiFlagsStart:
+TakiVarsStart:
 
 ; Release version: if high bit of first byte is
 ; set, this is an unstable/unreleased version
-.export PTakiReleaseVersion
-PTakiReleaseVersion:
+.export TakiVarReleaseVersion
+TakiVarReleaseVersion:
 	.byte $FF, $FF
 
 ; Original (pre-Taki init) I/O routines
 ; (could be from PR#0, more likely from a DOS)
 ; saved away for restoration on exit
-.export PTakiOrigCSW, PTakiOrigKSW
-PTakiOrigCSW:
+.export TakiVarOrigCSW, TakiVarOrigKSW
+TakiVarOrigCSW:
 	.word $0000
-PTakiOrigKSW:
+TakiVarOrigKSW:
 	.word $0000
 
 ; If Taki's input processor detects that it was
@@ -81,8 +77,8 @@ PTakiOrigKSW:
 ; Set the second prompt value to $00 to only check
 ; the first prompt; set the first prompt to $00
 ; to disable prompt checks.
-.export PTakiExitPrompts
-PTakiExitPrompts:
+.export TakiVarExitPrompts
+TakiVarExitPrompts:
 	.byte $DD
         .byte $AA
         
@@ -90,30 +86,30 @@ PTakiExitPrompts:
 ; at TakiIndirectFn, then JSR to TakiIndirect.
 ; A workaround for 6502's lack of indirect JSR
 ; (this is in "flags and variables" because
-; a user doesn't call it, only writes to PTakiIndirect
-.export TakiIndirect
-TakiIndirect:
-.export PTakiIndirectFn
-PTakiIndirectFn = TakiIndirect + 1
+; a user doesn't call it, only writes to TakVariIndirectFn)
+.export _TakiIndirect
+_TakiIndirect:
+.export TakiVarIndirectFn
+TakiVarIndirectFn = _TakiIndirect + 1
 	jmp $1000 ; addr overwritten by caller
-.export PTakiInGETLN
-PTakiInGETLN:
+.export TakiVarInGETLN
+TakiVarInGETLN:
 	.byte $00 ; set to $FF when TakiIn
                   ; called from GETLN
 
 
-; PTakiCurPageBase: contains $04 if page one is the
+; TakiVarCurPageBase: contains $04 if page one is the
 ; currently shown page, $08 if page two.
-; PTakiNextPageBase: reverse of the above.
+; TakiVarNextPageBase: reverse of the above.
 	.byte $00
-.export PTakiCurPageBase
-PTakiCurPageBase:
+.export TakiVarCurPageBase
+TakiVarCurPageBase:
 	.byte $04
 	.byte $00
-.export PTakiNextPageBase
-PTakiNextPageBase:
+.export TakiVarNextPageBase
+TakiVarNextPageBase:
 	.byte $08
 
-.export PTakiTicksPaused
-PTakiTicksPaused:
+.export TakiVarTicksPaused
+TakiVarTicksPaused:
 	.byte $00
