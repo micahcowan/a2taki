@@ -43,15 +43,19 @@ _TakiDbgInit:
         ; Reserve lines at scr bottom
 	lda #(24 - kDebugNumLines)
         sta Mon_WNDBTM
-        ; Print start msg
-        TakiDbgPrint_ pvDbgInitMsg
+        ; Mark debug as active
         lda #$FF
         sta TakiVarDebugActive
+        ; Print start msg
+        TakiDbgPrint_ pvDbgInitMsg
         rts
         
 .export _TakiDbgExit
 _TakiDbgExit:
-        TakiDbgPrint_ pvDbgExitMsg
+	bit TakiVarDebugActive
+        bmi :+
+        rts
+:       TakiDbgPrint_ pvDbgExitMsg
         lda #24
         sta Mon_WNDBTM
         lda #0
@@ -63,23 +67,24 @@ _TakiDbgExit:
         jsr Mon_COUT
         lda #$8D
         jsr Mon_COUT
+        ; Mark debug as inactive
         lda #$00
         sta TakiVarDebugActive
 	rts
 
 pvDbgInitMsg:
-	scrcode "TAKI START", $0D
+	scrcode "TAKI DEBUG START", $0D
 ;	scrcode "TWO",$0D,"THREE",$0D,"FOUR",$0D,"FIVE",$0D
 ;	scrcode "SIX",$0D,"SEVEN",$0D
         .byte $00
 pvDbgExitMsg:
-	scrcode "TAKI EXIT", $0D
+	scrcode "TAKI DEBUG EXIT", $0D
         .byte $00
 
 .export _TakiDbgPrint
 _TakiDbgPrint:
         bit TakiVarDebugActive
-        bpl :+
+        bmi :+
         rts
 :       sta _TakiDbgVarPrintStr
         sty _TakiDbgVarPrintStr+1
@@ -98,7 +103,10 @@ _TakiDbgVarPrintStr = * + 1
 
 .export _TakiDbgCOUT
 _TakiDbgCOUT:
-        bit pvDoCrNext
+	bit TakiVarDebugActive
+        bmi :+
+        rts
+:       bit pvDoCrNext
 	beq @NoPendCR	; Pending CR? no: check
         pha		; for current CR. yes: emit CR
 	lda #$8D
