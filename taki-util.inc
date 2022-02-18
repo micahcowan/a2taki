@@ -1,3 +1,6 @@
+.ifndef _TAKI_UTIL_INC_
+_TAKI_UTIL_INC_ = 1
+
 ; write a byte literal to a memory loc
 .macro writeByte dst, src
 	lda #src
@@ -31,3 +34,5 @@
 	.ident(.concat("P", .string(subname))):
         jmp subname
 .endmacro
+
+.endif ; _TAKI_UTIL_INC_

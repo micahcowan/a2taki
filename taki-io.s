@@ -1,3 +1,15 @@
+.export TakiDoubleDo, TakiDoubledOut, TakiClearPage2
+.export TakiBASCALC_pageTwo, TakiOut, TakiIn
+
+.include "a2-monitor.inc"
+.include "taki-debug.inc"
+
+.import DebugInit, DebugExit, DebugPrint, DebugPrintStr, DebugDrawBadge, DebugUndrawBadge
+.import PTakiIndirectFn, TakiTick, TakiExit, PTakiExitPrompts
+.import PTakiInGETLN, TakiIndirect
+
+.macpack apple2
+
 ; Call a function twice, once with BAS -> pg 1,
 ; and once with BAS -> pg 2.
 ;

@@ -1,5 +1,7 @@
 ;#resource "apple2.rom"
 ;#link "taki-startup.s"
+;#link "taki-debug.s"
+;#link "taki-io.s"
 ;#link "taki-basic.s"
 ;#link "load-and-run-basic.s"
 ;#resource "taki.cfg"
@@ -8,12 +10,16 @@
 
 .macpack apple2
 
-.define DEBUG	1
+.import TakiDoubleDo, TakiDoubledOut, TakiClearPage2
+.import TakiBASCALC_pageTwo, TakiOut, TakiIn
+
+.import DebugInit, DebugExit, DebugPrint, DebugDrawBadge, DebugUndrawBadge
 
 TakiStart:
 
 .include "taki-util.inc"
 .include "a2-monitor.inc"
+.include "taki-debug.inc"
 
 ;;;;; PUBLIC FUNCTION ENTRY POINTS
 ; Stable entry points table, so that programs
@@ -56,12 +62,14 @@ TakiFlagsStart:
 
 ; Release version: if high bit of first byte is
 ; set, this is an unstable/unreleased version
+.export PTakiReleaseVersion
 PTakiReleaseVersion:
 	.byte $FF, $FF
 
 ; Original (pre-Taki init) I/O routines
 ; (could be from PR#0, more likely from a DOS)
 ; saved away for restoration on exit
+.export PTakiOrigCSW, PTakiOrigKSW
 PTakiOrigCSW:
 	.word $0000
 PTakiOrigKSW:
@@ -81,6 +89,7 @@ PTakiOrigKSW:
 ; Set the second prompt value to $00 to only check
 ; the first prompt; set the first prompt to $00
 ; to disable prompt checks.
+.export PTakiExitPrompts
 PTakiExitPrompts:
 	.byte $DD
         .byte $AA
@@ -90,15 +99,15 @@ PTakiExitPrompts:
 ; A workaround for 6502's lack of indirect JSR
 ; (this is in "flags and variables" because
 ; a user doesn't call it, only writes to PTakiIndirect
+.export TakiIndirect
 TakiIndirect:
+.export PTakiIndirectFn
 PTakiIndirectFn = TakiIndirect + 1
 	jmp $1000 ; addr overwritten by caller
+.export PTakiInGETLN
 PTakiInGETLN:
 	.byte $00 ; set to $FF when TakiIn
                   ; called from GETLN
-
-.include "taki-debug.inc"
-.include "taki-io.inc"
 
 ; Reorganize where in memory a BASIC program is
 ; located (to move it out of the way of the
@@ -138,6 +147,7 @@ TakiResume:
         writeWord Mon_CSWL, TakiOut
 	rts
 
+.export TakiExit
 TakiExit:
 	DebugExit_
         jsr TakiPause
@@ -150,6 +160,7 @@ TakiTickCounter:
 TakiTickChars:
 	scrcode "I/-\"
         .byte $00
+.export TakiTick
 TakiTick:
 	pha
         tya

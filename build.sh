@@ -51,4 +51,6 @@ link() {
 ####################
 
 main "$@"
+
+echo; echo "Done."
 exit 0
