@@ -29,10 +29,4 @@ _TAKI_UTIL_INC_ = 1
         .byte .strat(str, .strlen(str)-1)+128
 .endmacro
 
-.macro TakiPublic_ subname
-	.export .ident(.concat("P", .string(subname)))
-	.ident(.concat("P", .string(subname))):
-        jmp subname
-.endmacro
-
 .endif ; _TAKI_UTIL_INC_
