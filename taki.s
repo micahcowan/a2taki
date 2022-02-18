@@ -41,38 +41,24 @@ _TakiMoveASoft:
 _TakiInit:
 	jsr Mon_HOME
 	jsr _TakiIoClearPageTwo
-        jsr _TakiDbgInit
+        ;jsr _TakiDbgInit
         ; save away CSW, KSW
         copyWord TakiVarOrigCSW, Mon_CSWL
         copyWord TakiVarOrigKSW, Mon_KSWL
         lda #$00
         sta TakiVarTicksPaused
         jsr _TakiIoSetPageOne
-        jmp _TakiResume
-
-; Pause Taki I/O processing, restoring any
-; previous I/O hooks. Mostly useful for talking
-; to a DOS
-.export _TakiPause
-_TakiPause:
-        bit $C054	; force page one
-        jsr _TakiDbgUndrawBadge
-	copyWord Mon_CSWL, TakiVarOrigCSW
-        copyWord Mon_KSWL, TakiVarOrigKSW
-	rts
-
-; Restore Taki I/O hooks, saving away current ones,
-; resuming Taki processing 
-.export _TakiResume
-_TakiResume:
-	writeWord Mon_KSWL, _TakiIn
+        writeWord Mon_KSWL, _TakiIn
         writeWord Mon_CSWL, _TakiOut
 	rts
 
 .export _TakiExit
 _TakiExit:
         jsr _TakiDbgExit
-        jsr _TakiPause
+        bit $C054	; force page one
+        jsr _TakiDbgUndrawBadge
+	copyWord Mon_CSWL, TakiVarOrigCSW
+        copyWord Mon_KSWL, TakiVarOrigKSW
 	rts
 
 pvTickIter:
@@ -108,6 +94,7 @@ _TakiTick:
         lda pvTickChars,y
 @DrawSta:
         sta $7F6
+        jsr _TakiDbgDrawBadge
 	jsr _TakiIoPageFlip
         
         pla

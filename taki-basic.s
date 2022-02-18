@@ -9,6 +9,11 @@ scrcode "10 R$=CHR$(ASC(",'"',"R",'"',")-64)",$0D
 scrcode "95 PRINT ",'"',"THIS ISN'T INCLUDED",'"',$0D
 scrcode "100 CALL ",.sprintf("%d",$6003)
 scrcode   ":REM INIT TAKI",$0D
+.if 0
+scrcode "101 CALL ",.sprintf("%d",$600F)
+scrcode   ":REM TAKI DEBUG MODE",$0D
+.endif
+scrcode "102 PRINT ",'"',"1234567890123456789012345678901234567890",'"',';',$0D
 scrcode "105 PRINT ",'"',"HELLO, THIS IS AN EXAMPLE",'"',$0D
 scrcode "110 PRINT ",'"',"OF A ",'"',';',$0D
 scrcode "120 PRINT R$;",'"',"SSCANNING",'"',";R$;",$0D

@@ -67,6 +67,7 @@ _TakiDbgExit:
         jsr Mon_COUT
         lda #$8D
         jsr Mon_COUT
+        jsr _TakiDbgUndrawBadge
         ; Mark debug as inactive
         lda #$00
         sta TakiVarDebugActive
@@ -187,7 +188,10 @@ pPrintTeardown:
         
 .export _TakiDbgUndrawBadge
 _TakiDbgUndrawBadge:
-	pha
+	bit TakiVarDebugActive
+        bmi :+
+        rts
+:	pha
           lda #$A0	; SPACE
           sta $400 + 38
           sta $400 + 39
@@ -196,7 +200,10 @@ _TakiDbgUndrawBadge:
         
 .export _TakiDbgDrawBadge
 _TakiDbgDrawBadge:
-	pha
+	bit TakiVarDebugActive
+        bmi :+
+        rts
+:	pha
           lda #$10	; 'P'
           sta $400 + 38
           sta $800 + 38

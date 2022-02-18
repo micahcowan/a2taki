@@ -99,12 +99,21 @@ _TakiIn:
         beq @NotExited		; 2nd prompt disabled
         cmp Mon_PROMPT		; PROMPT = * (or P2)?
         bne @NotExited		; no, not exited
-@Exited:lda pvSavedRealChar
-	sta (Mon_BASL),y
-        TakiDbgPrint_ pvPromptExitStr
-	jsr _TakiExit
+@Exited:TakiDbgPrint_ pvPromptExitStr
+	lda (Mon_BASL),y
+        pha
         lda pvSavedRealChar
-        jmp Mon_GETLN		; hand control to
+	sta (Mon_BASL),y	; remove flasher
+	jsr _TakiExit
+	ldy #$00		; prompt at col 0
+        lda Mon_PROMPT
+        sta (Mon_BASL),y
+        iny
+        sty Mon_CH
+        pla			; set flasher new spot
+        sta (Mon_BASL),y
+        lda pvSavedRealChar
+        jmp (Mon_KSWL)		; hand control to
         			;  pre-Taki I/O processor
 @NotExited:
         ; save $6, $7, use for BAS + $400

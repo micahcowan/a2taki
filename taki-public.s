@@ -31,8 +31,10 @@ TakiPublic_ TakiMoveASoft
 ;	jmp _TakiMoveASoft
 
 TakiPublic_ TakiInit
-TakiPublic_ TakiPause
-TakiPublic_ TakiResume
+;TakiPublic_ TakiPause
+.byte $60,$00,$00
+;TakiPublic_ TakiResume
+.byte $60,$00,$00
 TakiPublic_ TakiExit
 
 TakiPublic_ TakiDbgInit
