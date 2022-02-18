@@ -92,7 +92,7 @@ PTakiOrigKSW:
 .export PTakiExitPrompts
 PTakiExitPrompts:
 	.byte $DD
-        .byte $00 ; $AA
+        .byte $AA
         
 ; A convenience routine: store an address
 ; at TakiIndirectFn, then JSR to TakiIndirect.
