@@ -1,24 +1,24 @@
 .include "taki-debug.inc"
 
-.export DebugInit, DebugExit, DebugPrint, DebugPrintStr
-.export DebugDrawBadge, DebugUndrawBadge
-
 .include "a2-monitor.inc"
 
 .import TakiOut
 
+.import TakiVarDebugActive
+
 .macpack apple2
 
-DebugNumLines	= 4 ; # lines to reserve at scr btm
-DebugNumRegLines= 24 - DebugNumLines
+kDebugNumLines		= 4 ; # lines to reserve at scr btm
+kDebugNumRegLines	= 24 - kDebugNumLines
 
-DebugInit:
+.export _TakiDbgInit
+_TakiDbgInit:
 	; If CV is in the reserved area, scroll
         ; up (scrolling cursor along) until
         ; it's not.
 @ScrollCheck:
         lda Mon_CV
-	cmp #DebugNumRegLines
+	cmp #kDebugNumRegLines
         bcc @DoneScrolling
         sbc #1	; carry is set/"borrow clear"
         sta Mon_CV
@@ -27,7 +27,7 @@ DebugInit:
         jmp @ScrollCheck
 @DoneScrolling:
 	; Clear lines at screen bottom
-	lda #(24 - DebugNumLines)
+	lda #(24 - kDebugNumLines)
 @ClrLoop:
 	cmp #24 ; total lines in screen
         bcs @ClrDone
@@ -41,14 +41,17 @@ DebugInit:
 @ClrDone:
 	jsr Mon_VTAB
         ; Reserve lines at scr bottom
-	lda #(24 - DebugNumLines)
+	lda #(24 - kDebugNumLines)
         sta Mon_WNDBTM
         ; Print start msg
-        DebugPrint_ DbgInitMsg
+        TakiDbgPrint_ pvDbgInitMsg
+        lda #$FF
+        sta TakiVarDebugActive
         rts
         
-DebugExit:
-	DebugPrint_ DbgExitMsg
+.export _TakiDbgExit
+_TakiDbgExit:
+        TakiDbgPrint_ pvDbgExitMsg
         lda #24
         sta Mon_WNDBTM
         lda #0
@@ -60,111 +63,122 @@ DebugExit:
         jsr Mon_COUT
         lda #$8D
         jsr Mon_COUT
+        lda #$00
+        sta TakiVarDebugActive
 	rts
 
-DbgInitMsg:
+pvDbgInitMsg:
 	scrcode "TAKI START", $0D
 ;	scrcode "TWO",$0D,"THREE",$0D,"FOUR",$0D,"FIVE",$0D
 ;	scrcode "SIX",$0D,"SEVEN",$0D
         .byte $00
-DbgExitMsg:
+pvDbgExitMsg:
 	scrcode "TAKI EXIT", $0D
         .byte $00
 
-DebugPrint:
-	jsr DebugPrSetup
-DebugPrintStr = * + 1
+.export _TakiDbgPrint
+_TakiDbgPrint:
+        bit TakiVarDebugActive
+        bpl :+
+        rts
+:       sta _TakiDbgVarPrintStr
+        sty _TakiDbgVarPrintStr+1
+        jsr pPrintSetup
+.export _TakiDbgVarPrintStr
+_TakiDbgVarPrintStr = * + 1
 @Loop:	lda $1000
 	beq @Done
         jsr Mon_COUT
-        inc DebugPrintStr
+        inc _TakiDbgVarPrintStr
         bne @Loop
-        inc DebugPrintStr+1
+        inc _TakiDbgVarPrintStr+1
         bne @Loop
 @Done:
-	jmp DebugPrTeardown
+        jmp pPrintTeardown
 
-DebugCOUT:
-	bit DebugDoCrNext
+.export _TakiDbgCOUT
+_TakiDbgCOUT:
+        bit pvDoCrNext
 	beq @NoPendCR	; Pending CR? no: check
         pha		; for current CR. yes: emit CR
 	lda #$8D
         jsr TakiOut
         lda #$00 ; un-pend CR
-        sta DebugDoCrNext
+        sta pvDoCrNext
         pla
 @NoPendCR:
 	cmp #$8D	; current CR?
         bne @DoOutput	; no: just do output
-        sta DebugDoCrNext ; yes: save it and exit
+        sta pvDoCrNext ; yes: save it and exit
         rts
 @DoOutput:
-        sta DebugSavedChar
+        sta pvSavedChar
         lda Mon_INVFLG; save invflag
         pha
         lda #$3F ; Set inverse
         sta Mon_INVFLG
-        lda DebugSavedChar
+        lda pvSavedChar
 	jsr TakiOut
         pla
         sta Mon_INVFLG
-        lda DebugSavedChar
+        lda pvSavedChar
         rts
 
-DebugSavedChar:
+pvSavedChar:
 	.byte $00
-DebugSavedCSW:
+pvSavedCSW:
 	.word $0000
-DebugSavedWNDBTM:
+pvSavedWNDBTM:
 	.byte $00
-DebugSavedWNDTOP:
+pvSavedWNDTOP:
 	.byte $00
-DebugSavedCV:
+pvSavedCV:
 	.byte $00
-DebugSavedCH:
+pvSavedCH:
 	.byte $00
-DebugCH:
+pvCH:
 	.byte $00
-DebugDoCrNext:
+pvDoCrNext:
 	.byte $FF
-DebugPrSetup:
-        copyWord DebugSavedCSW, Mon_CSWL
-        writeWord Mon_CSWL, DebugCOUT
+pPrintSetup:
+        copyWord pvSavedCSW, Mon_CSWL
+        writeWord Mon_CSWL, _TakiDbgCOUT
         lda Mon_WNDBTM
-        sta DebugSavedWNDBTM
+        sta pvSavedWNDBTM
         lda Mon_WNDTOP
-        sta DebugSavedWNDTOP
+        sta pvSavedWNDTOP
         lda Mon_CH
-        sta DebugSavedCH
+        sta pvSavedCH
         lda Mon_CV
-        sta DebugSavedCV
-        lda #DebugNumRegLines
+        sta pvSavedCV
+        lda #kDebugNumRegLines
         sta Mon_WNDTOP
         lda #24 ; total # lines on screen
         sta Mon_WNDBTM
         lda #23 ; last line #
         sta Mon_CV
-        lda DebugCH
+        lda pvCH
         sta Mon_CH
         jsr Mon_VTAB
         rts
 
-DebugPrTeardown:
-	copyWord Mon_CSWL, DebugSavedCSW
+pPrintTeardown:
+	copyWord Mon_CSWL, pvSavedCSW
         lda Mon_CH
-        sta DebugCH
-        lda DebugSavedWNDBTM
+        sta pvCH
+        lda pvSavedWNDBTM
         sta Mon_WNDBTM
-        lda DebugSavedWNDTOP
+        lda pvSavedWNDTOP
         sta Mon_WNDTOP
-        lda DebugSavedCH
+        lda pvSavedCH
         sta Mon_CH
-        lda DebugSavedCV
+        lda pvSavedCV
         sta Mon_CV
         jsr Mon_VTAB
         rts
         
-DebugUndrawBadge:
+.export _TakiDbgUndrawBadge
+_TakiDbgUndrawBadge:
 	pha
           lda #$A0	; SPACE
           sta $400 + 38
@@ -172,7 +186,8 @@ DebugUndrawBadge:
         pla
         rts
         
-DebugDrawBadge:
+.export _TakiDbgDrawBadge
+_TakiDbgDrawBadge:
 	pha
           lda #$10	; 'P'
           sta $400 + 38

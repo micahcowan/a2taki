@@ -11,15 +11,17 @@
    * Declares a public-interface variable. As with public-interface
      functions, these variables' locations are intended to remain
      stable across future versions.
+ * **TakiMacro_**
+   * An underscore suffix indicates a macro.
  * **_TakiRoutine**
-   * Declares a private, exported subroutine name
+   * Declares a private, exported subroutine name.
  * **_TakiVarFoo**
-   * Declares a private, exported variable name
+   * Declares a private, exported variable name.
  * **pLabel**
    * Declares a private, unexported routine, subroutine, or other
-     executable code label
+     executable code label.
  * **pvFoo**
-   * Declares a private, unexported variable name
+   * Declares a private, unexported variable name.
  * **@Foo**
    * A **ca65**-ism. Declares a label that is only visible until between
      the two nearest non-`@` labels.

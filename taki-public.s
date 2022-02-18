@@ -5,6 +5,9 @@
 .import _TakiIn, _TakiOut, _TakiIoPageTwoBasCalc, _TakiIoClearPageTwo
 .import _TakiIoDoubleDo, _TakiIoDoubledOut
 
+.import _TakiDbgInit, _TakiDbgExit, _TakiDbgPrint, _TakiDbgCOUT
+.import _TakiDbgUndrawBadge, _TakiDbgDrawBadge
+
 TakiStart:
 
 .macro TakiPublic_ subname
@@ -31,6 +34,14 @@ TakiPublic_ TakiInit
 TakiPublic_ TakiPause
 TakiPublic_ TakiResume
 TakiPublic_ TakiExit
+
+TakiPublic_ TakiDbgInit
+TakiPublic_ TakiDbgExit
+TakiPublic_ TakiDbgPrint
+TakiPublic_ TakiDbgCOUT
+TakiPublic_ TakiDbgUndrawBadge
+TakiPublic_ TakiDbgDrawBadge
+
 TakiPublic_ TakiIn
 TakiPublic_ TakiOut
 TakiPublic_ TakiIoPageTwoBasCalc
@@ -62,6 +73,11 @@ TakiVarOrigCSW:
 	.word $0000
 TakiVarOrigKSW:
 	.word $0000
+
+; Is debug mode active?
+.export TakiVarDebugActive
+TakiVarDebugActive:
+    .byte $00
 
 ; If Taki's input processor detects that it was
 ; called from GETLN, *and* the current PROMPT

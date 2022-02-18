@@ -1,10 +1,12 @@
 .include "a2-monitor.inc"
 .include "taki-debug.inc"
 
-.import DebugInit, DebugExit, DebugPrint, DebugPrintStr, DebugDrawBadge, DebugUndrawBadge
+.import _TakiDbgInit, _TakiDbgExit, _TakiDbgPrint, _TakiDbgPrintStr
+.import _TakiDbgDrawBadge, _TakiDbgUndrawBadge
 
 .import TakiVarIndirectFn, TakiVarExitPrompts, TakiVarInGETLN
 .import TakiVarCurPageBase, TakiVarNextPageBase, TakiVarTicksPaused
+.import TakiVarDebugActive
 
 .import _TakiTick, _TakiExit, _TakiIndirect
 
@@ -69,11 +71,9 @@ _TakiIoDoubleDo:
 _TakiOut:
 	jmp _TakiIoDoubledOut
 
-.if DEBUG
 pvPromptExitStr:
 	scrcode "!!EXIT VIA PROMPT DETECTED!!",$0D
         .byte $00
-.endif
 
 pvSavedCursor:
 	.byte $00
@@ -101,7 +101,7 @@ _TakiIn:
         bne @NotExited		; no, not exited
 @Exited:lda pvSavedRealChar
 	sta (Mon_BASL),y
-        DebugPrint_ pvPromptExitStr
+        TakiDbgPrint_ pvPromptExitStr
 	jsr _TakiExit
         lda pvSavedRealChar
         jmp Mon_GETLN		; hand control to
@@ -136,7 +136,8 @@ _TakiIn:
         ; keypress available.
 	lda     SS_KBD
         bit	SS_KBDSTRB
-.if DEBUG
+        bit     TakiVarDebugActive  ; is debug active?
+        bpl     @NoAT               ; no: skip @ check
         cmp	#$C0	; '@' ?
         bne	@NoAT	; no: skip
         pha
@@ -145,7 +146,6 @@ _TakiIn:
         pla
         jsr	_TakiIoPageFlip
         jmp	@KEYIN
-.endif ; DEBUG
 @NoAT:	; Any key other than @ will resume ticks
         pha
         lda #$00
@@ -345,7 +345,7 @@ pSCRL2:	lda     (Mon_BASL),y
         bpl     pSCRL2
         bmi     pSCRL1
 pBadge:
-	DebugDrawBadge_
+        jsr _TakiDbgDrawBadge
 pSCRL3:	ldy     #$00
         jsr     pCLEOLZ
         bcs     pVTAB
@@ -396,7 +396,7 @@ _TakiIoClearPageTwo:
         sta $07
         pla
         sta $06
-        DebugDrawBadge_
+        jsr _TakiDbgDrawBadge
 	rts
 
 .export _TakiIoPageFlip

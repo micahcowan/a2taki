@@ -17,7 +17,7 @@
 .import _TakiIoPageTwoBasCalc, _TakiOut, _TakiIn, _TakiIoPageFlip
 .import _TakiIoSetPageOne, _TakiIoSetPageTwo
 
-.import DebugInit, DebugExit, DebugPrint, DebugDrawBadge, DebugUndrawBadge
+.import _TakiDbgInit, _TakiDbgExit, _TakiDbgPrint, _TakiDbgDrawBadge, _TakiDbgUndrawBadge
 
 .include "taki-util.inc"
 .include "a2-monitor.inc"
@@ -41,7 +41,7 @@ _TakiMoveASoft:
 _TakiInit:
 	jsr Mon_HOME
 	jsr _TakiIoClearPageTwo
-        DebugInit_
+        jsr _TakiDbgInit
         ; save away CSW, KSW
         copyWord TakiVarOrigCSW, Mon_CSWL
         copyWord TakiVarOrigKSW, Mon_KSWL
@@ -56,7 +56,7 @@ _TakiInit:
 .export _TakiPause
 _TakiPause:
         bit $C054	; force page one
-	DebugUndrawBadge_
+        jsr _TakiDbgUndrawBadge
 	copyWord Mon_CSWL, TakiVarOrigCSW
         copyWord Mon_KSWL, TakiVarOrigKSW
 	rts
@@ -71,7 +71,7 @@ _TakiResume:
 
 .export _TakiExit
 _TakiExit:
-	DebugExit_
+        jsr _TakiDbgExit
         jsr _TakiPause
 	rts
 
