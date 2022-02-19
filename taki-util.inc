@@ -21,6 +21,16 @@ _TAKI_UTIL_INC_ = 1
         sta dst+1
 .endMacro
 
+.macro subtractAndSave16_8 wloc, bloc
+        sec
+        lda wloc
+        sbc bloc
+        sta wloc
+        lda wloc+1
+        sbc #$0
+        sta wloc+1
+.endmacro
+
 
 .macro tstr str
 	.repeat .strlen (str)-1, i

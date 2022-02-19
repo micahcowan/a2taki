@@ -8,6 +8,7 @@
 .import _TakiDbgInit, _TakiDbgExit, _TakiDbgPrint, _TakiDbgCOUT
 .import _TakiDbgUndrawBadge, _TakiDbgDrawBadge
 
+.export TakiStart
 TakiStart:
 
 .macro TakiPublic_ subname
@@ -66,6 +67,32 @@ TakiVarsStart:
 .export TakiVarReleaseVersion
 TakiVarReleaseVersion:
 	.byte $FF, $FF
+
+.export TakiVarEffectsAllocNumPages, TakiVarMaxActiveEffects
+.export TakiVarActiveEffectsNum, TakiVarDefaultCountdown
+TakiVarEffectsAllocNumPages:
+	.byte $10	; default value
+TakiVarMaxActiveEffects:
+	.byte 32	; default value
+TakiVarDefaultCountdown:
+	.word $0020
+
+.export TakiVarEffectsAllocStartPage, TakiVarEffectsAllocEndPage
+.export TakiVarActiveEffectsNum, TakiVarEffectAllocTable
+.export TakiVarEffectCounterTable, TakiVarEffectCounterInitTable
+TakiVarEffectsAllocStartPage:
+	.byte $00
+TakiVarEffectsAllocEndPage:
+	.byte $00
+TakiVarActiveEffectsNum:
+	.byte $00
+TakiVarEffectAllocTable:
+	.word $0000
+TakiVarEffectCounterTable:
+	.word $0000
+TakiVarEffectCounterInitTable:
+	.word $0000
+        
 
 ; Original (pre-Taki init) I/O routines
 ; (could be from PR#0, more likely from a DOS)

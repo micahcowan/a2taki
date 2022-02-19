@@ -11,6 +11,10 @@
 
 .macpack apple2
 
+.import TakiStart, TakiVarMaxActiveEffects, TakiVarEffectCounterTable
+.import TakiVarEffectAllocTable, TakiVarActiveEffectsNum
+.import TakiVarEffectsAllocStartPage, TakiVarEffectsAllocEndPage
+.import TakiVarEffectsAllocNumPages, TakiVarEffectCounterInitTable
 .import TakiVarNextPageBase, TakiVarTicksPaused, TakiVarOrigKSW, TakiVarOrigCSW
 
 .import _TakiIoDoubleDo, _TakiIoDoubledOut, _TakiIoClearPageTwo
@@ -39,7 +43,8 @@ _TakiMoveASoft:
 ; text pages)
 .export _TakiInit
 _TakiInit:
-	jsr Mon_HOME
+	jsr _TakiMemInit
+        jsr Mon_HOME
 	jsr _TakiIoClearPageTwo
         ;jsr _TakiDbgInit
         ; save away CSW, KSW
@@ -61,6 +66,57 @@ _TakiExit:
         copyWord Mon_KSWL, TakiVarOrigKSW
 	rts
 
+_TakiMemInit:
+	; save $6, $7, $8: use for allocation
+        lda $6
+        pha
+        lda $7
+        pha
+        lda $8
+        pha
+        
+        lda TakiVarMaxActiveEffects
+        asl ; x2 for word-size tables
+        sta $8
+        ; Initialize $6 and $7 with Taki's start-of-code
+        lda #>TakiStart
+        sta $7
+        lda #<TakiStart
+        ;sta $6 ; will delay until after first calc below
+        
+        ; Allocate various effect tables:
+        ; effect delay counter initial values table
+        sec
+        sbc $8
+        sta $6
+        lda $7
+        sbc #$0
+        sta $7
+        copyWord TakiVarEffectCounterInitTable, $6
+        ; effect delay counter current values table
+        subtractAndSave16_8 $6, $8
+        copyWord TakiVarEffectCounterTable, $6
+        ; effect allocations table
+        subtractAndSave16_8 $6, $8
+        copyWord TakiVarEffectAllocTable, $6
+        
+        ; Allocate effect allocations area
+        sta TakiVarEffectsAllocEndPage ; assumes $7 in acc
+        sec
+        sbc TakiVarEffectsAllocNumPages
+        sta TakiVarEffectsAllocStartPage
+        ; Init current number of effects
+        lda #0
+        sta TakiVarActiveEffectsNum
+        
+        pla
+        sta $8
+        pla
+        sta $7
+        pla
+        sta $6
+        rts
+        
 pvTickIter:
 	.byte $00
 pvTickCounter:
