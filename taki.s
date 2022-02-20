@@ -5,6 +5,7 @@
 ;#link "taki-basic.s"
 ;#link "taki-public.s"
 ;#link "eff-spinner.s"
+;#link "eff-scan.s"
 ;#link "load-and-run-basic.s"
 ;#resource "taki.cfg"
 ;#define CFGFILE taki.cfg

@@ -26,9 +26,13 @@ scrcode "150 HTAB(1):INPUT ",'"',"INPUT:",'"',";A$",$0D
 scrcode "155 ? ",'"',"INPUT GOT: <",'"',";A$;",'"',">",'"',$0D
 scrcode "160 ? ",'"',"SENTENCE INTERRUPTED BY GETKEY",'"',';',$0D
 scrcode "170 HTAB(1):?",'"',"GET",'"',";:GET A$",$0D
-; This bit is to ensure DebugInit happens
-; with junk left after CV, to test erasure
-scrcode $0D,$0D,$0D,"VTAB(16)",$0D
+.if 1
+scrcode "122 REM DISABLE EXIT-ON-PROMPT, RUN THE MONITOR",$0D
+scrcode "175 POKE ",.sprintf("%d",$808E),", 0",$0D
+scrcode "180 CALL-151",$0D
+scrcode "190 ? ",'"',"INPUT",'"',";:INPUT A$",$0D
+scrcode "200 GOTO 180",$0D
+.endif
 
 scrcode "RUN",$0D
 ASoftEnd:
