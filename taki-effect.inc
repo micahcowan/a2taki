@@ -6,8 +6,10 @@ TAKI_DSP_COLLECT	= 1
 TAKI_DSP_ENDCOLLECT	= 2
 TAKI_DSP_DESTROY	= 3
 TAKI_DSP_TICK		= 4
-;
-TAKI_DSP_USER_INPUT	= 6
+TAKI_DSP_UNTICK		= 5	; "idle" tick, for delay-smoothing
+TAKI_DSP_DRAW		= 6	; draw, whether ticked or not
+				; (someone somewhere ticked)
+TAKI_DSP_USER_INPUT	= 7
 
 ;; Effects Zero-Page Resources
 ;; 

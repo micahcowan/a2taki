@@ -319,16 +319,18 @@ _TakiEffectInitializeDirect:
 _TakiEffectInitializeDirectFn = @DispatchCall + 1
 
 
+pvTickMode:
+	.byte TAKI_DSP_UNTICK
 pvPendingFlip:
 	.byte $00
 .export _TakiTick
 _TakiTick:
         ; Run all effect ticks
         lda _TakiVarActiveEffectsNum
-        beq @EffLoopDone
+        beq @SkipFlip
         ldy #0
         sty pvPendingFlip
-@EffLoop:
+@TickLoop:
         jsr _TakiSetupForEffectY
         
         tya
@@ -340,25 +342,27 @@ _TakiTick:
         lda (kZpEffCtrValTbl),y
         sbc #1
         sta (kZpEffCtrValTbl),y
-        bcs @SkipDispatch
+        bcs @NoTrip
         iny ; borrow from high byte
         lda (kZpEffCtrValTbl),y
         sbc #0
         sta (kZpEffCtrValTbl),y
         dey
-        bcs @SkipDispatch
-        
+        bcs @NoTrip
         ; counter underflowed!
-        ; reload initial counter values,
-        ; and run dispatch!
-        lda #$ff
-        sta pvPendingFlip
+        ; reset the counter
         lda (kZpEffCtrInitTbl),y
         sta (kZpEffCtrValTbl),y
         iny
         lda (kZpEffCtrInitTbl),y
         sta (kZpEffCtrValTbl),y
         dey
+        ; mark tick (vs untick), and the pending flip
+        lda #$ff
+        sta pvPendingFlip
+        lda #TAKI_DSP_TICK
+        sta pvTickMode
+@NoTrip:
         
         lda (kZpEffDispatchTbl),y
         sta @pEffJsr+1
@@ -368,20 +372,51 @@ _TakiTick:
         
         ldy kZpCurEffect
         tay
-        lda #TAKI_DSP_TICK
+        lda pvTickMode
 @pEffJsr:
 	jsr $1000
-@SkipDispatch:
+
+        lda #TAKI_DSP_UNTICK
+        sta pvTickMode
         ldy kZpCurEffect
         iny
 	cpy _TakiVarActiveEffectsNum
-	bne @EffLoop
+	bne @TickLoop
 
-@EffLoopDone:
-        jsr _TakiDbgDrawBadge
+@TickLoopDone:
         bit pvPendingFlip
-        beq @SkipFlip
+        bpl @SkipFlip
+        
+        ; We've a pending page flip - loop
+        ; through all the effects again for drawing!ldy #0
+        ldy #$00
+@DrawLoop:
+        jsr _TakiSetupForEffectY
+        
+        tya
+        asl
+        tay ; y *= 2, for tables-of-addresses
+        
+        lda (kZpEffDispatchTbl),y
+        sta @pEffDrawJsr+1
+        iny
+        lda (kZpEffDispatchTbl),y
+        sta @pEffDrawJsr+2
+        
+        ldy kZpCurEffect
+        tay
+        lda #TAKI_DSP_DRAW
+@pEffDrawJsr:
+	jsr $1000
+
+        ldy kZpCurEffect
+        iny
+	cpy _TakiVarActiveEffectsNum
+	bne @TickLoop
+
+@DrawLoopDone:
 	jsr _TakiIoPageFlip
 @SkipFlip:
+        jsr _TakiDbgDrawBadge
         
         rts
