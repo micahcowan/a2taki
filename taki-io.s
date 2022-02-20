@@ -1,4 +1,5 @@
 .include "a2-monitor.inc"
+.include "taki-util.inc"
 .include "taki-debug.inc"
 
 .import _TakiDbgInit, _TakiDbgExit, _TakiDbgPrint, _TakiDbgPrintStr
@@ -9,6 +10,7 @@
 .import TakiVarDebugActive
 
 .import _TakiTick, _TakiExit, _TakiIndirect
+.import _TakiEffectSetupAndDo, _TakiEffectSetupFn
 
 .macpack apple2
 
@@ -138,7 +140,7 @@ _TakiIn:
 	inc     Mon_RNDH
         bit TakiVarTicksPaused
         bne @Paused
-        jsr _TakiTick
+        TakiEffectDo_ _TakiTick
 @Paused:
 @KEYIN2:bit     SS_KBD             ;read keyboard
 	bpl     @KEYIN
