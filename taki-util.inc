@@ -43,18 +43,23 @@ _TAKI_UTIL_INC_ = 1
 
 ;;;; Less general, more Taki-specific facilities
 
-kZpCurEffStorageL	= TAKI_ZP_EFF_STORAGE_L	; $6
-kZpCurEffStorageH	= TAKI_ZP_EFF_STORAGE_H	; $7
-kZpCurEffStorageEndL	= TAKI_ZP_EFF_STORAGE_END_L ; $8
-kZpCurEffStorageEndH	= TAKI_ZP_EFF_STORAGE_END_H ; $9
-kZpCmdbufL		= TAKI_ZP_CMDBUF_L ; $0A
-kZpCmdbufH		= TAKI_ZP_CMDBUF_H ; $0B
-kZpDispatchMode		= TAKI_ZP_DSP_MODE ; $0C
-kZpAcc			= TAKI_ZP_ACC ; $0D
-kZpX			= TAKI_ZP_X ; $0E
-kZpY			= TAKI_ZP_Y ; $0F
-kZpCurEffect		= $10
-kZpEffTablesStart	= $11
+kZpStart		= $60
+kZpCurEffStorageL	= TAKI_ZP_EFF_STORAGE_L	; $66
+kZpCurEffStorageH	= TAKI_ZP_EFF_STORAGE_H	; $67
+kZpCurEffStorageEndL	= TAKI_ZP_EFF_STORAGE_END_L ; $68
+kZpCurEffStorageEndH	= TAKI_ZP_EFF_STORAGE_END_H ; $69
+kZpCmdbufL		= TAKI_ZP_CMDBUF_L ; $6A
+kZpCmdbufH		= TAKI_ZP_CMDBUF_H ; $6B
+kZpDispatchMode		= TAKI_ZP_DSP_MODE ; $6C
+kZpAcc			= TAKI_ZP_ACC ; $6D
+kZpX			= TAKI_ZP_X ; $6E
+kZpY			= TAKI_ZP_Y ; $6F
+kZpEffSpecial0		= TAKI_ZP_EFF_SPECIAL_0 ; $70
+kZpEffSpecial1		= TAKI_ZP_EFF_SPECIAL_1 ; $71
+kZpEffSpecial2		= TAKI_ZP_EFF_SPECIAL_2 ; $72
+kZpEffSpecial3		= TAKI_ZP_EFF_SPECIAL_3 ; $73
+kZpCurEffect		= $74
+kZpEffTablesStart	= $75
 kZpEffAllocTbl		= kZpEffTablesStart
 kZpEffCtrValTbl		= kZpEffTablesStart + 2
 kZpEffCtrInitTbl	= kZpEffTablesStart + 4

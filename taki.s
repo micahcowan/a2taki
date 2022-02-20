@@ -165,7 +165,7 @@ _TakiEffectSetupAndDo:
         pha
         txa
         pha
-        ldy #$00	; Save ZP items
+        ldy #kZpStart	; Save ZP items
 @Lp:    lda $00,y
         pha
         iny
@@ -189,7 +189,8 @@ _TakiEffectSetupFn = * + 1
 @Lp:    pla
         sta $00,y
         dey
-        bpl @Lp
+        cpy #kZpStart
+        bcs @Lp
         pla		; Restore registers
         tax
         pla
