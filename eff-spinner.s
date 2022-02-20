@@ -16,7 +16,7 @@ pvTickCharsEnd:
 
 .export TE_Spinner
 TE_Spinner:
-	cmp TAKI_DSP_INIT	; check if "init" mode,
+	cmp #TAKI_DSP_INIT	; check if "init" mode,
         bne @notInit		; no: check other modes
         ; reserve one byte of storage
         inc TAKI_ZP_EFF_STORAGE_END_L
@@ -24,7 +24,7 @@ TE_Spinner:
         inc TAKI_ZP_EFF_STORAGE_END_H
 @skipHi:rts
 @notInit:
-	cmp TAKI_DSP_TICK	; check if draw
+	cmp #TAKI_DSP_TICK	; check if draw
         bne @notTick		; no: exit
         ldy pvTickIter		; yes: DRAW
         iny

@@ -175,7 +175,8 @@ _TakiEffectSetupAndDo:
         ldy #$00
 @LpZp:	lda TakiEffectTablesStart,y
         sta kZpEffTablesStart,y
-        cpy 1 + kZpEffTablesEnd - kZpEffTablesStart
+        iny
+        cpy #1 + kZpEffTablesEnd - kZpEffTablesStart
         bne @LpZp
 
 .export _TakiEffectSetupFn
@@ -263,7 +264,6 @@ _TakiEffectInitializeDirect:
         dey
         lda #$00
         sta TAKI_ZP_EFF_STORAGE_END_L
-        dey ; y = 0 (cur eff low byte)
         beq @FinishAlloc ; always
 @PrevEffAlloc:
 	dey ; y -= 2, to get prev eff's end
@@ -287,11 +287,12 @@ _TakiEffectInitializeDirect:
         
         ; Initialize counter init and counter
         lda TakiVarDefaultCountdown+1
-        sta (kZpEffCtrValTbl),y
         sta (kZpEffCtrInitTbl),y
-        dey
-        lda TakiVarDefaultCountdown
+        lda #$00
         sta (kZpEffCtrValTbl),y
+        dey
+        sta (kZpEffCtrValTbl),y
+        lda TakiVarDefaultCountdown
         sta (kZpEffCtrInitTbl),y
         ; y is at eff
        	tya ; save y to stack
@@ -317,58 +318,60 @@ _TakiEffectInitializeDirect:
         rts
 _TakiEffectInitializeDirectFn = @DispatchCall + 1
 
-pvTickIter:
+
+pvPendingFlip:
 	.byte $00
-pvTickCounter:
-	.byte $01
-pvTickChars:
-	scrcode "I/-\"
 .export _TakiTick
 _TakiTick:
-        ; Start spinner stuff
-        ldx pvTickCounter
-        ldy pvTickIter
-        dex
-        bne @StX
-        ldx #$20
-        iny
-        cpy #4
-        bne @StY
-        ldy #0
-@StY:	sty pvTickIter
-@StX:	stx pvTickCounter
-
-        lda TakiVarNextPageBase
-        ora #$03
-        sta @DrawSta+2	; modify upcoming sta dest
-        lda pvTickChars,y
-@DrawSta:
-        sta $7F6
-        ; End spinner stuff
-        
         ; Run all effect ticks
-        bit _TakiVarActiveEffectsNum
+        lda _TakiVarActiveEffectsNum
         beq @EffLoopDone
         ldy #0
+        sty pvPendingFlip
 @EffLoop:
         jsr _TakiSetupForEffectY
         
         tya
-        pha
-        
         asl
-        tay
+        tay ; y *= 2, for tables-of-addresses
+        
+        ; handle the counter
+        sec
+        lda (kZpEffCtrValTbl),y
+        sbc #1
+        sta (kZpEffCtrValTbl),y
+        bcs @SkipDispatch
+        iny ; borrow from high byte
+        lda (kZpEffCtrValTbl),y
+        sbc #0
+        sta (kZpEffCtrValTbl),y
+        dey
+        bcs @SkipDispatch
+        
+        ; counter underflowed!
+        ; reload initial counter values,
+        ; and run dispatch!
+        lda #$ff
+        sta pvPendingFlip
+        lda (kZpEffCtrInitTbl),y
+        sta (kZpEffCtrValTbl),y
+        iny
+        lda (kZpEffCtrInitTbl),y
+        sta (kZpEffCtrValTbl),y
+        dey
+        
         lda (kZpEffDispatchTbl),y
         sta @pEffJsr+1
         iny
         lda (kZpEffDispatchTbl),y
         sta @pEffJsr+2
         
-        pla
+        ldy kZpCurEffect
         tay
-        lda TAKI_DSP_TICK
+        lda #TAKI_DSP_TICK
 @pEffJsr:
 	jsr $1000
+@SkipDispatch:
         ldy kZpCurEffect
         iny
 	cpy _TakiVarActiveEffectsNum
@@ -376,6 +379,9 @@ _TakiTick:
 
 @EffLoopDone:
         jsr _TakiDbgDrawBadge
+        bit pvPendingFlip
+        beq @SkipFlip
 	jsr _TakiIoPageFlip
+@SkipFlip:
         
         rts

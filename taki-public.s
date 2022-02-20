@@ -75,7 +75,7 @@ TakiVarEffectsAllocNumPages:
 TakiVarMaxActiveEffects:
 	.byte 32	; default value
 TakiVarDefaultCountdown:
-	.word $0020
+	.word $0012
 
 .export TakiVarEffectsAllocStartPage, TakiVarEffectsAllocEndPage
 TakiVarEffectsAllocStartPage:
