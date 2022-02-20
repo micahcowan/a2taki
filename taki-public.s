@@ -69,7 +69,7 @@ TakiVarReleaseVersion:
 	.byte $FF, $FF
 
 .export TakiVarEffectsAllocNumPages, TakiVarMaxActiveEffects
-.export TakiVarActiveEffectsNum, TakiVarDefaultCountdown
+.export TakiVarDefaultCountdown
 TakiVarEffectsAllocNumPages:
 	.byte $10	; default value
 TakiVarMaxActiveEffects:
@@ -78,20 +78,10 @@ TakiVarDefaultCountdown:
 	.word $0020
 
 .export TakiVarEffectsAllocStartPage, TakiVarEffectsAllocEndPage
-.export TakiVarActiveEffectsNum, TakiVarEffectAllocTable
-.export TakiVarEffectCounterTable, TakiVarEffectCounterInitTable
 TakiVarEffectsAllocStartPage:
 	.byte $00
 TakiVarEffectsAllocEndPage:
 	.byte $00
-TakiVarActiveEffectsNum:
-	.byte $00
-TakiVarEffectAllocTable:
-	.word $0000
-TakiVarEffectCounterTable:
-	.word $0000
-TakiVarEffectCounterInitTable:
-	.word $0000
         
 
 ; Original (pre-Taki init) I/O routines

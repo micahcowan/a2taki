@@ -4,6 +4,7 @@
 ;#link "taki-io.s"
 ;#link "taki-basic.s"
 ;#link "taki-public.s"
+;#link "eff-spinner.s"
 ;#link "load-and-run-basic.s"
 ;#resource "taki.cfg"
 ;#define CFGFILE taki.cfg
@@ -11,8 +12,7 @@
 
 .macpack apple2
 
-.import TakiStart, TakiVarMaxActiveEffects, TakiVarEffectCounterTable
-.import TakiVarEffectAllocTable, TakiVarActiveEffectsNum
+.import TakiStart, TakiVarMaxActiveEffects, TakiVarDefaultCountdown
 .import TakiVarEffectsAllocStartPage, TakiVarEffectsAllocEndPage
 .import TakiVarEffectsAllocNumPages, TakiVarEffectCounterInitTable
 .import TakiVarNextPageBase, TakiVarTicksPaused, TakiVarOrigKSW, TakiVarOrigCSW
@@ -23,9 +23,28 @@
 
 .import _TakiDbgInit, _TakiDbgExit, _TakiDbgPrint, _TakiDbgDrawBadge, _TakiDbgUndrawBadge
 
-.include "taki-util.inc"
+.import TE_Spinner
+
 .include "a2-monitor.inc"
+.include "taki-util.inc"
+.include "taki-effect.inc"
 .include "taki-debug.inc"
+
+_TakiVarActiveEffectsNum:
+	.byte $00
+; alloc table: tracks the ENDs of allocation!
+; Start of alloc for first effect is always
+; start of the storage area itself.
+.export TakiEffectTablesStart
+TakiEffectTablesStart:
+_TakiVarEffectAllocTable = TakiEffectTablesStart
+_TakiVarEffectCounterTable = TakiEffectTablesStart + 2
+_TakiVarEffectCounterInitTable = TakiEffectTablesStart + 4
+_TakiVarEffectDispatchTable = TakiEffectTablesStart + 6
+.export TakiEffectTablesEnd
+TakiEffectTablesEnd = TakiEffectTablesStart + 8
+
+.res (TakiEffectTablesEnd - TakiEffectTablesStart)
 
 ; Reorganize where in memory a BASIC program is
 ; located (to move it out of the way of the
@@ -50,11 +69,19 @@ _TakiInit:
         ; save away CSW, KSW
         copyWord TakiVarOrigCSW, Mon_CSWL
         copyWord TakiVarOrigKSW, Mon_KSWL
-        lda #$00
-        sta TakiVarTicksPaused
         jsr _TakiIoSetPageOne
         writeWord Mon_KSWL, _TakiIn
         writeWord Mon_CSWL, _TakiOut
+        lda TakiVarEffectsAllocStartPage
+        lda #$00
+        sta TakiVarTicksPaused
+        sta _TakiVarActiveEffectsNum
+        
+        ; Demo effect: "spinenr"
+        TakiEffectDispatchStart_
+        TakiEffectInitializeDirect_ TE_Spinner
+        TakiEffectDispatchEnd_
+        
 	rts
 
 .export _TakiExit
@@ -92,13 +119,16 @@ _TakiMemInit:
         lda $7
         sbc #$0
         sta $7
-        copyWord TakiVarEffectCounterInitTable, $6
+        copyWord _TakiVarEffectCounterInitTable, $6
         ; effect delay counter current values table
         subtractAndSave16_8 $6, $8
-        copyWord TakiVarEffectCounterTable, $6
+        copyWord _TakiVarEffectCounterTable, $6
         ; effect allocations table
         subtractAndSave16_8 $6, $8
-        copyWord TakiVarEffectAllocTable, $6
+        copyWord _TakiVarEffectAllocTable, $6
+        ; effect dispatch handlers table
+        subtractAndSave16_8 $6, $8
+        copyWord _TakiVarEffectDispatchTable, $6
         
         ; Allocate effect allocations area
         sta TakiVarEffectsAllocEndPage ; assumes $7 in acc
@@ -107,7 +137,7 @@ _TakiMemInit:
         sta TakiVarEffectsAllocStartPage
         ; Init current number of effects
         lda #0
-        sta TakiVarActiveEffectsNum
+        sta _TakiVarActiveEffectsNum
         
         pla
         sta $8
