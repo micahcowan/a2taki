@@ -19,7 +19,7 @@ LoadAndRunBasic:
         ; Set to 0 if the program doesn't
         ; seem to be working (may be
         ; hidden syntax errors?)
-.define HIDE_ASOFT_INPUT 1
+.define HIDE_ASOFT_INPUT 0
 .if HIDE_ASOFT_INPUT
         lda #<MyRTS
         sta CSWL

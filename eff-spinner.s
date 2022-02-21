@@ -5,6 +5,7 @@
 .macpack apple2
 
 .include "taki-effect.inc"
+.include "a2-monitor.inc"
 
 .import TakiVarNextPageBase ; XXX
 
@@ -36,12 +37,17 @@ TE_Spinner:
 @notTick:
 	cmp #TAKI_DSP_DRAW	; check if draw
         bne @noModesHandled
-        ldy pvTickIter
-        lda TakiVarNextPageBase
-        ora #$03
+        ; DRAW!
+        lda Mon_BASL
+        sta @DrawSta+1
+        lda Mon_BASH
+        and #$03
+        ora TakiVarNextPageBase
         sta @DrawSta+2	; modify upcoming sta dest
+        ldy pvTickIter
         lda pvTickChars,y
+        ldy Mon_CH
 @DrawSta:
-        sta $7F0
+        sta $7F0,y
 @noModesHandled:
 	rts
