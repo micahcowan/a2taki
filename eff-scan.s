@@ -13,7 +13,7 @@
 kLocBase	= 0
 kLocNumChars	= kLocBase + 2
 kLocHilitePos	= kLocNumChars + 1
-kNeeded		= kLocHilitePos = 1
+kNeeded		= kLocHilitePos + 1
 
 .export TE_Scan
 TE_Scan:
@@ -45,7 +45,8 @@ TE_Scan:
 	rts
 NoInit: cmp #TAKI_DSP_COLLECT	; collect?
 	bne NoCollect		; no: check more modes
-	; TODO: sanity-check character value
+	; COLLECT
+        ; TODO: sanity-check character value
 	; increment numChars by 1
 	lda #$0
         sec ; so, 1
@@ -57,7 +58,8 @@ NoInit: cmp #TAKI_DSP_COLLECT	; collect?
 NoCollect:
 	cmp #TAKI_DSP_TICK	; tick?
         bne NoTick		; no: check more modes
-	lda #$0
+	; TICK
+        lda #$0
         sec ; so, 1
         ldy #kLocHilitePos
 	adc (TAKI_ZP_EFF_STORAGE_L),y
@@ -68,19 +70,18 @@ NoCollect:
 @NoReset:
         iny
 	sta (TAKI_ZP_EFF_STORAGE_L),y
-        lda TAKI_ZP_ACC
-        jmp _TakiIoDoubledOut	; output as normal
         rts
 NoTick:	cmp #TAKI_DSP_DRAW	; draw?
 	bne NoModesFound	; no: exit
+        ; DRAW!
         ; Adjust "Base" by which page is coming
         ldy #kLocBase+1
-        lda TAKI_ZP_EFF_STORAGE_H,y
+        lda (TAKI_ZP_EFF_STORAGE_L),y
         and #$03 ; remove page info
         ora TakiVarNextPageBase ; add it back in
         sta TAKI_ZP_EFF_SPECIAL_1
-        dey
-        lda TAKI_ZP_EFF_STORAGE_L,y
+        dey ; Now copy the low byte of "Base"
+        lda (TAKI_ZP_EFF_STORAGE_L),y
         sta TAKI_ZP_EFF_SPECIAL_0
         ; DRAW: loop over the characters, setting
         ; to "plain"
@@ -104,7 +105,7 @@ NoTick:	cmp #TAKI_DSP_DRAW	; draw?
         tay
         lda (TAKI_ZP_EFF_SPECIAL_0),y
         and #$3f
-        sta (TAKI_ZP_EFF_STORAGE_L),y
+        sta (TAKI_ZP_EFF_SPECIAL_0),y
         rts
 NoModesFound:
 	rts

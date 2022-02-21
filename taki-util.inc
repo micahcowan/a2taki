@@ -69,19 +69,30 @@ kZpEffTablesEnd		= kZpEffTablesStart + 8
 kZpEnd			= kZpEffTablesEnd
 
 
-; make space in zero page for effect stuff
+; Make space in zero page for effect stuff
 ;   NOTE: users of this macro must import the relevant
 ;   symbols
 .macro TakiEffectDo_ fn
 	pha
-        
-	lda #<fn
+        lda #<fn
         sta _TakiEffectSetupFn
         lda #>fn
         sta _TakiEffectSetupFn+1
-        jsr _TakiEffectSetupAndDo
-        
         pla
+        
+        jsr _TakiEffectSetupAndDo
 .endmacro
+
+; Initialize an effect instance
+;   NOTE: users of this macro must import the relevant
+;   symbols
+.macro TakiEffectInitializeDirect_ effAddr
+	lda #<effAddr
+        sta _TakiEffectInitializeDirectFn
+        lda #>effAddr
+        sta _TakiEffectInitializeDirectFn+1
+	TakiEffectDo_ _TakiEffectInitializeDirect
+.endmacro
+
 
 .endif ; _TAKI_UTIL_INC_

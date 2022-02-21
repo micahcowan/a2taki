@@ -2,6 +2,10 @@
 .include "taki-util.inc"
 .include "taki-debug.inc"
 
+; Used by InitializeDirect:
+.import _TakiEffectInitializeDirect, _TakiEffectInitializeDirectFn
+.import TE_Scan, _TakiSetupForEffectY, _TakiVarEffectCounterInitTable
+
 .import _TakiDbgInit, _TakiDbgExit, _TakiDbgPrint, _TakiDbgPrintStr
 .import _TakiDbgDrawBadge, _TakiDbgUndrawBadge
 
@@ -68,10 +72,71 @@ _TakiIoDoubleDo:
         pla
         rts
 
-; Taki character output/processing routine
+; Taki standard character output/processing routine
 .export _TakiOut
 _TakiOut:
+	cmp #$92	; Ctrl-R?
+        bne @RegChar	; No, so proceed to output
+        writeWord Mon_CSWL, _TakiIoCtrlR
+        rts
+@RegChar:
 	jmp _TakiIoDoubledOut
+
+_TakiIoCtrlR:
+	; ignore next char for , assume "S"
+        ; Set up initialization
+        TakiEffectInitializeDirect_ TE_Scan
+        ;; set different counter value
+        tya
+        pha
+        lda $0
+        pha
+        lda $1
+        pha
+        
+        lda _TakiVarEffectCounterInitTable
+        sta $0
+        lda _TakiVarEffectCounterInitTable+1
+        sta $1
+        lda #$2C
+        ldy #2
+        sta ($0),y
+        
+        pla
+        sta $1
+        pla
+        sta $0
+        pla
+        tay
+        ;; end set different countr value
+	writeWord Mon_CSWL, _TakiIoCollectWord
+        rts
+
+_TakiIoCollectWord:
+	cmp #$92	; Ctrl-R?
+        bne @Collect
+        ;TakiEffectDo_ _TakiIoCollectEndScan
+	writeWord Mon_CSWL, _TakiOut ; restore normal output
+        rts
+@Collect:
+	TakiEffectDo_ _TakiIoCollectByteScan
+	rts
+
+_TakiIoCollectByteScan:
+	ldy #1
+        jsr _TakiSetupForEffectY
+        lda #TAKI_DSP_COLLECT
+        jsr TE_Scan
+        ; save allocations
+        lda kZpCurEffect
+        asl
+        tay
+        lda kZpCurEffStorageEndL
+        sta (kZpEffAllocTbl),y
+        iny
+        lda kZpCurEffStorageEndH
+        sta (kZpEffAllocTbl),y
+	rts
 
 pvPromptExitStr:
 	scrcode "!!EXIT VIA PROMPT DETECTED!!",$0D

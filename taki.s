@@ -31,15 +31,6 @@
 .include "taki-effect.inc"
 .include "taki-debug.inc"
 
-
-.macro TakiEffectInitializeDirect_ effAddr
-	lda #<effAddr
-        sta _TakiEffectInitializeDirectFn
-        lda #>effAddr
-        sta _TakiEffectInitializeDirectFn+1
-	TakiEffectDo_ _TakiEffectInitializeDirect
-.endmacro
-
 _TakiVarActiveEffectsNum:
 	.byte $00
 ; alloc table: tracks the ENDs of allocation!
@@ -47,10 +38,19 @@ _TakiVarActiveEffectsNum:
 ; start of the storage area itself.
 .export TakiEffectTablesStart
 TakiEffectTablesStart:
+
+.export _TakiVarEffectAllocTable
 _TakiVarEffectAllocTable = TakiEffectTablesStart
+
+.export _TakiVarEffectCounterTable
 _TakiVarEffectCounterTable = TakiEffectTablesStart + 2
+
+.export _TakiVarEffectCounterInitTable
 _TakiVarEffectCounterInitTable = TakiEffectTablesStart + 4
+
+.export _TakiVarEffectDispatchTable
 _TakiVarEffectDispatchTable = TakiEffectTablesStart + 6
+
 .export TakiEffectTablesEnd
 TakiEffectTablesEnd = TakiEffectTablesStart + 8
 
@@ -161,10 +161,12 @@ _TakiMemInit:
 .export _TakiEffectSetupAndDo
 _TakiEffectSetupAndDo:
 	; Save various things to stack
-        tya		; Save registers
-        pha
+        sta pvAcc
         txa
-        pha
+        sta pvX
+        tya
+        sta pvY
+        
         ldy #kZpStart	; Save ZP items
 @Lp:    lda $00,y
         pha
@@ -179,6 +181,14 @@ _TakiEffectSetupAndDo:
         iny
         cpy #1 + kZpEffTablesEnd - kZpEffTablesStart
         bne @LpZp
+        
+        ; Copy saved registers to ZP
+        lda pvAcc
+        sta kZpAcc
+        ldx pvX
+        stx kZpX
+        ldy pvY
+        sty kZpY
 
 .export _TakiEffectSetupFn
 _TakiEffectSetupFn = * + 1
@@ -191,13 +201,23 @@ _TakiEffectSetupFn = * + 1
         dey
         cpy #kZpStart
         bcs @Lp
-        pla		; Restore registers
-        tax
-        pla
+        
+        ; Restore registers
+        lda pvY
         tay
+        lda pvX
+        tax
+        lda pvAcc
         
         rts
+pvAcc:
+	.byte $00
+pvX:
+	.byte $00
+pvY:
+	.byte $00
 
+.export _TakiSetupForEffectY
 _TakiSetupForEffectY:
 	; Set up effect storage start:
         ;  if we're effect 0 it's start of storage
@@ -235,6 +255,7 @@ _TakiSetupForEffectY:
         lda TAKI_ZP_DSP_MODE
         rts
 
+.export _TakiEffectInitializeDirect
 _TakiEffectInitializeDirect:
 	lda _TakiVarActiveEffectsNum
         asl	; times 2 to count words
@@ -262,13 +283,14 @@ _TakiEffectInitializeDirect:
         bne @PrevEffAlloc
         ; we're effect 0, use start of storage
         lda TakiVarEffectsAllocStartPage
-        sta TAKI_ZP_EFF_STORAGE_END_H
+        sta TAKI_ZP_EFF_STORAGE_H
         dey
         lda #$00
-        sta TAKI_ZP_EFF_STORAGE_END_L
+        sta TAKI_ZP_EFF_STORAGE_L
         beq @FinishAlloc ; always
 @PrevEffAlloc:
-	dey ; y -= 2, to get prev eff's end
+	dey ; y -= 3, to get prev eff's end
+        dey
         dey
         lda (kZpEffAllocTbl),y
         sta TAKI_ZP_EFF_STORAGE_L
@@ -304,7 +326,7 @@ _TakiEffectInitializeDirect:
         ; Increment number of effects
         inc _TakiVarActiveEffectsNum
         
-        lda TAKI_DSP_INIT
+        lda #TAKI_DSP_INIT
         ; Call effect's dispatch handler
 @DispatchCall:
 	jsr $1000 ; address is overwritten
@@ -319,7 +341,7 @@ _TakiEffectInitializeDirect:
         sta (kZpEffAllocTbl),y
         rts
 _TakiEffectInitializeDirectFn = @DispatchCall + 1
-
+.export _TakiEffectInitializeDirectFn
 
 pvTickMode:
 	.byte TAKI_DSP_UNTICK
@@ -373,7 +395,6 @@ _TakiTick:
         sta @pEffJsr+2
         
         ldy kZpCurEffect
-        tay
         lda pvTickMode
 @pEffJsr:
 	jsr $1000
@@ -406,7 +427,6 @@ _TakiTick:
         sta @pEffDrawJsr+2
         
         ldy kZpCurEffect
-        tay
         lda #TAKI_DSP_DRAW
 @pEffDrawJsr:
 	jsr $1000
@@ -414,7 +434,7 @@ _TakiTick:
         ldy kZpCurEffect
         iny
 	cpy _TakiVarActiveEffectsNum
-	bne @TickLoop
+	bne @DrawLoop
 
 @DrawLoopDone:
 	jsr _TakiIoPageFlip
