@@ -6,6 +6,7 @@
 ;#link "taki-public.s"
 ;#link "eff-spinner.s"
 ;#link "eff-scan.s"
+;#link "eff-NONE.s"
 ;#link "load-and-run-basic.s"
 ;#resource "taki.cfg"
 ;#define CFGFILE taki.cfg
@@ -17,6 +18,7 @@
 .import TakiVarEffectsAllocStartPage, TakiVarEffectsAllocEndPage
 .import TakiVarEffectsAllocNumPages, TakiVarEffectCounterInitTable
 .import TakiVarNextPageBase, TakiVarTicksPaused, TakiVarOrigKSW, TakiVarOrigCSW
+.import TakiVarCommandBufferPage
 
 .import _TakiIoDoubleDo, _TakiIoDoubledOut, _TakiIoClearPageTwo
 .import _TakiIoPageTwoBasCalc, _TakiOut, _TakiIn, _TakiIoPageFlip
@@ -116,6 +118,9 @@ _TakiMemInit:
         sta $8
         ; Initialize $6 and $7 with Taki's start-of-code
         lda #>TakiStart
+        sec
+        sbc #$01 ; to reserve a page for command buffer
+        sta TakiVarCommandBufferPage
         sta $7
         lda #<TakiStart
         ;sta $6 ; will delay until after first calc below
@@ -126,7 +131,7 @@ _TakiMemInit:
         sbc $8
         sta $6
         lda $7
-        sbc #$0
+        sbc #$0 ; for carry
         sta $7
         copyWord _TakiVarEffectCounterInitTable, $6
         ; effect delay counter current values table
@@ -159,14 +164,17 @@ _TakiMemInit:
 ; Setup zero page for effect actions.
 ; Set TakiEffectSetupFn to your fn addr
 ; before invoking
+; NOT REENTRANT, unless you
+;  first push _TakiPreEff{Acc|X|Y}
+;  before reentry, and restore after
 .export _TakiEffectSetupAndDo
 _TakiEffectSetupAndDo:
 	; Save various things to stack
-        sta pvAcc
+        sta _TakiPreEffAcc
         txa
-        sta pvX
+        sta _TakiPreEffX
         tya
-        sta pvY
+        sta _TakiPreEffY
         
         ldy #kZpStart	; Save ZP items
 @Lp:    lda $00,y
@@ -175,7 +183,14 @@ _TakiEffectSetupAndDo:
         cpy #kZpEnd
         bne @Lp
         
-        ; Copy various things to ZP
+        ; Copy CmdBuf location to ZP
+        lda #$00
+        sta kZpCmdBufL
+        lda TakiVarCommandBufferPage
+        sta kZpCmdBufH
+        
+        ; Copy effect tables to ZP
+        ; (assumes we keep same order internally!)
         ldy #$00
 @LpZp:	lda TakiEffectTablesStart,y
         sta kZpEffTablesStart,y
@@ -184,11 +199,11 @@ _TakiEffectSetupAndDo:
         bne @LpZp
         
         ; Copy saved registers to ZP
-        lda pvAcc
+        lda _TakiPreEffAcc
         sta kZpAcc
-        ldx pvX
+        ldx _TakiPreEffX
         stx kZpX
-        ldy pvY
+        ldy _TakiPreEffY
         sty kZpY
 
 .export _TakiEffectSetupFn
@@ -204,18 +219,21 @@ _TakiEffectSetupFn = * + 1
         bcs @Lp
         
         ; Restore registers
-        lda pvY
+        lda _TakiPreEffY
         tay
-        lda pvX
+        lda _TakiPreEffX
         tax
-        lda pvAcc
+        lda _TakiPreEffAcc
         
         rts
-pvAcc:
+.export _TakiPreEffAcc
+_TakiPreEffAcc:
 	.byte $00
-pvX:
+.export _TakiPreEffX
+_TakiPreEffX:
 	.byte $00
-pvY:
+.export _TakiPreEffY
+_TakiPreEffY:
 	.byte $00
 
 .export _TakiSetupForEffectY

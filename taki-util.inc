@@ -48,8 +48,8 @@ kZpCurEffStorageL	= TAKI_ZP_EFF_STORAGE_L	; $66
 kZpCurEffStorageH	= TAKI_ZP_EFF_STORAGE_H	; $67
 kZpCurEffStorageEndL	= TAKI_ZP_EFF_STORAGE_END_L ; $68
 kZpCurEffStorageEndH	= TAKI_ZP_EFF_STORAGE_END_H ; $69
-kZpCmdbufL		= TAKI_ZP_CMDBUF_L ; $6A
-kZpCmdbufH		= TAKI_ZP_CMDBUF_H ; $6B
+kZpCmdBufL		= TAKI_ZP_CMDBUF_L ; $6A
+kZpCmdBufH		= TAKI_ZP_CMDBUF_H ; $6B
 kZpDispatchMode		= TAKI_ZP_DSP_MODE ; $6C
 kZpAcc			= TAKI_ZP_ACC ; $6D
 kZpX			= TAKI_ZP_X ; $6E
@@ -87,10 +87,12 @@ kZpEnd			= kZpEffTablesEnd
 ;   NOTE: users of this macro must import the relevant
 ;   symbols
 .macro TakiEffectInitializeDirect_ effAddr
+	pha
 	lda #<effAddr
         sta _TakiEffectInitializeDirectFn
         lda #>effAddr
         sta _TakiEffectInitializeDirectFn+1
+        pla
 	TakiEffectDo_ _TakiEffectInitializeDirect
 .endmacro
 

@@ -3,7 +3,9 @@
 .include "taki-debug.inc"
 
 ; Used by InitializeDirect:
-.import TakiBuiltinEffectsTable
+.import TE_NONE
+.import _TakiPreEffAcc, _TakiPreEffX, _TakiPreEffY
+.import TakiBuiltinEffectsTable, TakiNumBuiltinEffects, TakiVarCommandBufferPage
 .import _TakiVarActiveEffectsNum
 .import _TakiEffectInitializeDirect, _TakiEffectInitializeDirectFn
 .import TE_Scan, _TakiSetupForEffectY, _TakiVarEffectCounterInitTable
@@ -19,6 +21,9 @@
 .import _TakiEffectSetupAndDo, _TakiEffectSetupFn
 
 .macpack apple2
+
+_TakiCmdBufCurrent:
+	.byte $00
 
 ; Call a function twice, once with BAS -> pg 1,
 ; and once with BAS -> pg 2.
@@ -77,91 +82,184 @@ _TakiIoDoubleDo:
 ; Taki standard character output/processing routine
 .export _TakiOut
 _TakiOut:
-	cmp #$92	; Ctrl-R?
+	cmp #$94	; Ctrl-T?
         bne @RegChar	; No, so proceed to output
-        writeWord Mon_CSWL, _TakiIoCtrlR
+        lda #$00
+        sta _TakiCmdBufCurrent
+        writeWord Mon_CSWL, _TakiIoCtrlReadCmd
         rts
 @RegChar:
 	jmp _TakiIoDoubledOut
 
-_TakiIoCtrlR:
-	pha
-        txa
+_TakiIoCtrlReadCmd:
+        sta pvSavedRealChar
+
+	tya	; save Y
         pha
-        tya
+        lda $00 ; make room in ZP
         pha
-	
-	; FAKE OUT selecting the effect
-        ; from effect instantiator table 
-	lda #$00	; first in table
-        asl		; double, for word size
+        lda $01
+        pha
+        
+        lda TakiVarCommandBufferPage
+        sta $01
+        lda #$00
+        sta $00
+        ldy _TakiCmdBufCurrent
+        lda pvSavedRealChar
+        sta ($00),y	; the actual save
+        inc _TakiCmdBufCurrent
+        
+        pla	; restore ZP
+        sta $01
+        pla
+        sta $00
+        pla	; restore Y
         tay
-        iny ; increment to get high byte, for X
-        ldx TakiBuiltinEffectsTable,y
-        dey
+        
+        lda pvSavedRealChar	; and A
+        
+	cmp #$8D	; Did we just store a CR?
+        bne @rts	; no, return
+        TakiEffectDo_ _TakiIoCtrlExecCmd	; yes: command done, execute
+
+@rts:	rts
+
+_TakiIoCtrlExecCmd:
+        ; We have the effect name in the
+        ; command buffer - find it!
+        ldy #$00
+@FindEffLp:
+	tya
+        lsr	; div by 2, giving entry num
+	cmp TakiNumBuiltinEffects
+        beq @NoEffFound
+        
+        ; Get the effect's dispatch addr
+        ; into the zero page
+	lda TakiBuiltinEffectsTable,y
+        sta kZpEffSpecial0
+        iny
         lda TakiBuiltinEffectsTable,y
+        sta kZpEffSpecial1
+        ; Y is now at the high byte
         
+        ; skip backwards, past a "flags" word,
+        ; to a tag name character count
+        lda kZpEffSpecial0
+        sec
+        sbc #$03
+        sta kZpEffSpecial0
+        bcs @NoBorrow
+        lda kZpEffSpecial1 ; handle borrow
+        sbc #$00
+        sta kZpEffSpecial1
+@NoBorrow:
+	tya
+        pha
         
-	; ignore next char for , assume "S"
-        ; Set up initialization
-        TakiEffectInitializeAX_
-        
+	ldy #$00 ; get the value there into y
+	lda (kZpEffSpecial0),y
+        pha
+        ; and step back by that many bytes
+        lda kZpEffSpecial0
+        sec
+        sbc (kZpEffSpecial0),y
+        sta kZpEffSpecial0
+        bcs @NoBorrow1
+        lda kZpEffSpecial1 ; handle borrow
+        sbc #$00
+        sta kZpEffSpecial1
+@NoBorrow1:
         pla
         tay
-        pla
-        tax
-        pla
+        ; Y is the num characters in tag.
+        beq @NextEffect	; handle silly case: tag == ""
+        ; Is that char in the CmdBuf a terminator?
+        lda (kZpCmdBufL),y
+        beq @HaveTerminator	; NUL
+        cmp #$8D		; CR
+        beq @HaveTerminator
+        cmp #$A8		; '('
+        bne @NextEffect		; no terminator,
+        			;  check next effect
+@HaveTerminator:
+	; Both words seem to end here.
+        ; Walk backward and check characters
+@TagCmpLoop:
+        dey
+        bmi @EffFound ; checked all the chars? found it!
+        lda (kZpCmdBufL),y
+        cmp (kZpEffSpecial0),y
+        bne @NextEffect
+        jmp @TagCmpLoop
         
-        ;; set different counter value
-        tya
-        pha
-        lda $0
-        pha
-        lda $1
-        pha
-        
-        lda _TakiVarEffectCounterInitTable
-        sta $0
-        lda _TakiVarEffectCounterInitTable+1
-        sta $1
-        lda #$2C
-        ldy #2
-        sta ($0),y
-        
-        pla
-        sta $1
-        pla
-        sta $0
-        pla
+@NextEffect:
+	pla ; restore effect table entry #
         tay
-        ;; end set different countr value
-	writeWord Mon_CSWL, _TakiIoCollectWord
+        
+        iny ; check next entry
+        jmp @FindEffLp
+@NoEffFound:
+	lda #<TE_NONE
+	ldy #>TE_NONE
+        sta _TakiEffectInitializeDirectFn
+        sty _TakiEffectInitializeDirectFn+1
+        jmp @runInit
+@EffFound:
+	pla ; restore effect table entry #
+        tay
+	; Initialize an effect instance
+        ; from the found entry
+	;   -- Y is at the high byte of dispatch handler
+        lda TakiBuiltinEffectsTable,y
+        sta _TakiEffectInitializeDirectFn+1
+        dey ; now get low byte
+        lda TakiBuiltinEffectsTable,y
+	sta _TakiEffectInitializeDirectFn
+@runInit:
+        jsr _TakiEffectInitializeDirect
+        
+	writeWord Mon_CSWL, _TakiIoCollectUntilCtrlS
         rts
 
-_TakiIoCollectWord:
-	cmp #$92	; Ctrl-R?
+_TakiIoCollectUntilCtrlS:
+	cmp #$93	; Ctrl-S?
         bne @Collect
         ;TakiEffectDo_ _TakiIoCollectEndScan
 	writeWord Mon_CSWL, _TakiOut ; restore normal output
         rts
 @Collect:
-	TakiEffectDo_ _TakiIoCollectByteScan
+	TakiEffectDo_ _TakiIoCollectByte
 	rts
 
-_TakiIoCollectByteScan:
+_TakiIoCollectByte:
 	ldy _TakiVarActiveEffectsNum
         dey
         jsr _TakiSetupForEffectY
-        lda #TAKI_DSP_COLLECT
-        jsr TE_Scan
-        ; save allocations
-        lda kZpCurEffect
-        asl
+        
+        tya
+        asl ; lookup by words
         tay
-        lda kZpCurEffStorageEndL
-        sta (kZpEffAllocTbl),y
+        lda (kZpEffDispatchTbl),y
+        sta @Dispatch+1
         iny
+        lda (kZpEffDispatchTbl),y
+        sta @Dispatch+2
+        
+        tya ; Y is at high byte
+        pha
+        lda #TAKI_DSP_COLLECT
+@Dispatch:
+        jsr TE_Scan
+        
+        pla
+        tay ; Y is at high byte
+        ; save allocations
         lda kZpCurEffStorageEndH
+        sta (kZpEffAllocTbl),y
+        dey
+        lda kZpCurEffStorageEndL
         sta (kZpEffAllocTbl),y
 	rts
 

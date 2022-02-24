@@ -22,7 +22,6 @@ pTag:
 pTagEnd:
 	.byte pTagEnd - pTag 
 	.word $0000 ; flags
-.export TE_Scan
 TE_Scan:
 	cmp #TAKI_DSP_INIT	; init?
         bne NoInit		; no: check more modes

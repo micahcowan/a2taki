@@ -55,9 +55,9 @@ TakiPublic_ TakiIoDoubledOut
 
 ;;;;; PUBLIC VARIABLES AND FLAGS
 
-; Guarantee that they begin at $8080
 TakiPubFnEnd:
 
+; Guarantee that they begin at START + $80
 .res TakiStart + $80 - *
 
 TakiVarsStart:
@@ -78,9 +78,12 @@ TakiVarDefaultCountdown:
 	.word $0012
 
 .export TakiVarEffectsAllocStartPage, TakiVarEffectsAllocEndPage
+.export TakiVarCommandBufferPage
 TakiVarEffectsAllocStartPage:
 	.byte $00
 TakiVarEffectsAllocEndPage:
+	.byte $00
+TakiVarCommandBufferPage:
 	.byte $00
         
 
