@@ -6,7 +6,9 @@
 ;#link "taki-public.s"
 ;#link "eff-spinner.s"
 ;#link "eff-scan.s"
+;#link "eff-scan2.c"
 ;#link "load-and-run-basic.s"
+;#resource "taki-effect.h"
 ;#resource "taki.cfg"
 ;#define CFGFILE taki.cfg
 ;#resource "NAMING.md"

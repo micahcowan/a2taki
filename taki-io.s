@@ -4,7 +4,7 @@
 
 ; Used by InitializeDirect:
 .import _TakiEffectInitializeDirect, _TakiEffectInitializeDirectFn
-.import TE_Scan, _TakiSetupForEffectY, _TakiVarEffectCounterInitTable
+.import _TE_Scan2, _TakiSetupForEffectY, _TakiVarEffectCounterInitTable
 
 .import _TakiDbgInit, _TakiDbgExit, _TakiDbgPrint, _TakiDbgPrintStr
 .import _TakiDbgDrawBadge, _TakiDbgUndrawBadge
@@ -85,7 +85,7 @@ _TakiOut:
 _TakiIoCtrlR:
 	; ignore next char for , assume "S"
         ; Set up initialization
-        TakiEffectInitializeDirect_ TE_Scan
+        TakiEffectInitializeDirect_ _TE_Scan2
         ;; set different counter value
         tya
         pha
@@ -126,7 +126,7 @@ _TakiIoCollectByteScan:
 	ldy #1
         jsr _TakiSetupForEffectY
         lda #TAKI_DSP_COLLECT
-        jsr TE_Scan
+        jsr _TE_Scan2
         ; save allocations
         lda kZpCurEffect
         asl

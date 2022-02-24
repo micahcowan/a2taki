@@ -104,21 +104,25 @@ _TakiDbgVarPrintStr = * + 1
 
 .export _TakiDbgCOUT
 _TakiDbgCOUT:
+	ora #$80	; Ensure screen code values
 	bit TakiVarDebugActive
         bmi :+
         rts
 :       bit pvDoCrNext
-	beq @NoPendCR	; Pending CR? no: check
+	beq @NoPendingCR; Pending CR? no: check
         pha		; for current CR. yes: emit CR
 	lda #$8D
         jsr TakiOut
         lda #$00 ; un-pend CR
         sta pvDoCrNext
         pla
-@NoPendCR:
+@NoPendingCR:
+	cmp #$8A	; Treat newline as CR
+        beq @PendCR
 	cmp #$8D	; current CR?
         bne @DoOutput	; no: just do output
-        sta pvDoCrNext ; yes: save it and exit
+@PendCR:
+	sta pvDoCrNext ; yes: save it and exit
         rts
 @DoOutput:
         sta pvSavedChar
