@@ -19,6 +19,10 @@ scrcode "105 PRINT ",'"',"HELLO, THIS IS AN EXAMPLE",'"',$0D
 scrcode "110 PRINT ",'"',"OF A ",'"',';',$0D
 scrcode "120 PRINT R$;",'"',"S< SCANNING >",'"',";R$;",$0D
 scrcode "130 PRINT ",'"'," WORD",'"',":?",$0D
+scrcode "135 PRINT ",'"',"OH, AND ALSO YOU MAY BE INTERESTED",'"',$0D
+scrcode "140 PRINT ",'"',"TO FIND THAT HERE IS ",'"',';',$0D
+scrcode "150 PRINT R$;",'"',"SANOTHER",'"',";R$;",$0D
+scrcode "160 PRINT ",'"'," SUCH WORD",'"',":?:?",$0D
 
 scrcode "172 REM DISABLE EXIT-ON-PROMPT",$0D
 scrcode "175 POKE ",.sprintf("%d",$808D),", 0",$0D

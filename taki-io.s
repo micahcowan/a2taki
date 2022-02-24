@@ -3,6 +3,7 @@
 .include "taki-debug.inc"
 
 ; Used by InitializeDirect:
+.import _TakiVarActiveEffectsNum
 .import _TakiEffectInitializeDirect, _TakiEffectInitializeDirectFn
 .import TE_Scan, _TakiSetupForEffectY, _TakiVarEffectCounterInitTable
 
@@ -123,7 +124,8 @@ _TakiIoCollectWord:
 	rts
 
 _TakiIoCollectByteScan:
-	ldy #1
+	ldy _TakiVarActiveEffectsNum
+        dey
         jsr _TakiSetupForEffectY
         lda #TAKI_DSP_COLLECT
         jsr TE_Scan

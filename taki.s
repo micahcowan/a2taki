@@ -31,6 +31,7 @@
 .include "taki-effect.inc"
 .include "taki-debug.inc"
 
+.export _TakiVarActiveEffectsNum
 _TakiVarActiveEffectsNum:
 	.byte $00
 ; alloc table: tracks the ENDs of allocation!
