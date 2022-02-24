@@ -18,13 +18,12 @@ scrcode "103 ?:?",$0D
 scrcode "105 PRINT ",'"',"HELLO, THIS IS AN EXAMPLE",'"',$0D
 scrcode "110 PRINT ",'"',"OF A ",'"',';',$0D
 scrcode "120 PRINT R$;",'"',"S< SCANNING >",'"',";R$;",$0D
-scrcode "130 PRINT ",'"'," WORD",'"',":?:?",$0D
-scrcode "171 ?:?:?",'"',"FAKE PROMPT:",'"'
-scrcode  ":INPUT ",'"',']','"',";A$",$0D
+scrcode "130 PRINT ",'"'," WORD",'"',":?",$0D
 
 scrcode "172 REM DISABLE EXIT-ON-PROMPT",$0D
 scrcode "175 POKE ",.sprintf("%d",$808D),", 0",$0D
 scrcode "176 POKE ",.sprintf("%d",$808E),", 0",$0D
+scrcode "180 ? ",'"',"PROGRAM EXIT (ANIMATIONS REMAIN)",'"',$0D
 
 .if 0
 scrcode "135 REM CHECKS FOR CR HANDLING IN INPUT",$0D

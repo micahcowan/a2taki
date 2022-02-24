@@ -12,7 +12,7 @@
 pvTickIter:
 	.byte $00
 pvTickChars:
-	scrcode "I/-\"
+	scrcode "!/-\"
 pvTickCharsEnd:
 
 .export TE_Spinner

@@ -200,7 +200,6 @@ _TakiIn:
         lda (Mon_BASL),y
         sta pvSavedCursor
         sta ($06),y
-        TakiEffectDo_ _TakiTick
 @KEYIN:	inc     Mon_RNDL
 	bne     @KEYIN2
 	inc     Mon_RNDH
