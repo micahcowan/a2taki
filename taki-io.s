@@ -3,6 +3,7 @@
 .include "taki-debug.inc"
 
 ; Used by InitializeDirect:
+.import TakiBuiltinEffectsTable
 .import _TakiVarActiveEffectsNum
 .import _TakiEffectInitializeDirect, _TakiEffectInitializeDirectFn
 .import TE_Scan, _TakiSetupForEffectY, _TakiVarEffectCounterInitTable
@@ -84,9 +85,33 @@ _TakiOut:
 	jmp _TakiIoDoubledOut
 
 _TakiIoCtrlR:
+	pha
+        txa
+        pha
+        tya
+        pha
+	
+	; FAKE OUT selecting the effect
+        ; from effect instantiator table 
+	lda #$00	; first in table
+        asl		; double, for word size
+        tay
+        iny ; increment to get high byte, for X
+        ldx TakiBuiltinEffectsTable,y
+        dey
+        lda TakiBuiltinEffectsTable,y
+        
+        
 	; ignore next char for , assume "S"
         ; Set up initialization
-        TakiEffectInitializeDirect_ TE_Scan
+        TakiEffectInitializeAX_
+        
+        pla
+        tay
+        pla
+        tax
+        pla
+        
         ;; set different counter value
         tya
         pha

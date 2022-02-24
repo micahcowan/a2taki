@@ -1,6 +1,10 @@
 .ifndef _TAKI_EFFECT_INC_
 _TAKI_EFFECT_INC_ = 1
 
+.macro TakiBuiltinEffect_ effect
+    .condes effect, 6
+.endmacro
+
 TAKI_DSP_INIT		= 0
 TAKI_DSP_COLLECT	= 1
 TAKI_DSP_ENDCOLLECT	= 2

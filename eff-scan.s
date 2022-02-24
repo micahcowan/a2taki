@@ -7,6 +7,8 @@
 .include "taki-effect.inc"
 .include "a2-monitor.inc"
 
+TakiBuiltinEffect_ TE_Scan
+
 .import TakiVarNextPageBase ; XXX use draw API
 .import _TakiIoDoubledOut ; XXX
 
@@ -15,6 +17,11 @@ kLocNumChars	= kLocBase + 2
 kLocHilitePos	= kLocNumChars + 1
 kNeeded		= kLocHilitePos + 1
 
+pTag:
+	scrcode "SCAN"
+pTagEnd:
+	.byte pTagEnd - pTag 
+	.word $0000 ; flags
 .export TE_Scan
 TE_Scan:
 	cmp #TAKI_DSP_INIT	; init?

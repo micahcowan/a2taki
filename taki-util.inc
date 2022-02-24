@@ -94,5 +94,14 @@ kZpEnd			= kZpEffTablesEnd
 	TakiEffectDo_ _TakiEffectInitializeDirect
 .endmacro
 
+; Initialize an effect instance
+;   NOTE: users of this macro must import the relevant
+;   symbols
+.macro TakiEffectInitializeAX_
+        sta _TakiEffectInitializeDirectFn
+        stx _TakiEffectInitializeDirectFn+1
+	TakiEffectDo_ _TakiEffectInitializeDirect
+.endmacro
+
 
 .endif ; _TAKI_UTIL_INC_
