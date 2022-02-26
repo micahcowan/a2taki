@@ -18,7 +18,7 @@
 .import TakiVarEffectsAllocStartPage, TakiVarEffectsAllocEndPage
 .import TakiVarEffectsAllocNumPages, TakiVarEffectCounterInitTable
 .import TakiVarNextPageBase, TakiVarTicksPaused, TakiVarOrigKSW, TakiVarOrigCSW
-.import TakiVarCommandBufferPage
+.import TakiVarCommandBufferPage, TakiVarTickNum
 
 .import _TakiIoDoubleDo, _TakiIoDoubledOut, _TakiIoClearPageTwo
 .import _TakiIoPageTwoBasCalc, _TakiOut, _TakiIn, _TakiIoPageFlip
@@ -373,6 +373,7 @@ _TakiTick:
         beq @SkipFlip
         ldy #0
         sty pvPendingFlip
+        inc TakiVarTickNum
 @TickLoop:
         jsr _TakiSetupForEffectY
         

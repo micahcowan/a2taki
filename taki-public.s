@@ -151,3 +151,10 @@ TakiVarNextPageBase:
 .export TakiVarTicksPaused
 TakiVarTicksPaused:
 	.byte $00
+
+; TakiVarTickNum: incrmented just prior to each tick/untick.
+; useful for an effect to coordinate something across its
+; multiple instances (like the XXX flasher)
+.export TakiVarTickNum
+TakiVarTickNum:
+	.byte $00
