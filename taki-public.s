@@ -3,7 +3,7 @@
 .import _TakiMoveASoft, _TakiInit, _TakiPause, _TakiResume, _TakiExit
 
 .import _TakiIn, _TakiOut, _TakiIoPageTwoBasCalc, _TakiIoClearPageTwo
-.import _TakiIoDoubleDo, _TakiIoDoubledOut
+.import _TakiIoDoubledOut
 
 .import _TakiDbgInit, _TakiDbgExit, _TakiDbgPrint, _TakiDbgCOUT
 .import _TakiDbgUndrawBadge, _TakiDbgDrawBadge, _TakiDelay
@@ -50,7 +50,6 @@ TakiPublic_ TakiOut
 TakiPublic_ TakiDelay
 TakiPublic_ TakiIoPageTwoBasCalc
 TakiPublic_ TakiIoClearPageTwo
-TakiPublic_ TakiIoDoubleDo
 TakiPublic_ TakiIoDoubledOut
 
 

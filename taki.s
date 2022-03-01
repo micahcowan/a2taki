@@ -21,7 +21,7 @@
 .import TakiVarCommandBufferPage, TakiVarTickNum, TakiVarInProgress
 .import TakiVarInInput
 
-.import _TakiIoDoubleDo, _TakiIoDoubledOut, _TakiIoClearPageTwo
+.import _TakiIoDoubledOut, _TakiIoClearPageTwo
 .import _TakiIoPageTwoBasCalc, _TakiOut, _TakiIn, _TakiIoPageFlip
 .import _TakiIoSetPageOne, _TakiIoSetPageTwo
 

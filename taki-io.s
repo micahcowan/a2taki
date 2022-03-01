@@ -25,60 +25,6 @@
 _TakiCmdBufCurrent:
 	.byte $00
 
-; Call a function twice, once with BAS -> pg 1,
-; and once with BAS -> pg 2.
-;
-; To invoke, first write the addr of the fn
-; you want called for each page to TakiVarIndirectFn,
-; then jsr TakiDoubleDo.
-.export _TakiIoDoubleDo
-_TakiIoDoubleDo:
-	; Save CH, CV, BASL/H
-        pha
-        lda Mon_CH
-        sta pvSaved_CH
-        lda Mon_CV
-        sta pvSaved_CV
-        lda Mon_BASL
-        sta pvSaved_BAS
-        lda Mon_BASH
-        sta pvSaved_BAS+1
-        pla
-        
-        ; Do p1 job
-        jsr _TakiIndirect
-        
-        ; Restore CH, CV, BASL/H
-        pha
-        lda pvSaved_CH
-        sta Mon_CH
-        lda pvSaved_CV
-        sta Mon_CV
-        lda pvSaved_BAS
-        sta Mon_BASL
-        lda pvSaved_BAS+1
-        eor #$0C
-        sta Mon_BASH
-        ; and set BASCALC
-        lda #<_TakiIoPageTwoBasCalc
-        sta pvBASCALCfn
-        lda #>_TakiIoPageTwoBasCalc
-        sta pvBASCALCfn+1
-	pla
-        ; Do p2 job
-        jsr _TakiIndirect
-        ; Fix up BASL, and BASLCALC
-        pha
-        lda Mon_BASH
-        eor #$0C
-        sta Mon_BASH
-        lda #<_TakiIoPageOneBasCalc
-        sta pvBASCALCfn
-        lda #>_TakiIoPageOneBasCalc
-        sta pvBASCALCfn+1
-        pla
-        rts
-
 ; Taki standard character output/processing routine
 .export _TakiOut
 _TakiOut:
@@ -381,16 +327,7 @@ _TakiIn:
 	bne @NoCR
 	bit TakiVarInGETLN	; ...but only if in GETLN
         bpl @NoCR
-        writeWord TakiVarIndirectFn, pCLREOL
-        
-        ; CLREOL changes y reg, so save/restore
-        pha
-        tya
-        pha
-        jsr _TakiIoDoubleDo
-        pla
-        tay
-        pla
+        jsr pCLREOL
         
         ; "Saved char" will be written to both pages,
         ; AFTER we did a CLREOL, and then GETLN
