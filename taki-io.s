@@ -528,12 +528,18 @@ pBadge:
 pSCRL3:	ldy     #$00
         jsr     pCLEOLZ
         bcs     pVTAB
-pCLREOL:ldy     Mon_CH
+pCLREOL:pha
+	tya
+        pha
+	ldy     Mon_CH
 pCLEOLZ:	lda     #$a0
 pCLREOL2:doubledStaBasl_ Mon_BASL
 	iny
 	cpy     Mon_WNDWDTH
         bcc     pCLREOL2
+        pla
+        tay
+        pla
 	rts
 
 pVTAB:	lda	Mon_CV
