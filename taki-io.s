@@ -15,7 +15,7 @@
 
 .import TakiVarIndirectFn, TakiVarExitPrompts, TakiVarInGETLN
 .import TakiVarCurPageBase, TakiVarNextPageBase, TakiVarTicksPaused
-.import TakiVarDebugActive
+.import TakiVarDebugActive, TakiVarInProgress
 
 .import _TakiTick, _TakiExit, _TakiIndirect
 .import _TakiEffectSetupAndDo, _TakiEffectSetupFn
@@ -536,6 +536,14 @@ pLF:	inc     Mon_CV
 	cmp     Mon_WNDBTM
         bcc     pVTABZ
 	dec     Mon_CV
+        ; TAKI - if we would scroll because of a CR,
+        ; but an animation has been initialized:
+        ; refuse to scroll. Erase current line from start
+        ; instead.
+        bit TakiVarInProgress
+        bpl pSCROLL
+        ldy #$00
+        beq pCLEOLZ ; always
 pSCROLL:lda     Mon_WNDTOP
 	pha
         jsr     pVTABZ

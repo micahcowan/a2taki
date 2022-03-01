@@ -18,7 +18,7 @@
 .import TakiVarEffectsAllocStartPage, TakiVarEffectsAllocEndPage
 .import TakiVarEffectsAllocNumPages, TakiVarEffectCounterInitTable
 .import TakiVarNextPageBase, TakiVarTicksPaused, TakiVarOrigKSW, TakiVarOrigCSW
-.import TakiVarCommandBufferPage, TakiVarTickNum
+.import TakiVarCommandBufferPage, TakiVarTickNum, TakiVarInProgress
 
 .import _TakiIoDoubleDo, _TakiIoDoubledOut, _TakiIoClearPageTwo
 .import _TakiIoPageTwoBasCalc, _TakiOut, _TakiIn, _TakiIoPageFlip
@@ -88,6 +88,7 @@ _TakiInit:
         lda TakiVarEffectsAllocStartPage
         lda #$00
         sta TakiVarTicksPaused
+        sta TakiVarInProgress
         sta _TakiVarActiveEffectsNum
         
         ; Demo effect: "spinenr"
@@ -279,6 +280,10 @@ _TakiEffectInitializeDirect:
 	lda _TakiVarActiveEffectsNum
         asl	; times 2 to count words
         tay
+        
+        ; Mark "in progress" to prevent screen scrolling
+        lda #$FF
+        sta TakiVarInProgress
         
         ;; Set values in tables:
         ; dispatch handler in table
