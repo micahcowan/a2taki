@@ -15,9 +15,6 @@ TAKI_PUBLIC_INC_=1
 .import _TakiExit
 .import _TakiEffectSetupAndDo
 .import _TakiEffectSetupFn
-.import _TakiPreEffAcc
-.import _TakiPreEffX
-.import _TakiPreEffY
 .import _TakiSetupForEffectY
 .import _TakiEffectInitializeDirect
 .import _TakiEffectInitializeDirectFn

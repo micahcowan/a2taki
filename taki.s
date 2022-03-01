@@ -8,6 +8,8 @@
 ;#link "eff-scan.s"
 ;#link "eff-NONE.s"
 ;#link "load-and-run-basic.s"
+;#link "forthish.s"
+
 ;#resource "taki.cfg"
 ;#define CFGFILE taki.cfg
 ;#resource "NAMING.md"
@@ -15,6 +17,9 @@
 .macpack apple2
 
 .include "a2-monitor.inc"
+.include "forthish.inc"
+
+
 .include "taki-util.inc"
 .include "taki-effect.inc"
 .include "taki-debug.inc"
@@ -158,17 +163,14 @@ _TakiMemInit:
 ; Setup zero page for effect actions.
 ; Set TakiEffectSetupFn to your fn addr
 ; before invoking
-; NOT REENTRANT, unless you
-;  first push _TakiPreEff{Acc|X|Y}
-;  before reentry, and restore after
 .export _TakiEffectSetupAndDo
 _TakiEffectSetupAndDo:
 	; Save various things to stack
-        sta _TakiPreEffAcc
+        pha
         txa
-        sta _TakiPreEffX
+        pha
         tya
-        sta _TakiPreEffY
+        pha
         
         ldy #kZpStart	; Save ZP items
 @Lp:    lda $00,y
@@ -193,12 +195,18 @@ _TakiEffectSetupAndDo:
         bne @LpZp
         
         ; Copy saved registers to ZP
-        lda _TakiPreEffAcc
-        sta kZpAcc
-        ldx _TakiPreEffX
-        stx kZpX
-        ldy _TakiPreEffY
+        ;  
+        ;pick_ kZpEnd-kZpStart, 3
+        ;  ^ ca65 doesn't like, for some reason
+        pick_ $1D, 3
+        pla
+        tay
         sty kZpY
+        pla
+        tax
+        stx kZpX
+        pla
+        sta kZpAcc
 
 .export _TakiEffectSetupFn
 _TakiEffectSetupFn = * + 1
@@ -213,22 +221,13 @@ _TakiEffectSetupFn = * + 1
         bcs @Lp
         
         ; Restore registers
-        lda _TakiPreEffY
+        pla
         tay
-        lda _TakiPreEffX
+        pla
         tax
-        lda _TakiPreEffAcc
+        pla
         
         rts
-.export _TakiPreEffAcc
-_TakiPreEffAcc:
-	.byte $00
-.export _TakiPreEffX
-_TakiPreEffX:
-	.byte $00
-.export _TakiPreEffY
-_TakiPreEffY:
-	.byte $00
 
 .export _TakiSetupForEffectY
 _TakiSetupForEffectY:
