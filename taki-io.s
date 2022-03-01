@@ -11,13 +11,13 @@
 .import TE_Scan, _TakiSetupForEffectY, _TakiVarEffectCounterInitTable
 
 .import _TakiDbgInit, _TakiDbgExit, _TakiDbgPrint, _TakiDbgPrintStr
-.import _TakiDbgDrawBadge, _TakiDbgUndrawBadge
+.import _TakiDbgDrawBadge, _TakiDbgUndrawBadge, _TakiDbgVarInDebug
 
 .import TakiVarIndirectFn, TakiVarExitPrompts, TakiVarInGETLN
 .import TakiVarCurPageBase, TakiVarNextPageBase, TakiVarTicksPaused
-.import TakiVarDebugActive, TakiVarInProgress
+.import TakiVarDebugActive, TakiVarInProgress, TakiVarInInput
 
-.import _TakiTick, _TakiExit, _TakiIndirect
+.import _TakiTick, _TakiExit, _TakiIndirect, _TakiDelay
 .import _TakiEffectSetupAndDo, _TakiEffectSetupFn
 
 .macpack apple2
@@ -330,7 +330,11 @@ _TakiIn:
 	inc     Mon_RNDH
         bit TakiVarTicksPaused
         bne @Paused
+        lda #$FF
+        sta TakiVarInInput
         TakiEffectDo_ _TakiTick
+        lda #$00
+        sta TakiVarInInput
 @Paused:
 @KEYIN2:bit     SS_KBD             ;read keyboard
 	bpl     @KEYIN
@@ -468,22 +472,23 @@ _TakiIoPageTwoBasCalc:
 	sta     Mon_BASL
 	rts
 
-; Taki's standard COUT-assigned routine.
-; Prints to both text pages at once, and
-; checks for Taki control character
-.export _TakiIoDoubledOut
-_TakiIoDoubledOut:
-	cld
+.macro doubledStaBasl_ basl
+    .repeat 2
+	sta (basl),y
         pha
-        writeWord TakiVarIndirectFn, pTakiCOUT
+        lda basl+1
+        eor #$0C
+        sta basl+1
         pla
-        jmp _TakiIoDoubleDo
+    .endrepeat
+.endmacro
 
 pvYSAV1:
 	.byte $00
 ; A modified variant of Monitor's COUT1 routine
 ; (standard PR#0 output routine)
-pTakiCOUT:
+.export _TakiIoDoubledOut
+_TakiIoDoubledOut:
 	cmp     #$a0
         bcc     pCOUTZ
 	and     Mon_INVFLG
@@ -495,7 +500,7 @@ pCOUTZ:  sty     pvYSAV1
 	rts
 ;
 pSTORADV:ldy     Mon_CH
-	sta     (Mon_BASL),y
+	doubledStaBasl_ Mon_BASL
 pADVANCE:inc     Mon_CH
 	lda     Mon_CH
 	cmp     Mon_WNDWDTH
@@ -534,16 +539,29 @@ pCR:	lda     #$00
 pLF:	inc     Mon_CV
 	lda     Mon_CV
 	cmp     Mon_WNDBTM
-        bcc     pVTABZ
+        bcs	@AtBottom
+        jmp     pVTABZ
+@AtBottom:
 	dec     Mon_CV
         ; TAKI - if we would scroll because of a CR,
         ; but an animation has been initialized:
-        ; refuse to scroll. Erase current line from start
-        ; instead.
+        ; only scroll last two lines.
+        ; AlsO add a delay
         bit TakiVarInProgress
-        bpl pSCROLL
-        ldy #$00
-        beq pCLEOLZ ; always
+        bpl pSCROLL ; No animations in progress, go ahead and scroll
+        bit _TakiDbgVarInDebug
+        bmi pSCROLL ; This is a debug print, scroll limits don't apply
+        ; Animations in progress: delay a bit (with animation)
+        ; and scroll ONLY last two lines (unless this
+        ; is a debug print, or we're already in animation)
+        lda #$18
+        jsr _TakiDelay
+        lda Mon_CV
+        sec
+        sbc #$01
+        pha
+        jsr pVTABZ
+        bne pSCRL1 ; "always"
 pSCROLL:lda     Mon_WNDTOP
 	pha
         jsr     pVTABZ
@@ -561,6 +579,24 @@ pSCRL1:	lda     Mon_BASL
         jsr     pVTABZ
 pSCRL2:	lda     (Mon_BASL),y
 	sta     (Mon_BAS2L),y
+        ; now do the other page
+        lda Mon_BASL+1
+        pha
+        eor #$0C
+        sta Mon_BASL+1
+        lda Mon_BAS2L+1
+        pha
+        eor #$0C
+        sta Mon_BAS2L+1
+        ;
+        lda (Mon_BASL),y
+        sta (Mon_BAS2L),y
+        ;
+        pla
+        sta Mon_BAS2L+1
+        pla
+        sta Mon_BASL+1
+        ;
 	dey
         bpl     pSCRL2
         bmi     pSCRL1
@@ -571,7 +607,7 @@ pSCRL3:	ldy     #$00
         bcs     pVTAB
 pCLREOL:ldy     Mon_CH
 pCLEOLZ:	lda     #$a0
-pCLREOL2:sta     (Mon_BASL),y
+pCLREOL2:doubledStaBasl_ Mon_BASL
 	iny
 	cpy     Mon_WNDWDTH
         bcc     pCLREOL2

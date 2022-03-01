@@ -7,6 +7,7 @@
 .include "taki-effect.inc"
 .include "a2-monitor.inc"
 
+.import TakiVarInInput
 .import TakiVarNextPageBase ; XXX
 
 pvTickIter:
@@ -37,6 +38,8 @@ TE_Spinner:
 @notTick:
 	cmp #TAKI_DSP_DRAW	; check if draw
         bne @noModesHandled
+        bit TakiVarInInput
+        bpl @noModesHandled
         ; DRAW!
         lda Mon_BASL
         sta @DrawSta+1

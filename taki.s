@@ -19,12 +19,14 @@
 .import TakiVarEffectsAllocNumPages, TakiVarEffectCounterInitTable
 .import TakiVarNextPageBase, TakiVarTicksPaused, TakiVarOrigKSW, TakiVarOrigCSW
 .import TakiVarCommandBufferPage, TakiVarTickNum, TakiVarInProgress
+.import TakiVarInInput
 
 .import _TakiIoDoubleDo, _TakiIoDoubledOut, _TakiIoClearPageTwo
 .import _TakiIoPageTwoBasCalc, _TakiOut, _TakiIn, _TakiIoPageFlip
 .import _TakiIoSetPageOne, _TakiIoSetPageTwo
 
 .import _TakiDbgInit, _TakiDbgExit, _TakiDbgPrint, _TakiDbgDrawBadge, _TakiDbgUndrawBadge
+.import _TakiDbgVarInDebug
 
 .import TE_Spinner
 
@@ -90,6 +92,9 @@ _TakiInit:
         sta TakiVarTicksPaused
         sta TakiVarInProgress
         sta _TakiVarActiveEffectsNum
+        sta TakiVarInInput
+        sta _TakiVarInTick
+        sta _TakiDbgVarInDebug
         
         ; Demo effect: "spinenr"
         TakiEffectInitializeDirect_ TE_Spinner
@@ -367,12 +372,40 @@ _TakiEffectInitializeDirect:
 _TakiEffectInitializeDirectFn = @DispatchCall + 1
 .export _TakiEffectInitializeDirectFn
 
+.export _TakiDelay
+_TakiDelay:
+	pha
+	lda #$FF
+        sta pvTakiDelayCounter
+        pla
+pWAIT2:
+	pha
+pWAIT3:	inc pvTakiDelayCounter
+        bne pWAIT3
+        TakiEffectDo_ _TakiTick
+	pla
+        sec
+	sbc     #$01
+	bne     pWAIT2
+	rts
+pvTakiDelayCounter:
+	.byte $00
+
+.export _TakiVarInTick
+_TakiVarInTick:
+	.byte $00
 pvTickMode:
 	.byte TAKI_DSP_UNTICK
 pvPendingFlip:
 	.byte $00
 .export _TakiTick
 _TakiTick:
+	bit _TakiVarInTick
+        bpl @NotInTick
+        rts
+@NotInTick:
+	lda #$FF
+        sta _TakiVarInTick
         ; Run all effect ticks
         lda _TakiVarActiveEffectsNum
         beq @SkipFlip
@@ -465,5 +498,8 @@ _TakiTick:
 	jsr _TakiIoPageFlip
 @SkipFlip:
         jsr _TakiDbgDrawBadge
+        
+        lda #$00
+        sta _TakiVarInTick
         
         rts

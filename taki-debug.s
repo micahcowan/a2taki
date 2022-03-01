@@ -102,8 +102,15 @@ _TakiDbgVarPrintStr = * + 1
 @Done:
         jmp pPrintTeardown
 
+.export _TakiDbgVarInDebug
+_TakiDbgVarInDebug:
+	.byte $00
 .export _TakiDbgCOUT
 _TakiDbgCOUT:
+        sta pvSavedChar
+        ; NOT RE-ENTRANT!
+        lda #$FF
+        sta _TakiDbgVarInDebug
 	bit TakiVarDebugActive
         bmi :+
         rts
@@ -119,9 +126,8 @@ _TakiDbgCOUT:
 	cmp #$8D	; current CR?
         bne @DoOutput	; no: just do output
         sta pvDoCrNext ; yes: save it and exit
-        rts
+        beq @rts	; always
 @DoOutput:
-        sta pvSavedChar
         lda Mon_INVFLG; save invflag
         pha
         lda #$3F ; Set inverse
@@ -130,6 +136,9 @@ _TakiDbgCOUT:
 	jsr TakiOut
         pla
         sta Mon_INVFLG
+@rts:
+	lda #$00
+	sta _TakiDbgVarInDebug
         lda pvSavedChar
         rts
 

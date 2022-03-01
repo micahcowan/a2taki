@@ -6,7 +6,7 @@
 .import _TakiIoDoubleDo, _TakiIoDoubledOut
 
 .import _TakiDbgInit, _TakiDbgExit, _TakiDbgPrint, _TakiDbgCOUT
-.import _TakiDbgUndrawBadge, _TakiDbgDrawBadge
+.import _TakiDbgUndrawBadge, _TakiDbgDrawBadge, _TakiDelay
 
 .export TakiStart
 TakiStart:
@@ -47,6 +47,7 @@ TakiPublic_ TakiDbgDrawBadge
 
 TakiPublic_ TakiIn
 TakiPublic_ TakiOut
+TakiPublic_ TakiDelay
 TakiPublic_ TakiIoPageTwoBasCalc
 TakiPublic_ TakiIoClearPageTwo
 TakiPublic_ TakiIoDoubleDo
@@ -135,7 +136,6 @@ TakiVarInGETLN:
 	.byte $00 ; set to $FF when TakiIn
                   ; called from GETLN
 
-
 ; TakiVarCurPageBase: contains $04 if page one is the
 ; currently shown page, $08 if page two.
 ; TakiVarNextPageBase: reverse of the above.
@@ -154,6 +154,10 @@ TakiVarTicksPaused:
 
 .export TakiVarInProgress
 TakiVarInProgress:
+	.byte $00
+        
+.export TakiVarInInput
+TakiVarInInput:
 	.byte $00
 
 ; TakiVarTickNum: incrmented just prior to each tick/untick.
