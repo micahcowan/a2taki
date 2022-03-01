@@ -9,14 +9,15 @@
 
 .macpack apple2
 
+.export TE_NONE
+
 .include "taki-effect.inc"
 .include "a2-monitor.inc"
+.include "taki-public.inc"
 .include "taki-debug.inc"
 
 .import TakiVarCommandBufferPage
-.import _TakiDbgPrint, TakiVarDebugActive
 
-.export TE_NONE
 TE_NONE:
 	cmp #TAKI_DSP_INIT
         bne @rts
@@ -45,7 +46,7 @@ TE_NONE:
         TakiDbgPrint_ kZpEffSpecial0
         lda #$00
         ldy kZpEffSpecial1
-        jsr _TakiDbgPrint
+        jsr TakiDbgPrint
         TakiDbgPrint_ pEffNotFoundMsgPost
 @rts:	rts
 

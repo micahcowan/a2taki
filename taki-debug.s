@@ -1,10 +1,10 @@
 .include "taki-debug.inc"
 
+I_AM_TAKI_DEBUG=1
+TAKI_INTERNAL=1
+.include "taki-public.inc"
+.include "taki-internal.inc"
 .include "a2-monitor.inc"
-
-.import TakiOut
-
-.import TakiVarDebugActive
 
 .macpack apple2
 
@@ -118,7 +118,7 @@ _TakiDbgCOUT:
 	beq @NoPendCR	; Pending CR? no: check
         pha		; for current CR. yes: emit CR
 	lda #$8D
-        jsr TakiOut
+        jsr _TakiOut
         lda #$00 ; un-pend CR
         sta pvDoCrNext
         pla
@@ -133,7 +133,7 @@ _TakiDbgCOUT:
         lda #$3F ; Set inverse
         sta Mon_INVFLG
         lda pvSavedChar
-	jsr TakiOut
+	jsr _TakiOut
         pla
         sta Mon_INVFLG
 @rts:

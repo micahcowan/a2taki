@@ -5,11 +5,11 @@
 .macpack apple2
 
 .include "taki-effect.inc"
+.include "taki-public.inc"
 .include "a2-monitor.inc"
 
 TakiBuiltinEffect_ TE_Scan
 
-.import TakiVarNextPageBase ; XXX use draw API
 .import _TakiIoDoubledOut ; XXX
 
 kLocBase	= 0
@@ -60,7 +60,7 @@ NoInit: cmp #TAKI_DSP_COLLECT	; collect?
 	adc (TAKI_ZP_EFF_STORAGE_L),y
 	sta (TAKI_ZP_EFF_STORAGE_L),y
         lda TAKI_ZP_ACC
-        jmp _TakiIoDoubledOut
+        jmp _TakiIoDoubledOut ; XXX
 NoCollect:
 	cmp #TAKI_DSP_TICK	; tick?
         bne NoTick		; no: check more modes

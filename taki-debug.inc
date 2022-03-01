@@ -10,7 +10,7 @@
 
     lda #<strAddr
     ldy #>strAddr
-    jsr _TakiDbgPrint
+    jsr TakiDbgPrint
 
     pla
     tay

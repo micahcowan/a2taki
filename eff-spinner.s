@@ -5,15 +5,13 @@
 .macpack apple2
 
 .include "taki-effect.inc"
+.include "taki-public.inc"
 .include "a2-monitor.inc"
-
-.import TakiVarInInput
-.import TakiVarNextPageBase ; XXX
 
 pvTickIter:
 	.byte $00
 pvTickChars:
-	scrcode "!/-\"
+	scrcode "!/-\" ; "
 pvTickCharsEnd:
 
 .export TE_Spinner
@@ -45,7 +43,7 @@ TE_Spinner:
         sta @DrawSta+1
         lda Mon_BASH
         and #$03
-        ora TakiVarNextPageBase
+        ora TakiVarNextPageBase ; XXX
         sta @DrawSta+2	; modify upcoming sta dest
         ldy pvTickIter
         lda pvTickChars,y

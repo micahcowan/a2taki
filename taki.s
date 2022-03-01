@@ -14,26 +14,14 @@
 
 .macpack apple2
 
-.import TakiStart, TakiVarMaxActiveEffects, TakiVarDefaultCountdown
-.import TakiVarEffectsAllocStartPage, TakiVarEffectsAllocEndPage
-.import TakiVarEffectsAllocNumPages, TakiVarEffectCounterInitTable
-.import TakiVarNextPageBase, TakiVarTicksPaused, TakiVarOrigKSW, TakiVarOrigCSW
-.import TakiVarCommandBufferPage, TakiVarTickNum, TakiVarInProgress
-.import TakiVarInInput
-
-.import _TakiIoDoubledOut, _TakiIoClearPageTwo
-.import _TakiIoPageTwoBasCalc, _TakiOut, _TakiIn, _TakiIoPageFlip
-.import _TakiIoSetPageOne, _TakiIoSetPageTwo
-
-.import _TakiDbgInit, _TakiDbgExit, _TakiDbgPrint, _TakiDbgDrawBadge, _TakiDbgUndrawBadge
-.import _TakiDbgVarInDebug
-
-.import TE_Spinner
-
 .include "a2-monitor.inc"
 .include "taki-util.inc"
 .include "taki-effect.inc"
 .include "taki-debug.inc"
+TAKI_INTERNAL=1
+.include "taki-public.inc"
+I_AM_TAKI=1
+.include "taki-internal.inc"
 
 .export _TakiVarActiveEffectsNum
 _TakiVarActiveEffectsNum:

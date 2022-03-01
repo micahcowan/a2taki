@@ -1,24 +1,10 @@
 .include "a2-monitor.inc"
 .include "taki-util.inc"
 .include "taki-debug.inc"
-
-; Used by InitializeDirect:
-.import TE_NONE
-.import _TakiPreEffAcc, _TakiPreEffX, _TakiPreEffY
-.import TakiBuiltinEffectsTable, TakiNumBuiltinEffects, TakiVarCommandBufferPage
-.import _TakiVarActiveEffectsNum
-.import _TakiEffectInitializeDirect, _TakiEffectInitializeDirectFn
-.import TE_Scan, _TakiSetupForEffectY, _TakiVarEffectCounterInitTable
-
-.import _TakiDbgInit, _TakiDbgExit, _TakiDbgPrint, _TakiDbgPrintStr
-.import _TakiDbgDrawBadge, _TakiDbgUndrawBadge, _TakiDbgVarInDebug
-
-.import TakiVarIndirectFn, TakiVarExitPrompts, TakiVarInGETLN
-.import TakiVarCurPageBase, TakiVarNextPageBase, TakiVarTicksPaused
-.import TakiVarDebugActive, TakiVarInProgress, TakiVarInInput
-
-.import _TakiTick, _TakiExit, _TakiIndirect, _TakiDelay
-.import _TakiEffectSetupAndDo, _TakiEffectSetupFn
+TAKI_INTERNAL=1
+.include "taki-public.inc"
+I_AM_TAKI_IO=1
+.include "taki-internal.inc"
 
 .macpack apple2
 
@@ -78,15 +64,15 @@ _TakiIoCtrlExecCmd:
 @FindEffLp:
 	tya
         lsr	; div by 2, giving entry num
-	cmp TakiNumBuiltinEffects
+	cmp _TakiNumBuiltinEffects
         beq @NoEffFound
         
         ; Get the effect's dispatch addr
         ; into the zero page
-	lda TakiBuiltinEffectsTable,y
+	lda _TakiBuiltinEffectsTable,y
         sta kZpEffSpecial0
         iny
-        lda TakiBuiltinEffectsTable,y
+        lda _TakiBuiltinEffectsTable,y
         sta kZpEffSpecial1
         ; Y is now at the high byte
         
@@ -158,10 +144,10 @@ _TakiIoCtrlExecCmd:
 	; Initialize an effect instance
         ; from the found entry
 	;   -- Y is at the high byte of dispatch handler
-        lda TakiBuiltinEffectsTable,y
+        lda _TakiBuiltinEffectsTable,y
         sta _TakiEffectInitializeDirectFn+1
         dey ; now get low byte
-        lda TakiBuiltinEffectsTable,y
+        lda _TakiBuiltinEffectsTable,y
 	sta _TakiEffectInitializeDirectFn
 @runInit:
         jsr _TakiEffectInitializeDirect

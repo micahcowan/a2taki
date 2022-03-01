@@ -1,12 +1,7 @@
 .segment "PUBLIC"
 
-.import _TakiMoveASoft, _TakiInit, _TakiPause, _TakiResume, _TakiExit
-
-.import _TakiIn, _TakiOut, _TakiIoPageTwoBasCalc, _TakiIoClearPageTwo
-.import _TakiIoDoubledOut
-
-.import _TakiDbgInit, _TakiDbgExit, _TakiDbgPrint, _TakiDbgCOUT
-.import _TakiDbgUndrawBadge, _TakiDbgDrawBadge, _TakiDelay
+I_AM_TAKI_PUBLIC=1
+.include "taki-internal.inc"
 
 .export TakiStart
 TakiStart:
