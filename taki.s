@@ -71,6 +71,7 @@ _TakiMoveASoft:
 .export _TakiInit
 _TakiInit:
 	jsr _TakiMemInit
+        
         jsr Mon_HOME
 	jsr _TakiIoClearPageTwo
         ;jsr _TakiDbgInit
@@ -148,8 +149,15 @@ _TakiMemInit:
         sec
         sbc TakiVarEffectsAllocNumPages
         sta TakiVarEffectsAllocStartPage
-        ; Init current number of effects
+        
+        ; Set HIMEM
+        sta Mon_MEMSIZE+1
+        sta Mon_FRETOP+1
         lda #0
+        sta Mon_MEMSIZE
+        sta Mon_FRETOP
+        
+        ; Init current number of effects
         sta _TakiVarActiveEffectsNum
         
         pla

@@ -4,14 +4,14 @@
 
 ASoftProg:
 scrcode "CALL ",.sprintf("%d",$8000),":REM  MOVE APPLESOFT",$0D
+scrcode "5 CALL ",.sprintf("%d",$8003)
+scrcode   ":REM INIT TAKI",$0D
 scrcode "10 T$=CHR$(ASC(",'"',"T",'"',")-64)"
 scrcode ":REM CONTROL-T",$0D
 scrcode "20 S$=CHR$(ASC(",'"',"S",'"',")-64)"
 scrcode ":REM CONTROL-S",$0D
 ;scrcode "50 HOME",$0D
 scrcode "95 PRINT ",'"',"THIS ISN'T INCLUDED",'"',$0D
-scrcode "100 CALL ",.sprintf("%d",$8003)
-scrcode   ":REM INIT TAKI",$0D
 .if 1
 scrcode "101 CALL ",.sprintf("%d",$800F)
 scrcode   ":REM TAKI DEBUG MODE",$0D
