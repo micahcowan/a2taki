@@ -39,6 +39,7 @@ TakiPublic_ TakiDbgPrint
 TakiPublic_ TakiDbgCOUT
 TakiPublic_ TakiDbgUndrawBadge
 TakiPublic_ TakiDbgDrawBadge
+TakiPublic_ TakiDbgPrintCmdBufWordAtY
 
 TakiPublic_ TakiIn
 TakiPublic_ TakiOut

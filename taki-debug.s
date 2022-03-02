@@ -223,3 +223,42 @@ _TakiDbgDrawBadge:
           sta $800 + 39
         pla
         rts
+
+;; WARNING! This expects to be called somewhere within a
+;; TakiEffectDo_ environ (for Zero Page setup)
+.export _TakiDbgPrintCmdBufWordAtY
+_TakiDbgPrintCmdBufWordAtY:
+        TakiBranchUnlessFlag_ flagDebugActive, :+
+        tya
+        pha
+        
+        ; find the end of the word
+        jsr _TakiCmdFindWordEnd
+        sta @delimRestore
+        sty @yRestore
+        lda #0
+        sta (kZpCmdBufL),y
+
+	; find low byte of name
+	pla ; copy original y into acc,
+        pha ; still leaving it on stack
+        clc
+        adc kZpCmdBufL
+        pha
+        ; find high byte of name
+        lda kZpCmdBufH
+        adc #0 ; for carry
+        tay
+        pla
+        jsr TakiDbgPrint
+
+@delimRestore = * + 1
+        lda #$FF ; OVERWRITTEN
+@yRestore = * + 1
+	ldy #$FF ; OVERWRITTEN
+        sta (kZpCmdBufL),y
+
+        pla
+        tay
+:
+	rts

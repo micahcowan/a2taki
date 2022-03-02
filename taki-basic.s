@@ -23,6 +23,10 @@ scrcode "110 PRINT ",'"',"OF A ",'"',';',$0D
 scrcode "120 PRINT T$;",'"',"MARK SCAN(FDLY=10 PAUSE=180)",$0D
 scrcode "125 PRINT ",'"',"< SCANNING >",'"',";Q$;",$0D
 scrcode "130 PRINT ",'"'," WORD",'"',":?",$0D
+scrcode "131 PRINT ",'"',"NOTHING HAPPENS",'"',';',$0D
+scrcode "132 PRINT T$;",'"',"WORD EMPH",'"',":REM BAD EFFECT",$0D
+scrcode "133 PRINT ",'"',"HERE",'"',":PRINT",$0D
+scrcode "134 PRINT T$",'"',"OR HERE",'"',":REM BAD CMD",$0D
 scrcode "135 PRINT ",'"',"OH, AND ALSO YOU MAY BE INTERESTED",'"',$0D
 scrcode "140 PRINT ",'"',"TO FIND THAT HERE IS ",'"',';',$0D
 scrcode "150 PRINT T$;",'"',"WORD SCAN",$0D

@@ -57,6 +57,7 @@ flagInDebugPrint    = flagInTick << 1
 .import _TakiDbgCOUT
 .import _TakiDbgUndrawBadge
 .import _TakiDbgDrawBadge
+.import _TakiDbgPrintCmdBufWordAtY
 .endif
 
 ;; taki-effect.s

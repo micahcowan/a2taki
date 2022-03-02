@@ -49,6 +49,7 @@ maybe_import TakiDbgExit
 maybe_import TakiDbgCOUT
 maybe_import TakiDbgUndrawBadge
 maybe_import TakiDbgDrawBadge
+maybe_import TakiDbgPrintCmdBufWordAtY
 maybe_import TakiIn
 maybe_import TakiOut
 maybe_import TakiDelay

@@ -5,6 +5,7 @@ I_AM_TAKI_CMD=1
 
 .macpack apple2
 
+.include "taki-debug.inc"
 .include "taki-util.inc"
 
 .include "a2-monitor.inc"
@@ -76,8 +77,11 @@ _TakiIoCtrlExecCmd:
         stx @effMode
         jsr _TakiEffectFind
         bcc @EffFound
-@NoCmdFound:
 @NoEffFound:
+	; Print not-found message
+        TakiDbgPrint_ pEffNotFoundMsgPre
+        jsr _TakiDbgPrintCmdBufWordAtY
+        TakiDbgPrint_ pEffNotFoundMsgPost
 	; We use a dummy effect so collection still takes place
         ; XXX we should probably remove this as soon as
         ; collection is done.
@@ -86,6 +90,12 @@ _TakiIoCtrlExecCmd:
         sta _TakiEffectInitializeDirectFn
         sty _TakiEffectInitializeDirectFn+1
         jmp @runInit
+@NoCmdFound:
+	TakiDbgPrint_ pCmdNotFoundMsgPre
+        jsr _TakiDbgPrintCmdBufWordAtY
+        TakiDbgPrint_ pCmdNotFoundMsgPost
+        writeWord Mon_CSWL, _TakiOut
+        rts
 @EffFound:
 	; Initialize an effect instance
         ; from the found entry
@@ -110,7 +120,29 @@ _TakiIoCtrlExecCmd:
         rts
 @unhandled:
 	; XXX !!!
+        TakiDbgPrint_ pEffModeUnhandled
+        writeWord Mon_CSWL, _TakiOut
         rts
+
+pEffModeUnhandled:
+	scrcode "!!! UNHANDLED EFFECT MODE !!!",$0D
+        .byte $00
+
+pEffNotFoundMsgPre:
+	scrcode "BAD EFF NAME ",'"'
+	.byte $00
+
+pEffNotFoundMsgPost:
+	scrcode '"'," - IGNORE COLLECT",$0D
+	.byte $00
+
+pCmdNotFoundMsgPre:
+	scrcode "BAD COMMAND ",'"'
+	.byte $00
+
+pCmdNotFoundMsgPost:
+	scrcode '"',$0D
+	.byte $00
 
 ;; _TakiCmdFind
 ;;

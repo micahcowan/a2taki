@@ -75,9 +75,10 @@ _TakiIoCollectWord:
         cmp #$8D	; CR?
         bne @Collect	; no, collect
 @UnCollect:
+	pha
         TakiEffectDo_ _TakiEffectEndCollect
 	writeWord Mon_CSWL, _TakiOut ; restore normal output
-        lda #$A0 ; and also write out the space
+        pla ; and also write out the space or CR
         jmp (Mon_CSWL)
 @Collect:
 	TakiEffectDo_ _TakiEffectCollectA
