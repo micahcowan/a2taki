@@ -203,6 +203,8 @@ pvSavedCursor:
 	.byte $00
 pvSavedRealChar:
 	.byte $00
+pvSavedKey:
+	.byte $00
 ; Taki character input routine
 ; XXX: make this work with both text pages...
 ; XXX: does this work with //e cursors?
@@ -211,8 +213,9 @@ _TakiIn:
         ; save real char
         sta pvSavedRealChar
         jsr pTakiCheckForGETLN
-        bit TakiVarInGETLN	; are we in GETLN?
-        bpl @NotExited		; no, skip ahead
+        ; if we're not in GetLN, skip:
+        pha
+        TakiBranchUnlessFlag_ flagInGETLN, @NotExited
         cpx #00			; yes: are we in 2nd column?
         bne @NotExited		; no, no further checks
         lda TakiVarExitPrompts	; yes, check ] prompt
@@ -223,7 +226,8 @@ _TakiIn:
         beq @NotExited		; 2nd prompt disabled
         cmp Mon_PROMPT		; PROMPT = * (or P2)?
         bne @NotExited		; no, not exited
-@Exited:TakiDbgPrint_ pvPromptExitStr
+@Exited:pla ; from branch-unless flagInGETLN
+	TakiDbgPrint_ pvPromptExitStr
 	lda (Mon_BASL),y
         pha
         lda pvSavedRealChar
@@ -240,6 +244,7 @@ _TakiIn:
         jmp (Mon_KSWL)		; hand control to
         			;  pre-Taki I/O processor
 @NotExited:
+	pla ; from branch-unless flagInGETLN
         ; save $6, $7, use for BAS + $400
         lda $6
         pha
@@ -260,30 +265,26 @@ _TakiIn:
 @KEYIN:	inc     Mon_RNDL
 	bne     @KEYIN2
 	inc     Mon_RNDH
-        bit TakiVarTicksPaused
-        bne @Paused
-        lda #$FF
-        sta TakiVarInInput
+        TakiBranchIfFlag_ flagTicksPaused, @Paused
+        TakiSetFlag_ flagInInput
         TakiEffectDo_ _TakiTick
-        lda #$00
-        sta TakiVarInInput
+        TakiUnsetFlag_ flagInInput
 @Paused:
 @KEYIN2:bit     SS_KBD             ;read keyboard
 	bpl     @KEYIN
         ; keypress available.
 	lda     SS_KBD
         bit	SS_KBDSTRB
-        bit     TakiVarDebugActive  ; is debug active?
-        bpl     @NoAT               ; no: check for plus maybe
+        sta	pvSavedKey
+        TakiBranchUnlessFlag_ flagDebugActive, @NoAT
+        lda pvSavedKey
         cmp	#$C0	; '@' ?
         bne	@NoAT	; no: skip
-        pha
-        lda #$FF
-        sta TakiVarTicksPaused
-        pla
+        TakiSetFlag_ flagTicksPaused
         jsr	_TakiIoPageFlip
         jmp	@KEYIN
-@NoAT:	cmp	#$AB	; '+'?
+@NoAT:	lda pvSavedKey
+	cmp	#$AB	; '+'?
 	bne	@Resume	; no:
         ; We received a '+' - that means, proceed
         ; until next animation frame.
@@ -295,10 +296,7 @@ _TakiIn:
 	beq @NoFlip ; no: do another tick
         jmp @KEYIN  ; yes: go back to (paused) key processing
 @Resume:; Any key other than @ will resume ticks
-        pha
-        lda #$00
-        sta TakiVarTicksPaused
-        pla
+        TakiUnsetFlag_ flagTicksPaused
 	cmp #$9B	; ESC - skip and get new keypress
         bne @NoESC
         jmp @KEYIN
@@ -311,8 +309,7 @@ _TakiIn:
         ; and perform CLREOL in both pages if so.
 	cmp #$8D	; CR - clear to EOL...
 	bne @NoCR
-	bit TakiVarInGETLN	; ...but only if in GETLN
-        bpl @NoCR
+        TakiBranchUnlessFlag_ flagInGETLN, @NoCR
         jsr pCLREOL
         
         ; "Saved char" will be written to both pages,
@@ -353,11 +350,9 @@ pTakiCheckForGETLN:
           lda $108,x
           cmp #$FD
           bne @False
-          lda #$FF
-          sta TakiVarInGETLN
+          TakiSetFlag_ flagInGETLN
           bne @Done ; always
-@False: lda #$00
-	sta TakiVarInGETLN
+@False: TakiUnsetFlag_ flagInGETLN
 @Done:  pla
         tax
         pla
@@ -470,10 +465,8 @@ pLF:	inc     Mon_CV
         ; but an animation has been initialized:
         ; only scroll last two lines.
         ; AlsO add a delay
-        bit TakiVarInProgress
-        bpl pSCROLL ; No animations in progress, go ahead and scroll
-        bit _TakiDbgVarInDebug
-        bmi pSCROLL ; This is a debug print, scroll limits don't apply
+        TakiBranchUnlessFlag_ flagAnimationActive, pSCROLL
+        TakiBranchIfFlag_ flagInDebugPrint, pSCROLL
         ; Animations in progress: delay a bit (with animation)
         ; and scroll ONLY last two lines (unless this
         ; is a debug print, or we're already in animation)

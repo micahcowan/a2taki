@@ -91,11 +91,6 @@ TakiVarOrigCSW:
 TakiVarOrigKSW:
 	.word $0000
 
-; Is debug mode active?
-.export TakiVarDebugActive
-TakiVarDebugActive:
-    .byte $00
-
 ; If Taki's input processor detects that it was
 ; called from GETLN, *and* the current PROMPT
 ; is set to one of the following two values,
@@ -125,10 +120,6 @@ _TakiIndirect:
 .export TakiVarIndirectFn
 TakiVarIndirectFn = _TakiIndirect + 1
 	jmp $1000 ; addr overwritten by caller
-.export TakiVarInGETLN
-TakiVarInGETLN:
-	.byte $00 ; set to $FF when TakiIn
-                  ; called from GETLN
 
 ; TakiVarCurPageBase: contains $04 if page one is the
 ; currently shown page, $08 if page two.
@@ -142,16 +133,10 @@ TakiVarCurPageBase:
 TakiVarNextPageBase:
 	.byte $08
 
-.export TakiVarTicksPaused
-TakiVarTicksPaused:
-	.byte $00
-
-.export TakiVarInProgress
-TakiVarInProgress:
-	.byte $00
-        
-.export TakiVarInInput
-TakiVarInInput:
+; READ-ONLY flags variable that is copied from an internal one
+; when effect processing is active
+.export TakiVarFlags
+TakiVarFlags:
 	.byte $00
 
 ; TakiVarTickNum: incrmented just prior to each tick/untick.

@@ -1,8 +1,27 @@
+.ifndef TAKI_PUBLIC_INC_
+TAKI_PUBLIC_INC_ = 1
+
 .macro maybe_import name
     .ifndef name
         .import name
     .endif
 .endmacro
+
+.macro TF_BRANCH_IF_FLG flag, dest
+    lda #flag
+    bit TakiVarFlags
+    bne dest
+.endmacro
+
+.macro TF_BRANCH_UNLESS_FLG flag, dest
+    lda #flag
+    bit TakiVarFlags
+    beq dest
+.endmacro
+
+TF_ANIMATION_ACTIVE = 1
+TF_DEBUG_ACTIVE     = 2
+TF_IN_INPUT         = 4
 
 maybe_import TakiStart
 maybe_import TakiVarReleaseVersion
@@ -14,15 +33,11 @@ maybe_import TakiVarEffectsAllocEndPage
 maybe_import TakiVarCommandBufferPage
 maybe_import TakiVarOrigCSW
 maybe_import TakiVarOrigKSW
-maybe_import TakiVarDebugActive
 maybe_import TakiVarExitPrompts
 maybe_import TakiVarIndirectFn
-maybe_import TakiVarInGETLN
 maybe_import TakiVarCurPageBase
 maybe_import TakiVarNextPageBase
-maybe_import TakiVarTicksPaused
-maybe_import TakiVarInProgress
-maybe_import TakiVarInInput
+maybe_import TakiVarFlags
 maybe_import TakiVarTickNum
 
 maybe_import TakiDbgPrint
@@ -43,3 +58,5 @@ maybe_import TakiIoDoubledOut
 .endif
 
 .delmacro maybe_import
+
+.endif ; TAKI_PUBLIC_INC_

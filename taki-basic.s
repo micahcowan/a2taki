@@ -30,8 +30,8 @@ scrcode "155 PRINT ",'"',"ANOTHER",'"',";S$;",$0D
 scrcode "160 PRINT ",'"'," SUCH WORD",'"',":?:?",$0D
 
 scrcode "172 REM DISABLE EXIT-ON-PROMPT",$0D
-scrcode "175 POKE ",.sprintf("%d",$808E),", 0",$0D
-scrcode "176 POKE ",.sprintf("%d",$808F),", 0",$0D
+scrcode "175 POKE ",.sprintf("%d",$808D),", 0",$0D
+scrcode "176 POKE ",.sprintf("%d",$808E),", 0",$0D
 scrcode "180 ? ",'"',"PROGRAM EXIT (ANIMATIONS REMAIN)",'"',$0D
 
 scrcode "RUN",$0D

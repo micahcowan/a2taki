@@ -36,8 +36,7 @@ TE_Spinner:
 @notTick:
 	cmp #TAKI_DSP_DRAW	; check if draw
         bne @noModesHandled
-        bit TakiVarInInput
-        bpl @noModesHandled
+        TF_BRANCH_UNLESS_FLG TF_IN_INPUT, @noModesHandled
         ; DRAW!
         lda Mon_BASL
         sta @DrawSta+1

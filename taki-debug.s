@@ -44,16 +44,18 @@ _TakiDbgInit:
 	lda #(24 - kDebugNumLines)
         sta Mon_WNDBTM
         ; Mark debug as active
-        lda #$FF
-        sta TakiVarDebugActive
+        lda _TakiVarStatusFlags
+        ora #flagDebugActive
+        sta _TakiVarStatusFlags
+        ; and copy to copy-of-flags
+        sta TakiVarFlags
         ; Print start msg
         TakiDbgPrint_ pvDbgInitMsg
         rts
         
 .export _TakiDbgExit
 _TakiDbgExit:
-	bit TakiVarDebugActive
-        bmi :+
+        TakiBranchIfFlag_ flagDebugActive, :+
         rts
 :       TakiDbgPrint_ pvDbgExitMsg
         lda #24
@@ -69,8 +71,11 @@ _TakiDbgExit:
         jsr Mon_COUT
         jsr _TakiDbgUndrawBadge
         ; Mark debug as inactive
-        lda #$00
-        sta TakiVarDebugActive
+        lda _TakiVarStatusFlags
+        and #.lobyte(~(flagDebugActive))
+        sta _TakiVarStatusFlags
+        ; and copy to copy-of-flags
+        sta TakiVarFlags
 	rts
 
 pvDbgInitMsg:
@@ -84,10 +89,12 @@ pvDbgExitMsg:
 
 .export _TakiDbgPrint
 _TakiDbgPrint:
-        bit TakiVarDebugActive
-        bmi :+
+	pha
+        TakiBranchIfFlag_ flagDebugActive, :+
+        pla
         rts
-:       sta _TakiDbgVarPrintStr
+:       pla
+	sta _TakiDbgVarPrintStr
         sty _TakiDbgVarPrintStr+1
         jsr pPrintSetup
 .export _TakiDbgVarPrintStr
@@ -102,19 +109,16 @@ _TakiDbgVarPrintStr = * + 1
 @Done:
         jmp pPrintTeardown
 
-.export _TakiDbgVarInDebug
-_TakiDbgVarInDebug:
-	.byte $00
 .export _TakiDbgCOUT
 _TakiDbgCOUT:
         sta pvSavedChar
-        ; NOT RE-ENTRANT!
-        lda #$FF
-        sta _TakiDbgVarInDebug
-	bit TakiVarDebugActive
-        bmi :+
+        TakiBranchIfFlag_ flagDebugActive, :+
+        lda pvSavedChar
         rts
-:       bit pvDoCrNext
+        ; NOT RE-ENTRANT!
+:       lda pvSavedChar
+	TakiSetFlag_ flagInDebugPrint
+        bit pvDoCrNext
 	beq @NoPendCR	; Pending CR? no: check
         pha		; for current CR. yes: emit CR
 	lda #$8D
@@ -137,8 +141,7 @@ _TakiDbgCOUT:
         pla
         sta Mon_INVFLG
 @rts:
-	lda #$00
-	sta _TakiDbgVarInDebug
+	TakiUnsetFlag_ flagInDebugPrint
         lda pvSavedChar
         rts
 
@@ -197,8 +200,7 @@ pPrintTeardown:
         
 .export _TakiDbgUndrawBadge
 _TakiDbgUndrawBadge:
-	bit TakiVarDebugActive
-        bmi :+
+        TakiBranchIfFlag_ flagDebugActive, :+
         rts
 :	pha
           lda #$A0	; SPACE
@@ -209,8 +211,7 @@ _TakiDbgUndrawBadge:
         
 .export _TakiDbgDrawBadge
 _TakiDbgDrawBadge:
-	bit TakiVarDebugActive
-        bmi :+
+        TakiBranchIfFlag_ flagDebugActive, :+
         rts
 :	pha
           lda #$10	; 'P'

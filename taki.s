@@ -28,31 +28,36 @@ TAKI_INTERNAL=1
 I_AM_TAKI=1
 .include "taki-internal.inc"
 
+.export _TakiVarStatusFlags
+_TakiVarStatusFlags:
+	.byte $00
+
 .export _TakiVarActiveEffectsNum
 _TakiVarActiveEffectsNum:
 	.byte $00
 ; alloc table: tracks the ENDs of allocation!
 ; Start of alloc for first effect is always
 ; start of the storage area itself.
-.export TakiEffectTablesStart
-TakiEffectTablesStart:
+.export _TakiEffectTablesStart
+_TakiEffectTablesStart:
 
 .export _TakiVarEffectAllocTable
-_TakiVarEffectAllocTable = TakiEffectTablesStart
+_TakiVarEffectAllocTable = _TakiEffectTablesStart
 
 .export _TakiVarEffectCounterTable
-_TakiVarEffectCounterTable = TakiEffectTablesStart + 2
+_TakiVarEffectCounterTable = _TakiEffectTablesStart + 2
 
 .export _TakiVarEffectCounterInitTable
-_TakiVarEffectCounterInitTable = TakiEffectTablesStart + 4
+_TakiVarEffectCounterInitTable = _TakiEffectTablesStart + 4
 
 .export _TakiVarEffectDispatchTable
-_TakiVarEffectDispatchTable = TakiEffectTablesStart + 6
+_TakiVarEffectDispatchTable = _TakiEffectTablesStart + 6
 
-.export TakiEffectTablesEnd
-TakiEffectTablesEnd = TakiEffectTablesStart + 8
+.export _TakiEffectTablesEnd
+_TakiEffectTablesEnd = _TakiEffectTablesStart + 8
 
-.res (TakiEffectTablesEnd - TakiEffectTablesStart)
+; actual table of table addresses:
+.res (_TakiEffectTablesEnd - _TakiEffectTablesStart)
 
 ; Reorganize where in memory a BASIC program is
 ; located (to move it out of the way of the
@@ -83,12 +88,9 @@ _TakiInit:
         writeWord Mon_CSWL, _TakiOut
         lda TakiVarEffectsAllocStartPage
         lda #$00
-        sta TakiVarTicksPaused
-        sta TakiVarInProgress
+        sta _TakiVarStatusFlags
+        sta TakiVarFlags
         sta _TakiVarActiveEffectsNum
-        sta TakiVarInInput
-        sta _TakiVarInTick
-        sta _TakiDbgVarInDebug
         
         ; Demo effect: "spinenr"
         TakiEffectInitializeDirect_ TE_Spinner
@@ -196,7 +198,7 @@ _TakiEffectSetupAndDo:
         ; Copy effect tables to ZP
         ; (assumes we keep same order internally!)
         ldy #$00
-@LpZp:	lda TakiEffectTablesStart,y
+@LpZp:	lda _TakiEffectTablesStart,y
         sta kZpEffTablesStart,y
         iny
         cpy #1 + kZpEffTablesEnd - kZpEffTablesStart
@@ -215,6 +217,10 @@ _TakiEffectSetupAndDo:
         stx kZpX
         pla
         sta kZpAcc
+        
+        ; Copy status flags
+        lda _TakiVarStatusFlags
+        sta TakiVarFlags
 
 .export _TakiEffectSetupFn
 _TakiEffectSetupFn = * + 1
@@ -282,8 +288,7 @@ _TakiEffectInitializeDirect:
         tay
         
         ; Mark "in progress" to prevent screen scrolling
-        lda #$FF
-        sta TakiVarInProgress
+        TakiSetFlag_ flagAnimationActive
         
         ;; Set values in tables:
         ; dispatch handler in table
@@ -386,21 +391,16 @@ pWAIT3:	inc pvTakiDelayCounter
 pvTakiDelayCounter:
 	.byte $00
 
-.export _TakiVarInTick
-_TakiVarInTick:
-	.byte $00
 pvTickMode:
 	.byte TAKI_DSP_UNTICK
 pvPendingFlip:
 	.byte $00
 .export _TakiTick
 _TakiTick:
-	bit _TakiVarInTick
-        bpl @NotInTick
+        TakiBranchUnlessFlag_ flagInTick, @NotInTick
         rts
 @NotInTick:
-	lda #$FF
-        sta _TakiVarInTick
+	TakiSetFlag_ flagInTick
         ; Run all effect ticks
         lda _TakiVarActiveEffectsNum
         beq @SkipFlip
@@ -494,7 +494,6 @@ _TakiTick:
 @SkipFlip:
         jsr _TakiDbgDrawBadge
         
-        lda #$00
-        sta _TakiVarInTick
+        TakiUnsetFlag_ flagInTick
         
         rts

@@ -1,9 +1,6 @@
 .include "taki-util.inc"
 
 .macro TakiDbgPrint_ strAddr
-    bit TakiVarDebugActive
-    bpl :+
-
     pha
     tya
     pha
@@ -15,6 +12,4 @@
     pla
     tay
     pla
-
-    :
 .endmacro
