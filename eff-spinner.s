@@ -8,8 +8,6 @@
 .include "taki-public.inc"
 .include "a2-monitor.inc"
 
-pvTickIter:
-	.byte $00
 pvTickChars:
 	scrcode "!/-\" ; "
 pvTickCharsEnd:
@@ -17,23 +15,25 @@ pvTickCharsEnd:
 .export TE_Spinner
 TE_Spinner:
 	cmp #TAKI_DSP_INIT	; check if "init" mode,
-        bne @notInit		; no: check other modes
+        bne @checkTick		; no: check other modes
         ; reserve one byte of storage
         inc TAKI_ZP_EFF_STORAGE_END_L
         bne @skipHi
         inc TAKI_ZP_EFF_STORAGE_END_H
 @skipHi:rts
-@notInit:
+@checkTick:
 	cmp #TAKI_DSP_TICK	; check if tick
-        bne @notTick		; no: check other modes
-        ldy pvTickIter		; yes: DRAW
-        iny
-        cpy #(pvTickCharsEnd - pvTickChars)
-        bne @StY
-        ldy #0
-@StY:	sty pvTickIter
+        bne @checkDraw		; no: check other modes
+        ldy #0			; yes: DRAW
+        lda (TAKI_ZP_EFF_STORAGE_L),y ; load iterator
+        clc
+        adc #1			; and advance
+	cmp #(pvTickCharsEnd - pvTickChars)
+        bne @Store
+        lda #0
+@Store:	sta (TAKI_ZP_EFF_STORAGE_L),y
 	rts
-@notTick:
+@checkDraw:
 	cmp #TAKI_DSP_DRAW	; check if draw
         bne @noModesHandled
         TF_BRANCH_UNLESS_FLG TF_IN_INPUT, @noModesHandled
@@ -44,7 +44,9 @@ TE_Spinner:
         and #$03
         ora TakiVarNextPageBase ; XXX
         sta @DrawSta+2	; modify upcoming sta dest
-        ldy pvTickIter
+        ldy #0
+        lda (TAKI_ZP_EFF_STORAGE_L),y
+        tay
         lda pvTickChars,y
         ldy Mon_CH
 @DrawSta:
