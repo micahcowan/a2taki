@@ -54,4 +54,15 @@ TAKI_ZP_EFF_SPECIAL_1		= $71
 TAKI_ZP_EFF_SPECIAL_2		= $72
 TAKI_ZP_EFF_SPECIAL_3		= $73
 
+.macro TAKI_EFFECT name, flags, configAddr
+.scope
+pTag:
+	scrcode name
+pTagEnd:
+	.byte pTagEnd - pTag
+        .word configAddr
+	.word flags 
+.endscope
+.endmacro
+
 .endif ; _TAKI_EFFECT_INC_

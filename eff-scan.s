@@ -17,11 +17,7 @@ kLocNumChars	= kLocBase + 2
 kLocHilitePos	= kLocNumChars + 1
 kNeeded		= kLocHilitePos + 1
 
-pTag:
-	scrcode "SCAN"
-pTagEnd:
-	.byte pTagEnd - pTag 
-	.word $0000 ; flags
+TAKI_EFFECT "SCAN", 0, 0
 TE_Scan:
 	cmp #TAKI_DSP_INIT	; init?
         bne NoInit		; no: check more modes

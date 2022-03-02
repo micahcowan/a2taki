@@ -18,17 +18,18 @@
 
 .import TakiVarCommandBufferPage
 
+TAKI_EFFECT "", 0, 0
 TE_NONE:
 	cmp #TAKI_DSP_INIT
         bne @rts
         ; Prepare command buffer for printing
 	lda #$00
-        sta kZpEffSpecial0
+        sta TAKI_ZP_EFF_SPECIAL_0
 	lda TakiVarCommandBufferPage
-        sta kZpEffSpecial1
+        sta TAKI_ZP_EFF_SPECIAL_1
         ldy #$00
 @BufLoop:
-	lda (kZpEffSpecial0),y
+	lda (TAKI_ZP_EFF_SPECIAL_0),y
         beq @FoundEnd	; NUL
         cmp #$8D	; CR
         beq @FoundEnd
@@ -39,13 +40,13 @@ TE_NONE:
         jmp @BufLoop
 @FoundEnd:
 	lda #$00	; NUL-terminate
-        sta (kZpEffSpecial0),y
+        sta (TAKI_ZP_EFF_SPECIAL_0),y
         
         ; Display debug message
         TakiDbgPrint_ pEffNotFoundMsgPre
-        TakiDbgPrint_ kZpEffSpecial0
+        TakiDbgPrint_ TAKI_ZP_EFF_SPECIAL_0
         lda #$00
-        ldy kZpEffSpecial1
+        ldy TAKI_ZP_EFF_SPECIAL_1
         jsr TakiDbgPrint
         TakiDbgPrint_ pEffNotFoundMsgPost
 @rts:	rts

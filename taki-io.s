@@ -76,11 +76,11 @@ _TakiIoCtrlExecCmd:
         sta kZpEffSpecial1
         ; Y is now at the high byte
         
-        ; skip backwards, past a "flags" word,
+        ; skip backwards, past words "flag" and "configAddr"
         ; to a tag name character count
         lda kZpEffSpecial0
         sec
-        sbc #$03
+        sbc #$05
         sta kZpEffSpecial0
         bcs @NoBorrow
         lda kZpEffSpecial1 ; handle borrow

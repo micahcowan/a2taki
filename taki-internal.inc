@@ -41,23 +41,10 @@ flagInDebugPrint    = flagInTick << 1
 ;; taki.s
 .ifndef I_AM_TAKI
 .import _TakiVarStatusFlags
-.import _TakiVarActiveEffectsNum
-.import TakiEffectTablesStart
-.import _TakiVarEffectAllocTable
-.import _TakiVarEffectCounterTable
-.import _TakiVarEffectCounterInitTable
-.import _TakiVarEffectDispatchTable
-.import TakiEffectTablesEnd
 .import _TakiMoveASoft
 .import _TakiInit
 .import _TakiExit
-.import _TakiEffectSetupAndDo
-.import _TakiEffectSetupFn
-.import _TakiSetupForEffectY
-.import _TakiEffectInitializeDirect
-.import _TakiEffectInitializeDirectFn
 .import _TakiDelay
-.import _TakiTick
 .endif
 
 ;; taki-debug.s
@@ -70,6 +57,23 @@ flagInDebugPrint    = flagInTick << 1
 .import _TakiDbgCOUT
 .import _TakiDbgUndrawBadge
 .import _TakiDbgDrawBadge
+.endif
+
+;; taki-effect.s
+.ifndef I_AM_TAKI_EFFECT
+.import _TakiVarActiveEffectsNum
+.import TakiEffectTablesStart
+.import _TakiVarEffectAllocTable
+.import _TakiVarEffectCounterTable
+.import _TakiVarEffectCounterInitTable
+.import _TakiVarEffectDispatchTable
+.import TakiEffectTablesEnd
+.import _TakiEffectSetupAndDo
+.import _TakiEffectSetupFn
+.import _TakiSetupForEffectY
+.import _TakiEffectInitializeDirect
+.import _TakiEffectInitializeDirectFn
+.import _TakiTick
 .endif
 
 ;; taki-io.s
@@ -104,5 +108,70 @@ maybe_import TE_Scan
 maybe_import TE_Spinner
 
 .delmacro maybe_import
+
+;;;; Less general, more Taki-specific facilities
+
+.include "taki-effect.inc"
+
+kZpStart		= $60
+kZpCurEffStorageL	= TAKI_ZP_EFF_STORAGE_L	; $66
+kZpCurEffStorageH	= TAKI_ZP_EFF_STORAGE_H	; $67
+kZpCurEffStorageEndL	= TAKI_ZP_EFF_STORAGE_END_L ; $68
+kZpCurEffStorageEndH	= TAKI_ZP_EFF_STORAGE_END_H ; $69
+kZpCmdBufL		= TAKI_ZP_CMDBUF_L ; $6A
+kZpCmdBufH		= TAKI_ZP_CMDBUF_H ; $6B
+kZpDispatchMode		= TAKI_ZP_DSP_MODE ; $6C
+kZpAcc			= TAKI_ZP_ACC ; $6D
+kZpX			= TAKI_ZP_X ; $6E
+kZpY			= TAKI_ZP_Y ; $6F
+kZpEffSpecial0		= TAKI_ZP_EFF_SPECIAL_0 ; $70
+kZpEffSpecial1		= TAKI_ZP_EFF_SPECIAL_1 ; $71
+kZpEffSpecial2		= TAKI_ZP_EFF_SPECIAL_2 ; $72
+kZpEffSpecial3		= TAKI_ZP_EFF_SPECIAL_3 ; $73
+kZpCurEffect		= $74
+kZpEffTablesStart	= $75
+kZpEffAllocTbl		= kZpEffTablesStart
+kZpEffCtrValTbl		= kZpEffTablesStart + 2
+kZpEffCtrInitTbl	= kZpEffTablesStart + 4
+kZpEffDispatchTbl	= kZpEffTablesStart + 6
+
+kZpEffTablesEnd		= kZpEffTablesStart + 8
+kZpEnd			= kZpEffTablesEnd
+
+; Make space in zero page for effect stuff
+;   NOTE: users of this macro must import the relevant
+;   symbols
+.macro TakiEffectDo_ fn
+	pha
+        lda #<fn
+        sta _TakiEffectSetupFn
+        lda #>fn
+        sta _TakiEffectSetupFn+1
+        pla
+        
+        jsr _TakiEffectSetupAndDo
+.endmacro
+
+; Initialize an effect instance
+;   NOTE: users of this macro must import the relevant
+;   symbols
+.macro TakiEffectInitializeDirect_ effAddr
+	pha
+	lda #<effAddr
+        sta _TakiEffectInitializeDirectFn
+        lda #>effAddr
+        sta _TakiEffectInitializeDirectFn+1
+        pla
+	TakiEffectDo_ _TakiEffectInitializeDirect
+.endmacro
+
+; Initialize an effect instance
+;   NOTE: users of this macro must import the relevant
+;   symbols
+.macro TakiEffectInitializeAX_
+        sta _TakiEffectInitializeDirectFn
+        stx _TakiEffectInitializeDirectFn+1
+	TakiEffectDo_ _TakiEffectInitializeDirect
+.endmacro
 
 .endif ; TAKI_INTERNAL_INC_
