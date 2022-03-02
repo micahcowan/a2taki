@@ -74,6 +74,7 @@ flagInDebugPrint    = flagInTick << 1
 .import _TakiEffectInitializeDirect
 .import _TakiEffectInitializeDirectFn
 .import _TakiTick
+.import _TakiEffectFind
 .endif
 
 ;; taki-io.s
@@ -86,6 +87,11 @@ flagInDebugPrint    = flagInTick << 1
 .import _TakiIoPageFlip
 .import _TakiIoSetPageOne
 .import _TakiIoSetPageTwo
+.endif
+
+;; taki-cmd.s
+.ifndef I_AM_TAKI_CMD
+.import _TakiCmdFindWordEnd
 .endif
 
 ;; taki.cfg

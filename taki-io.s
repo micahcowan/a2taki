@@ -58,74 +58,10 @@ _TakiIoCtrlReadCmd:
 @rts:	rts
 
 _TakiIoCtrlExecCmd:
-        ; We have the effect name in the
-        ; command buffer - find it!
-        ldx #$00
-@FindEffLp:
-	txa
-        lsr	; div by 2, giving entry num
-	cmp _TakiNumBuiltinEffects
-        beq @NoEffFound
-        
-        ; Get the effect's dispatch addr
-        ; into the zero page
-	lda _TakiBuiltinEffectsTable,x
-        sta kZpEffSpecial0
-        inx
-        lda _TakiBuiltinEffectsTable,x
-        sta kZpEffSpecial1
-        ; X is now at the high byte
-        
-        ; skip backwards, past words "flag" and "configAddr"
-        ; to a tag name character count
-        lda kZpEffSpecial0
-        sec
-        sbc #$05
-        sta kZpEffSpecial0
-        bcs @NoBorrow
-        lda kZpEffSpecial1 ; handle borrow
-        sbc #$00
-        sta kZpEffSpecial1
-@NoBorrow:
-	ldy #$00 ; get the value there into y
-	lda (kZpEffSpecial0),y
-        pha
-        ; and step back by that many bytes
-        lda kZpEffSpecial0
-        sec
-        sbc (kZpEffSpecial0),y
-        sta kZpEffSpecial0
-        bcs @NoBorrow1
-        lda kZpEffSpecial1 ; handle borrow
-        sbc #$00
-        sta kZpEffSpecial1
-@NoBorrow1:
-        pla
-        tay
-        ; Y is the num characters in tag.
-        beq @NextEffect	; handle silly case: tag == ""
-        ; Is that char in the CmdBuf a terminator?
-        lda (kZpCmdBufL),y
-        beq @HaveTerminator	; NUL
-        cmp #$8D		; CR
-        beq @HaveTerminator
-        cmp #$A8		; '('
-        bne @NextEffect		; no terminator,
-        			;  check next effect
-@HaveTerminator:
-	; Both words seem to end here.
-        ; Walk backward and check characters
-@TagCmpLoop:
-        dey
-        bmi @EffFound ; checked all the chars? found it!
-        lda (kZpCmdBufL),y
-        cmp (kZpEffSpecial0),y
-        bne @NextEffect
-        beq @TagCmpLoop
-        
-@NextEffect:
-	inx ; check next entry
-        jmp @FindEffLp
+        ; try to find the effect name
+        ldy #0 ; set y to start of cmd buf
+        jsr _TakiEffectFind
+        bcc @EffFound
 @NoEffFound:
 	lda #<TE_NONE
 	ldy #>TE_NONE
@@ -135,12 +71,12 @@ _TakiIoCtrlExecCmd:
 @EffFound:
 	; Initialize an effect instance
         ; from the found entry
-	;   -- X is at the high byte of dispatch handler
+	;   -- X is at the low byte of dispatch handler
         lda _TakiBuiltinEffectsTable,x
-        sta _TakiEffectInitializeDirectFn+1
-        dex ; now get low byte
+        sta _TakiEffectInitializeDirectFn
+        inx ; now get high byte
         lda _TakiBuiltinEffectsTable,x
-	sta _TakiEffectInitializeDirectFn
+	sta _TakiEffectInitializeDirectFn+1
 @runInit:
         jsr _TakiEffectInitializeDirect
         

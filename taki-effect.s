@@ -5,6 +5,9 @@ I_AM_TAKI_EFFECT=1
 .include "taki-internal.inc"
 
 .include "taki-effect.inc"
+.include "taki-debug.inc"
+
+.macpack apple2
 
 .export _TakiVarActiveEffectsNum
 _TakiVarActiveEffectsNum:
@@ -341,3 +344,137 @@ _TakiTick:
         TakiUnsetFlag_ flagInTick
         
         rts
+
+pDbgNoWordEnd:
+	scrcode "EFFECT NAME END NOT FOUND"
+        .byte 0
+
+;; _TakiEffectFind
+;;
+;; Assumes running under TakiEffectDo_.
+;; 
+;; Traverses available effects, looking for a name match
+;; against the Taki command buffer starting at position
+;; designated by register y.
+;;
+;; If successful: returns with carry unset,
+;; y at next token, x pointing in
+;; _TakiBuiltinEffectsTable at the
+;; found dispath entry.
+;;
+;; If unsuccesful: returns with carry set,
+;; y where it was on entry.
+;;
+;; Uses acc, x and y.
+.export _TakiEffectFind
+_TakiEffectFind:
+	sty @SavedY
+        
+        ; Find how long the command word is
+        jsr _TakiCmdFindWordEnd
+        cpy #0
+        bne @FoundEnd
+        ; We never found the end of a word -
+        ; yell and exit.
+        TakiDbgPrint_ pDbgNoWordEnd
+        jmp @NoEffFound
+@FoundEnd:
+	; Save the found word length.
+	tya
+        sec
+        sbc @SavedY
+        sta @WordLn
+        
+        ; save start of word, for comparisons
+        lda kZpCmdBufL
+        clc
+        adc @SavedY
+        sta kZpEffSpecial2
+        lda kZpCmdBufH
+        adc #0 ; handle carry
+        sta kZpEffSpecial3
+
+        ldx #$00
+@FindEffLp:
+	txa
+        lsr	; div by 2, giving entry num
+	cmp _TakiNumBuiltinEffects
+        beq @NoEffFound
+        
+        ; Get the effect's dispatch addr
+        ; into the zero page
+	lda _TakiBuiltinEffectsTable,x
+        sta kZpEffSpecial0
+        inx
+        lda _TakiBuiltinEffectsTable,x
+        sta kZpEffSpecial1
+        ; X is now at the high byte
+        
+        ; skip backwards, past words "flag" and "configAddr"
+        ; to a tag name character count
+        lda kZpEffSpecial0
+        sec
+        sbc #$05
+        sta kZpEffSpecial0
+        bcs :+	; need to borrow?
+        lda kZpEffSpecial1 ; handle borrow
+        sbc #$00
+        sta kZpEffSpecial1
+:
+	ldy #$00 ; get the value there into y
+	lda (kZpEffSpecial0),y
+        cmp @WordLn ; does it match our word length?
+        bne @NextEffect ; no: try next effect
+        
+        ; YES: eff name same len as our word
+        
+        ; step back by that many bytes to start of eff name
+        lda kZpEffSpecial0
+        sec
+        sbc (kZpEffSpecial0),y
+        sta kZpEffSpecial0
+        bcs :+	; need to borrow?
+        lda kZpEffSpecial1 ; handle borrow
+        sbc #$00
+        sta kZpEffSpecial1
+:
+        ldy @WordLn ; y -> past end of word
+@TagCmpLoop:
+        dey
+        bmi @EffFound ; checked all the chars? found it!
+        lda (kZpEffSpecial2),y
+        cmp (kZpEffSpecial0),y
+        bne @NextEffect
+        beq @TagCmpLoop
+        
+@NextEffect:
+	inx ; check next entry
+        jmp @FindEffLp
+@NoEffFound:
+        ldy @SavedY
+        sec
+        jmp @rts
+@EffFound:
+	;   -- X is at the high byte of dispatch handler
+        ;      so decrement it
+        dex
+        ; set y to next token
+        lda @SavedY
+        clc
+        adc @WordLn
+        tay
+@FindNxtTok:
+	lda (kZpCmdBufL),y
+        cmp #$A0 ; SPC
+        bne @AtNxtTok
+        iny
+        bne @FindNxtTok ; "always"
+@AtNxtTok:
+        ; clear carry to indicate success
+        clc
+@rts:
+	rts
+@SavedY:
+	.byte 0
+@WordLn:
+	.byte 0
