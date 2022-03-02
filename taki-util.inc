@@ -33,13 +33,20 @@ _TAKI_UTIL_INC_ = 1
         sta wloc+1
 .endmacro
 
+; needs .macpack apple2 before use
+.macro tstr str
+	scrcode str
+        .byte 0
+.endmacro
 
+.if 0
 .macro tstr str
 	.repeat .strlen (str)-1, i
-        	.byte .strat(str, i)
+        	.byte .strat(str, i)&$7F
         .endrepeat
-        .byte .strat(str, .strlen(str)-1)+128
+        .byte .strat(str, .strlen(str)-1)|$80
 .endmacro
+.endif
 
 
 .endif ; _TAKI_UTIL_INC_

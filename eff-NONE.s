@@ -52,7 +52,7 @@ TE_NONE:
 @rts:	rts
 
 pEffNotFoundMsgPre:
-	scrcode "EFFECT NAME ",'"'
+	scrcode "CMD OR EFFECT NAME ",'"'
 	.byte $00
 
 pEffNotFoundMsgPost:

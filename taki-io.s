@@ -57,70 +57,30 @@ _TakiIoCtrlReadCmd:
 
 @rts:	rts
 
-_TakiIoCtrlExecCmd:
-        ; try to find the effect name
-        ldy #0 ; set y to start of cmd buf
-        jsr _TakiEffectFind
-        bcc @EffFound
-@NoEffFound:
-	lda #<TE_NONE
-	ldy #>TE_NONE
-        sta _TakiEffectInitializeDirectFn
-        sty _TakiEffectInitializeDirectFn+1
-        jmp @runInit
-@EffFound:
-	; Initialize an effect instance
-        ; from the found entry
-	;   -- X is at the low byte of dispatch handler
-        lda _TakiBuiltinEffectsTable,x
-        sta _TakiEffectInitializeDirectFn
-        inx ; now get high byte
-        lda _TakiBuiltinEffectsTable,x
-	sta _TakiEffectInitializeDirectFn+1
-@runInit:
-        jsr _TakiEffectInitializeDirect
-        
-	writeWord Mon_CSWL, _TakiIoCollectUntilCtrlQ
-        rts
-
+.export _TakiIoCollectUntilCtrlQ
 _TakiIoCollectUntilCtrlQ:
 	cmp #$91	; Ctrl-Q?
         bne @Collect
-        ;TakiEffectDo_ _TakiIoCollectEndScan
+        TakiEffectDo_ _TakiEffectEndCollect
 	writeWord Mon_CSWL, _TakiOut ; restore normal output
         rts
 @Collect:
-	TakiEffectDo_ _TakiIoCollectByte
+	TakiEffectDo_ _TakiEffectCollectA
 	rts
 
-_TakiIoCollectByte:
-	ldy _TakiVarActiveEffectsNum
-        dey
-        jsr _TakiSetupForEffectY
-        
-        tya
-        asl ; lookup by words
-        tay
-        lda (kZpEffDispatchTbl),y
-        sta @Dispatch+1
-        iny
-        lda (kZpEffDispatchTbl),y
-        sta @Dispatch+2
-        
-        tya ; Y is at high byte
-        pha
-        lda #TAKI_DSP_COLLECT
-@Dispatch:
-        jsr TE_Scan
-        
-        pla
-        tay ; Y is at high byte
-        ; save allocations
-        lda kZpCurEffStorageEndH
-        sta (kZpEffAllocTbl),y
-        dey
-        lda kZpCurEffStorageEndL
-        sta (kZpEffAllocTbl),y
+.export _TakiIoCollectWord
+_TakiIoCollectWord:
+	cmp #$A0	; SPC?
+        beq @UnCollect
+        cmp #$8D	; CR?
+        bne @Collect	; no, collect
+@UnCollect:
+        TakiEffectDo_ _TakiEffectEndCollect
+	writeWord Mon_CSWL, _TakiOut ; restore normal output
+        lda #$A0 ; and also write out the space
+        jmp (Mon_CSWL)
+@Collect:
+	TakiEffectDo_ _TakiEffectCollectA
 	rts
 
 pvPromptExitStr:
