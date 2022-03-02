@@ -60,21 +60,21 @@ _TakiIoCtrlReadCmd:
 _TakiIoCtrlExecCmd:
         ; We have the effect name in the
         ; command buffer - find it!
-        ldy #$00
+        ldx #$00
 @FindEffLp:
-	tya
+	txa
         lsr	; div by 2, giving entry num
 	cmp _TakiNumBuiltinEffects
         beq @NoEffFound
         
         ; Get the effect's dispatch addr
         ; into the zero page
-	lda _TakiBuiltinEffectsTable,y
+	lda _TakiBuiltinEffectsTable,x
         sta kZpEffSpecial0
-        iny
-        lda _TakiBuiltinEffectsTable,y
+        inx
+        lda _TakiBuiltinEffectsTable,x
         sta kZpEffSpecial1
-        ; Y is now at the high byte
+        ; X is now at the high byte
         
         ; skip backwards, past words "flag" and "configAddr"
         ; to a tag name character count
@@ -87,9 +87,6 @@ _TakiIoCtrlExecCmd:
         sbc #$00
         sta kZpEffSpecial1
 @NoBorrow:
-	tya
-        pha
-        
 	ldy #$00 ; get the value there into y
 	lda (kZpEffSpecial0),y
         pha
@@ -124,13 +121,10 @@ _TakiIoCtrlExecCmd:
         lda (kZpCmdBufL),y
         cmp (kZpEffSpecial0),y
         bne @NextEffect
-        jmp @TagCmpLoop
+        beq @TagCmpLoop
         
 @NextEffect:
-	pla ; restore effect table entry #
-        tay
-        
-        iny ; check next entry
+	inx ; check next entry
         jmp @FindEffLp
 @NoEffFound:
 	lda #<TE_NONE
@@ -139,24 +133,22 @@ _TakiIoCtrlExecCmd:
         sty _TakiEffectInitializeDirectFn+1
         jmp @runInit
 @EffFound:
-	pla ; restore effect table entry #
-        tay
 	; Initialize an effect instance
         ; from the found entry
-	;   -- Y is at the high byte of dispatch handler
-        lda _TakiBuiltinEffectsTable,y
+	;   -- X is at the high byte of dispatch handler
+        lda _TakiBuiltinEffectsTable,x
         sta _TakiEffectInitializeDirectFn+1
-        dey ; now get low byte
-        lda _TakiBuiltinEffectsTable,y
+        dex ; now get low byte
+        lda _TakiBuiltinEffectsTable,x
 	sta _TakiEffectInitializeDirectFn
 @runInit:
         jsr _TakiEffectInitializeDirect
         
-	writeWord Mon_CSWL, _TakiIoCollectUntilCtrlS
+	writeWord Mon_CSWL, _TakiIoCollectUntilCtrlQ
         rts
 
-_TakiIoCollectUntilCtrlS:
-	cmp #$93	; Ctrl-S?
+_TakiIoCollectUntilCtrlQ:
+	cmp #$91	; Ctrl-Q?
         bne @Collect
         ;TakiEffectDo_ _TakiIoCollectEndScan
 	writeWord Mon_CSWL, _TakiOut ; restore normal output
