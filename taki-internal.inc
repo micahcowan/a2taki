@@ -77,6 +77,10 @@ flagInDebugPrint    = flagInTick << 1
 .import _TakiEffectDispatchCur
 .import _TakiTick
 .import _TakiEffectFind
+.import _TakiMySetCounter
+.import _TakiMyGetCounter
+.import _TakiMySetCounterInit
+.import _TakiMyGetCounterInit
 .endif
 
 ;; taki-io.s

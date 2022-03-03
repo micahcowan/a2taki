@@ -50,6 +50,12 @@ TAKI_ZP_EFF_SPECIAL_1		= $71
 TAKI_ZP_EFF_SPECIAL_2		= $72
 TAKI_ZP_EFF_SPECIAL_3		= $73
 
+; config var types
+TAKI_CFGTY_FN			= $00
+TAKI_CFGTY_BYTE			= $01
+TAKI_CFGTY_WORD			= $02
+
+; Used to declare an effect and provide metadata
 .macro TAKI_EFFECT effectFn, name, flags, configAddr
 .scope
 pTag:
@@ -62,6 +68,18 @@ pTagEnd:
 	.export effectFn
 	effectFn:
 .endscope
+.endmacro
+
+; set y to a variable position (constant) and fetch byte
+.macro getVar var
+	ldy #var
+        lda (TAKI_ZP_EFF_STORAGE_L),y
+.endmacro
+
+; set y to a variable position (constant) and set byte
+.macro setVar var
+	ldy #var
+        sta (TAKI_ZP_EFF_STORAGE_L),y
 .endmacro
 
 .endif ; _TAKI_EFFECT_INC_

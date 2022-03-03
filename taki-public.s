@@ -48,6 +48,11 @@ TakiPublic_ TakiIoPageTwoBasCalc
 TakiPublic_ TakiIoClearPageTwo
 TakiPublic_ TakiIoDoubledOut
 
+TakiPublic_ TakiMySetCounter
+TakiPublic_ TakiMyGetCounter
+TakiPublic_ TakiMySetCounterInit
+TakiPublic_ TakiMyGetCounterInit
+
 
 ;;;;; PUBLIC VARIABLES AND FLAGS
 

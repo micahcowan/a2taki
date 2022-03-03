@@ -502,3 +502,51 @@ _TakiEffectFind:
 	.byte 0
 @WordLn:
 	.byte 0
+
+.export _TakiMySetCounter
+_TakiMySetCounter:
+	; new value is in Y A
+        pha ; high
+        tya
+        pha ; low
+        
+        lda kZpCurEffect
+        asl ; double for words
+        tay
+        pla ; low
+        sta (kZpEffCtrValTbl),y
+        iny
+        pla ; high
+        sta (kZpEffCtrValTbl),y
+        
+	rts
+
+.export _TakiMyGetCounter
+_TakiMyGetCounter:
+	; value returned via Y A
+        ; XXX
+	rts
+
+.export _TakiMySetCounterInit
+_TakiMySetCounterInit:
+	; new value is in Y A
+        pha ; high
+        tya
+        pha ; low
+        
+        lda kZpCurEffect
+        asl ; double for words
+        tay
+        pla ; low
+        sta (kZpEffCtrInitTbl),y
+        iny
+        pla ; high
+        sta (kZpEffCtrInitTbl),y
+        
+	rts
+
+.export _TakiMyGetCounterInit
+_TakiMyGetCounterInit:
+	; value returned via Y A
+        ; XXX
+	rts

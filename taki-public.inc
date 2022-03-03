@@ -57,6 +57,10 @@ maybe_import TakiDelay
 maybe_import TakiIoPageTwoBasCalc
 maybe_import TakiIoClearPageTwo
 maybe_import TakiIoDoubledOut
+maybe_import TakiMySetCounter
+maybe_import TakiMyGetCounter
+maybe_import TakiMySetCounterInit
+maybe_import TakiMyGetCounterInit
 .endif
 
 .delmacro maybe_import

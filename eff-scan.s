@@ -10,16 +10,29 @@
 
 .import _TakiIoDoubledOut ; XXX
 
-kLocBase	= 0
+config: .byte 1
+types:  .byte TAKI_CFGTY_WORD
+words:
+	scrcode "PAUSE"
+        .byte $00
+
+kLocPause	= 0
+kLocBase	= kLocPause +2
 kLocNumChars	= kLocBase + 2
 kLocHilitePos	= kLocNumChars + 1
 kNeeded		= kLocHilitePos + 1
 
-TAKI_EFFECT TE_Scan, "SCAN", 0, 0
+TAKI_EFFECT TE_Scan, "SCAN", 0, config
 	cmp #TAKI_DSP_INIT	; init?
-        bne CkColl		; no: check more modes
+        bne CkColl
         ; INIT: save BASL/H and reserve two bytes
-        ldy #$0
+        ldy #kLocPause
+        lda #$80
+        sta (TAKI_ZP_EFF_STORAGE_L),y
+        iny
+        lda #0
+        sta (TAKI_ZP_EFF_STORAGE_L),y
+        iny
         clc
         lda Mon_BASL
         adc Mon_CH ; add current horiz. pos.
@@ -43,7 +56,7 @@ TAKI_EFFECT TE_Scan, "SCAN", 0, 0
 @NoHigh:
 	rts
 CkColl: cmp #TAKI_DSP_COLLECT	; collect?
-	bne CkTick		; no: check more modes
+	bne CkTick
 	; COLLECT
         ; TODO: sanity-check character value
 	; increment numChars by 1
@@ -56,7 +69,7 @@ CkColl: cmp #TAKI_DSP_COLLECT	; collect?
         jmp _TakiIoDoubledOut ; XXX
 CkTick:
 	cmp #TAKI_DSP_TICK	; tick?
-        bne CkDraw		; no: check more modes
+        bne CkDraw
 	; TICK
         lda #$0
         sec ; so, 1
@@ -64,14 +77,35 @@ CkTick:
 	adc (TAKI_ZP_EFF_STORAGE_L),y
         dey ; kLocNumChars
         cmp (TAKI_ZP_EFF_STORAGE_L),y
-        bne @NoReset
+        bne @NotEq ; y != numChars? skip to @notEq
+@Eq:
+        ; if we get here, we're "at" numChars.
+        ; This state means highlight nothing.
+        pha
+        tya
+        pha
+        ; copy Pause to counter {
+        getVar kLocPause+1
+        pha ; high
+        dey
+        lda (TAKI_ZP_EFF_STORAGE_L),y
+        tay; low
+        pla; high
+        jsr TakiMySetCounter
+        ; } copy Pause
+        pla
+        tay
+        pla
+        bne @Stor ; always
+@NotEq: bcc @InWord
         lda #0 ; reset hilitePos if past numChars
-@NoReset:
+@InWord:
+@Stor:
         iny
 	sta (TAKI_ZP_EFF_STORAGE_L),y
         rts
 CkDraw:	cmp #TAKI_DSP_DRAW	; draw?
-	bne NoModesFound	; no: exit
+	bne NoModesFound
         ; DRAW!
         ; Adjust "Base" by which page is coming
         ldy #kLocBase+1
@@ -99,12 +133,18 @@ CkDraw:	cmp #TAKI_DSP_DRAW	; draw?
         sta (TAKI_ZP_EFF_SPECIAL_0),y
         jmp @Loop
 @Done:  ; Now set inverse on the char we're interested in
+	ldy #kLocNumChars
+        lda (TAKI_ZP_EFF_STORAGE_L),y
+        sta TAKI_ZP_EFF_SPECIAL_2
 	ldy #kLocHilitePos
         lda (TAKI_ZP_EFF_STORAGE_L),y
+        cmp TAKI_ZP_EFF_SPECIAL_2
+        beq @rts ; hilitePos == numChars, hilite nothing
         tay
         lda (TAKI_ZP_EFF_SPECIAL_0),y
         and #$3f
         sta (TAKI_ZP_EFF_SPECIAL_0),y
+@rts:
         rts
 NoModesFound:
 	rts
