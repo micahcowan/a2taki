@@ -72,8 +72,8 @@ flagInDebugPrint    = flagInTick << 1
 .import _TakiEffectSetupAndDo
 .import _TakiEffectSetupFn
 .import _TakiSetupForEffectY
-.import _TakiEffectInitializeDirect
-.import _TakiEffectInitializeDirectFn
+.import _TakiEffectInitialize
+.import _TakiEffectInitializeFn
 .import _TakiEffectDispatchCur
 .import _TakiTick
 .import _TakiEffectFind
@@ -172,19 +172,6 @@ kZpEnd			= kZpEffTablesEnd
         sta TakiVarDispatchEvent
         pla
         TakiEffectDo_ _TakiEffectDispatchCur
-.endmacro
-
-; Initialize an effect instance
-;   NOTE: users of this macro must import the relevant
-;   symbols
-.macro TakiEffectInitializeDirect_ effAddr
-	pha
-	lda #<effAddr
-        sta _TakiEffectInitializeDirectFn
-        lda #>effAddr
-        sta _TakiEffectInitializeDirectFn+1
-        pla
-	TakiEffectDo_ _TakiEffectInitializeDirect
 .endmacro
 
 ; Initialize an effect instance

@@ -36,7 +36,7 @@ line "PRINT ",'"',"HERE",'"',":PRINT",$0D
 line "PRINT T$",'"',"OR HERE",'"',":REM BAD CMD",$0D
 line "PRINT ",'"',"OH, AND ALSO YOU MAY BE INTERESTED",'"',$0D
 line "PRINT ",'"',"TO FIND THAT HERE IS ",'"',';',$0D
-line "PRINT T$;",'"',"WORD SCAN",$0D
+line "PRINT T$;",'"',"WORD SCAN(FDLY=38)",$0D
 line "PRINT ",'"',"ANOTHER SUCH WORD",'"',":?:?",$0D
 
 line "PRINT T$;",'"',"INSTANT SPINR",'"',$0D

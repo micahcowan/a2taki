@@ -11,6 +11,9 @@
 ;#link "eff-NONE.s"
 ;#link "load-and-run-basic.s"
 ;#link "forthish.s"
+;#resource "math-ca65.inc"
+;#link "math-ca65.s"
+
 
 ;#resource "taki.cfg"
 ;#define CFGFILE taki.cfg

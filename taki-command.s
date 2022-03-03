@@ -10,6 +10,7 @@ I_AM_TAKI_CMD=1
 
 .include "a2-monitor.inc"
 .include "forthish.inc"
+.include "math-ca65.inc"
 
 _TakiCmdTable:
 	.byte 3		; num entries
@@ -62,6 +63,18 @@ _TakiCmdFindWordEnd:
 @HaveTerminator:
 	rts
 
+.export _TakiCmdSkipSpaces
+pCmdSkipSpacesPre:
+        iny
+_TakiCmdSkipSpaces:
+	; x has right value
+        ; forward y while SPC
+        lda (kZpCmdBufL),y
+        cmp #$A0 ; SPC
+        beq pCmdSkipSpacesPre
+        ;
+	rts
+
 ;; _TakiIoCtrlExecCmd
 ;;
 ;; Expects ZP set up via TakiEffectDo_
@@ -87,8 +100,8 @@ _TakiCommandExec:
         ; collection is done.
 	lda #<TE_NONE
 	ldy #>TE_NONE
-        sta _TakiEffectInitializeDirectFn
-        sty _TakiEffectInitializeDirectFn+1
+        sta _TakiEffectInitializeFn
+        sty _TakiEffectInitializeFn+1
         jmp @runInit
 @NoCmdFound:
 	TakiDbgPrint_ pCmdNotFoundMsgPre
@@ -101,12 +114,18 @@ _TakiCommandExec:
         ; from the found entry
 	;   -- X is at the low byte of dispatch handler
         lda _TakiBuiltinEffectsTable,x
-        sta _TakiEffectInitializeDirectFn
+        sta _TakiEffectInitializeFn
         inx ; now get high byte
         lda _TakiBuiltinEffectsTable,x
-	sta _TakiEffectInitializeDirectFn+1
+	sta _TakiEffectInitializeFn+1
 @runInit:
-        jsr _TakiEffectInitializeDirect
+        jsr _TakiEffectInitialize
+        lda (kZpCmdBufL),y
+        cmp #$A8 ; '('
+        bne @finalInit
+        iny
+        jsr _TakiCmdHandleConfig
+@finalInit:
         lda #TAKI_DSP_INIT
         sta TakiVarDispatchEvent
         jsr _TakiEffectDispatchCur
@@ -124,6 +143,7 @@ _TakiCommandExec:
         rts
 @unhandledOrInstant:
 	; Is this instant, or unhandled?
+        cmp #$00
         beq @skipUnh
         TakiDbgPrint_ pEffModeUnhandled
 @skipUnh:
@@ -153,6 +173,88 @@ pCmdNotFoundMsgPre:
 pCmdNotFoundMsgPost:
 	scrcode '"',$0D
 	.byte $00
+
+_TakiCmdReadNumW:
+	; XXX support reading HEX if first char is $!
+        
+        ; set up A and Y to point to high and low bytes
+        ; of buffer addr
+        lda kZpCmdBufL
+        pha
+        lda kZpCmdBufH
+        pha
+        jsr rdDec16u ; from math-ca65
+        
+        ; Y points past number in str, and
+        ; number is on stack, high byte pulls first
+        tya ; move Y onto stack so it oesn't get munged
+        pha
+        rollb1_ 5 ; move return address to just below
+        rollb1_ 5 ; pushed Y
+        rotb_
+        pla
+        tay
+	rts
+
+_TakiCmdHandleConfigFDLY:
+	tya
+        pha
+        
+        lda (kZpCmdBufL),y
+        cmp #$C6 ; 'F'
+        bne @cleanup
+        iny
+        lda (kZpCmdBufL),y
+        cmp #$C4 ; 'D'
+        bne @cleanup
+        iny
+        lda (kZpCmdBufL),y
+        cmp #$CC ; 'L'
+        bne @cleanup
+        iny
+        lda (kZpCmdBufL),y
+        cmp #$D9 ; 'Y'
+        bne @cleanup
+        iny
+        pla ; discard original y position
+        ;
+        
+        jsr _TakiCmdSkipSpaces
+        cmp #$BD ; '='
+        ; XXX if not, handle error!
+        iny
+        jsr _TakiCmdSkipSpaces
+        jsr _TakiCmdReadNumW
+        tya
+        pha
+        rot_
+        ; stack: regY numL numH (top)
+        lda _TakiVarActiveEffectsNum
+        sec
+        sbc #1
+        asl ; double for words
+        tay
+        iny
+        pla
+        sta (kZpEffCtrInitTbl),y
+        dey
+        pla
+        sta (kZpEffCtrInitTbl),y
+        ;
+        pla
+        tay ; restore Y that points past digits
+        ;
+        rts
+@cleanup:
+	pla
+        tya
+	rts
+
+_TakiCmdHandleConfig:
+	jsr _TakiCmdSkipSpaces
+        ; special handling for "FDLY"
+        jsr _TakiCmdHandleConfigFDLY
+	rts
 
 ;; _TakiCmdFind
 ;;
@@ -228,14 +330,7 @@ _TakiFindCmdWordInTable:
         ldy @savedY
         rts
 @FOUND:
-	; x has right value
-        ; forward y while SPC
-        lda (kZpCmdBufL),y
-        cmp #$A0 ; SPC
-        bne @done
-        iny
-        bne @FOUND ; "always"
-@done:
+	jsr _TakiCmdSkipSpaces
 	clc
 	rts
 @getTableChar:

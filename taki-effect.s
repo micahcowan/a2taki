@@ -147,8 +147,10 @@ _TakiSetupForEffectY:
         lda TAKI_ZP_DSP_MODE
         rts
 
-.export _TakiEffectInitializeDirect
-_TakiEffectInitializeDirect:
+.export _TakiEffectInitialize
+_TakiEffectInitialize:
+	tya
+        pha
 	lda _TakiVarActiveEffectsNum
         asl	; times 2 to count words
         tay
@@ -158,10 +160,10 @@ _TakiEffectInitializeDirect:
         
         ;; Set values in tables:
         ; dispatch handler in table
-        lda _TakiEffectInitializeDirectFn
+        lda _TakiEffectInitializeFn
         sta (kZpEffDispatchTbl),y
         iny
-        lda _TakiEffectInitializeDirectFn+1
+        lda _TakiEffectInitializeFn+1
         sta (kZpEffDispatchTbl),y
         ; y is now 1 past
         
@@ -212,15 +214,18 @@ _TakiEffectInitializeDirect:
         lda TakiVarDefaultCountdown
         sta (kZpEffCtrInitTbl),y
         ; y is at eff
-       	tya ; save y to stack
-        sta kZpCurEffect ; and also  to ZP
+       	tya ; save y to ZP
+        sta kZpCurEffect
         
         ; Increment number of effects
         inc _TakiVarActiveEffectsNum
-        rts
-_TakiEffectInitializeDirectFn:
+        
+        pla
+        tay
+        rts               ; THE END
+_TakiEffectInitializeFn:
 	.word $00
-.export _TakiEffectInitializeDirectFn
+.export _TakiEffectInitializeFn
 
 .export _TakiEffectDispatchCur
 _TakiEffectDispatchCur:
