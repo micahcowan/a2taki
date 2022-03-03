@@ -39,6 +39,7 @@ maybe_import TakiVarCurPageBase
 maybe_import TakiVarNextPageBase
 maybe_import TakiVarFlags
 maybe_import TakiVarTickNum
+maybe_import TakiVarDispatchEvent
 
 maybe_import TakiDbgPrint
 .ifndef TAKI_INTERNAL

@@ -74,8 +74,7 @@ flagInDebugPrint    = flagInTick << 1
 .import _TakiSetupForEffectY
 .import _TakiEffectInitializeDirect
 .import _TakiEffectInitializeDirectFn
-.import _TakiEffectCollectA
-.import _TakiEffectEndCollect
+.import _TakiEffectDispatchCur
 .import _TakiTick
 .import _TakiEffectFind
 .endif
@@ -163,6 +162,16 @@ kZpEnd			= kZpEffTablesEnd
         pla
         
         jsr _TakiEffectSetupAndDo
+.endmacro
+
+; Sets up zero page and calls last-allocated effect's
+; dispatch handler
+.macro TakiEffectDoDispatchCur_ event
+	pha
+        lda #event
+        sta TakiVarDispatchEvent
+        pla
+        TakiEffectDo_ _TakiEffectDispatchCur
 .endmacro
 
 ; Initialize an effect instance

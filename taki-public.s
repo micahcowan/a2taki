@@ -146,3 +146,13 @@ TakiVarFlags:
 .export TakiVarTickNum
 TakiVarTickNum:
 	.byte $00
+
+; TakiVarDispatchEvent: set before calling an effect
+; dispatch handler, to designate what the event is.
+; This info is also communicated via the accumulator to
+; the dispatch handler; but this var is used internally
+; while the accumulator and stack are used for other things,
+; and exposed here publicly for convenience
+.export TakiVarDispatchEvent
+TakiVarDispatchEvent:
+	.byte $00

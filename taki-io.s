@@ -61,11 +61,11 @@ _TakiIoCtrlReadCmd:
 _TakiIoCollectUntilCtrlQ:
 	cmp #$91	; Ctrl-Q?
         bne @Collect
-        TakiEffectDo_ _TakiEffectEndCollect
+        TakiEffectDoDispatchCur_ TAKI_DSP_ENDCOLLECT
 	writeWord Mon_CSWL, _TakiOut ; restore normal output
         rts
 @Collect:
-	TakiEffectDo_ _TakiEffectCollectA
+	TakiEffectDoDispatchCur_ TAKI_DSP_COLLECT
 	rts
 
 .export _TakiIoCollectWord
@@ -76,12 +76,12 @@ _TakiIoCollectWord:
         bne @Collect	; no, collect
 @UnCollect:
 	pha
-        TakiEffectDo_ _TakiEffectEndCollect
+        TakiEffectDoDispatchCur_ TAKI_DSP_ENDCOLLECT
 	writeWord Mon_CSWL, _TakiOut ; restore normal output
         pla ; and also write out the space or CR
         jmp (Mon_CSWL)
 @Collect:
-	TakiEffectDo_ _TakiEffectCollectA
+	TakiEffectDoDispatchCur_ TAKI_DSP_COLLECT
 	rts
 
 pvPromptExitStr:

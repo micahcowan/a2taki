@@ -125,7 +125,9 @@ _TakiIoCtrlExecCmd:
         TakiDbgPrint_ pEffModeUnhandled
 @skipUnh:
 	; immediately send ENDCOLLECT
-        jsr _TakiEffectEndCollect
+        lda #TAKI_DSP_COLLECT
+        sta TakiVarDispatchEvent
+        jsr _TakiEffectDispatchCur
         writeWord Mon_CSWL, _TakiOut
         rts
 

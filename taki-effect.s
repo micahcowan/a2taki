@@ -238,8 +238,8 @@ _TakiEffectInitializeDirect:
 _TakiEffectInitializeDirectFn = @DispatchCall + 1
 .export _TakiEffectInitializeDirectFn
 
-.export _TakiEffectCollectA
-_TakiEffectCollectA:
+.export _TakiEffectDispatchCur
+_TakiEffectDispatchCur:
 	ldy _TakiVarActiveEffectsNum
         dey
         jsr _TakiSetupForEffectY
@@ -255,40 +255,9 @@ _TakiEffectCollectA:
         
         tya ; Y is at high byte
         pha
-        lda #TAKI_DSP_COLLECT
+        lda TakiVarDispatchEvent
 @Dispatch:
-        jsr TE_Scan
-        
-        pla
-        tay ; Y is at high byte
-        ; save allocations
-        lda kZpCurEffStorageEndH
-        sta (kZpEffAllocTbl),y
-        dey
-        lda kZpCurEffStorageEndL
-        sta (kZpEffAllocTbl),y
-	rts
-
-.export _TakiEffectEndCollect
-_TakiEffectEndCollect:
-	ldy _TakiVarActiveEffectsNum
-        dey
-        jsr _TakiSetupForEffectY
-        
-        tya
-        asl ; lookup by words
-        tay
-        lda (kZpEffDispatchTbl),y
-        sta @Dispatch+1
-        iny
-        lda (kZpEffDispatchTbl),y
-        sta @Dispatch+2
-        
-        tya ; Y is at high byte
-        pha
-        lda #TAKI_DSP_ENDCOLLECT
-@Dispatch:
-        jsr TE_Scan
+        jsr $1000 ; OVERWRITTEN
         
         pla
         tay ; Y is at high byte

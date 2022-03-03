@@ -17,7 +17,7 @@ kNeeded		= kLocHilitePos + 1
 
 TAKI_EFFECT TE_Scan, "SCAN", 0, 0
 	cmp #TAKI_DSP_INIT	; init?
-        bne NoInit		; no: check more modes
+        bne CkColl		; no: check more modes
         ; INIT: save BASL/H and reserve two bytes
         ldy #$0
         clc
@@ -42,8 +42,8 @@ TAKI_EFFECT TE_Scan, "SCAN", 0, 0
         inc TAKI_ZP_EFF_STORAGE_END_H
 @NoHigh:
 	rts
-NoInit: cmp #TAKI_DSP_COLLECT	; collect?
-	bne NoCollect		; no: check more modes
+CkColl: cmp #TAKI_DSP_COLLECT	; collect?
+	bne CkTick		; no: check more modes
 	; COLLECT
         ; TODO: sanity-check character value
 	; increment numChars by 1
@@ -54,9 +54,9 @@ NoInit: cmp #TAKI_DSP_COLLECT	; collect?
 	sta (TAKI_ZP_EFF_STORAGE_L),y
         lda TAKI_ZP_ACC
         jmp _TakiIoDoubledOut ; XXX
-NoCollect:
+CkTick:
 	cmp #TAKI_DSP_TICK	; tick?
-        bne NoTick		; no: check more modes
+        bne CkDraw		; no: check more modes
 	; TICK
         lda #$0
         sec ; so, 1
@@ -70,7 +70,7 @@ NoCollect:
         iny
 	sta (TAKI_ZP_EFF_STORAGE_L),y
         rts
-NoTick:	cmp #TAKI_DSP_DRAW	; draw?
+CkDraw:	cmp #TAKI_DSP_DRAW	; draw?
 	bne NoModesFound	; no: exit
         ; DRAW!
         ; Adjust "Base" by which page is coming
