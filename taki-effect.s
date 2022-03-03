@@ -159,11 +159,9 @@ _TakiEffectInitializeDirect:
         ;; Set values in tables:
         ; dispatch handler in table
         lda _TakiEffectInitializeDirectFn
-        sta @DispatchCall+1
         sta (kZpEffDispatchTbl),y
         iny
         lda _TakiEffectInitializeDirectFn+1
-        sta @DispatchCall+2
         sta (kZpEffDispatchTbl),y
         ; y is now 1 past
         
@@ -216,26 +214,12 @@ _TakiEffectInitializeDirect:
         ; y is at eff
        	tya ; save y to stack
         sta kZpCurEffect ; and also  to ZP
-        pha
         
         ; Increment number of effects
         inc _TakiVarActiveEffectsNum
-        
-        lda #TAKI_DSP_INIT
-        ; Call effect's dispatch handler
-@DispatchCall:
-	jsr $1000 ; address is overwritten
-        pla
-        tay ; restore y, is at eff
-        
-        ; Save any allocation change
-        lda TAKI_ZP_EFF_STORAGE_END_L
-        sta (kZpEffAllocTbl),y
-        iny
-        lda TAKI_ZP_EFF_STORAGE_END_H
-        sta (kZpEffAllocTbl),y
         rts
-_TakiEffectInitializeDirectFn = @DispatchCall + 1
+_TakiEffectInitializeDirectFn:
+	.word $00
 .export _TakiEffectInitializeDirectFn
 
 .export _TakiEffectDispatchCur

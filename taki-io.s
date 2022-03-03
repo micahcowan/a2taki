@@ -53,7 +53,7 @@ _TakiIoCtrlReadCmd:
         
 	cmp #$8D	; Did we just store a CR?
         bne @rts	; no, return
-        TakiEffectDo_ _TakiIoCtrlExecCmd	; yes: command done, execute
+        TakiEffectDo_ _TakiCommandExec	; yes: command done, execute
 
 @rts:	rts
 

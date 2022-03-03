@@ -96,7 +96,7 @@ flagInDebugPrint    = flagInTick << 1
 ;; taki-cmd.s
 .ifndef I_AM_TAKI_CMD
 .import _TakiCmdFindWordEnd
-.import _TakiIoCtrlExecCmd
+.import _TakiCommandExec
 .import _TakiCmdFind
 .endif
 

@@ -68,8 +68,8 @@ _TakiCmdFindWordEnd:
 ;;
 ;; Attempts to execute the command found in the command buffer,
 ;; as collected from _TakiIoCtrlReadCmd
-.export _TakiIoCtrlExecCmd
-_TakiIoCtrlExecCmd:
+.export _TakiCommandExec
+_TakiCommandExec:
         ; try to find the effect name
         ldy #0 ; set y to start of cmd buf
         jsr _TakiCmdFind
@@ -107,6 +107,9 @@ _TakiIoCtrlExecCmd:
 	sta _TakiEffectInitializeDirectFn+1
 @runInit:
         jsr _TakiEffectInitializeDirect
+        lda #TAKI_DSP_INIT
+        sta TakiVarDispatchEvent
+        jsr _TakiEffectDispatchCur
         
 @effMode = * + 1
 	lda #$FF ; OVERWRITTEN
