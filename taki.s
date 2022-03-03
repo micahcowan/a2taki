@@ -67,9 +67,6 @@ _TakiInit:
         sta TakiVarFlags
         sta _TakiVarActiveEffectsNum
         
-        ; Demo effect: "spinenr"
-        TakiEffectInitializeDirect_ TE_Spinner
-        
 	rts
 
 .export _TakiExit

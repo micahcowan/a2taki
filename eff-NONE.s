@@ -16,8 +16,9 @@
 .include "taki-public.inc"
 .include "taki-debug.inc"
 
-.import TakiVarCommandBufferPage
-
-TAKI_EFFECT "", 0, 0
+.byte ""
+.byte 0
+.word 0
+.word 0
 TE_NONE:
 	rts

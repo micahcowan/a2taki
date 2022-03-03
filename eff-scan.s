@@ -8,8 +8,6 @@
 .include "taki-public.inc"
 .include "a2-monitor.inc"
 
-TakiBuiltinEffect_ TE_Scan
-
 .import _TakiIoDoubledOut ; XXX
 
 kLocBase	= 0
@@ -17,8 +15,7 @@ kLocNumChars	= kLocBase + 2
 kLocHilitePos	= kLocNumChars + 1
 kNeeded		= kLocHilitePos + 1
 
-TAKI_EFFECT "SCAN", 0, 0
-TE_Scan:
+TAKI_EFFECT TE_Scan, "SCAN", 0, 0
 	cmp #TAKI_DSP_INIT	; init?
         bne NoInit		; no: check more modes
         ; INIT: save BASL/H and reserve two bytes

@@ -359,7 +359,7 @@ _TakiTick:
         ldy kZpCurEffect
         lda pvTickMode
 @pEffJsr:
-	jsr $1000
+	jsr $1000 ; OVERWRITTEN
 
         lda #TAKI_DSP_UNTICK
         sta pvTickMode
@@ -456,12 +456,13 @@ _TakiEffectFind:
         adc #0 ; handle carry
         sta kZpEffSpecial3
 
-        ldx #$00
+        lda #$00
 @FindEffLp:
-	txa
-        lsr	; div by 2, giving entry num
-	cmp _TakiNumBuiltinEffects
+	cmp #.lobyte(_TakiNumBuiltinEffects)
         beq @NoEffFound
+        
+        asl ; double it so it points at words.
+        tax
         
         ; Get the effect's dispatch addr
         ; into the zero page
@@ -511,6 +512,9 @@ _TakiEffectFind:
         
 @NextEffect:
 	inx ; check next entry
+        txa
+        lsr ; halve it so it refers to number-of-entries
+        
         jmp @FindEffLp
 @NoEffFound:
         ldy @SavedY

@@ -110,17 +110,22 @@ _TakiIoCtrlExecCmd:
         
 @effMode = * + 1
 	lda #$FF ; OVERWRITTEN
+@ckMark:
         cmp #pvCmdMark
         bne @ckWord
 	writeWord Mon_CSWL, _TakiIoCollectUntilCtrlQ
         rts
 @ckWord:cmp #pvCmdWord
-	bne @unhandled
+	bne @unhandledOrInstant
 	writeWord Mon_CSWL, _TakiIoCollectWord
         rts
-@unhandled:
-	; XXX !!!
+@unhandledOrInstant:
+	; Is this instant, or unhandled?
+        beq @skipUnh
         TakiDbgPrint_ pEffModeUnhandled
+@skipUnh:
+	; immediately send ENDCOLLECT
+        jsr _TakiEffectEndCollect
         writeWord Mon_CSWL, _TakiOut
         rts
 

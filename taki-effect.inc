@@ -1,10 +1,6 @@
 .ifndef _TAKI_EFFECT_INC_
 _TAKI_EFFECT_INC_ = 1
 
-.macro TakiBuiltinEffect_ effect
-    .condes effect, 6
-.endmacro
-
 TAKI_DSP_INIT		= 0
 TAKI_DSP_COLLECT	= 1
 TAKI_DSP_ENDCOLLECT	= 2
@@ -54,7 +50,7 @@ TAKI_ZP_EFF_SPECIAL_1		= $71
 TAKI_ZP_EFF_SPECIAL_2		= $72
 TAKI_ZP_EFF_SPECIAL_3		= $73
 
-.macro TAKI_EFFECT name, flags, configAddr
+.macro TAKI_EFFECT effectFn, name, flags, configAddr
 .scope
 pTag:
 	scrcode name
@@ -62,6 +58,9 @@ pTagEnd:
 	.byte pTagEnd - pTag
         .word configAddr
 	.word flags 
+	.condes effectFn, 6
+	.export effectFn
+	effectFn:
 .endscope
 .endmacro
 

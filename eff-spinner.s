@@ -12,11 +12,7 @@ pvTickChars:
 	scrcode "!/-\" ; "
 pvTickCharsEnd:
 
-; config table addr
-TAKI_EFFECT "SPINR", 0, 0
-
-.export TE_Spinner
-TE_Spinner:
+TAKI_EFFECT TE_Spinner, "SPINR", 0, 0
 	cmp #TAKI_DSP_INIT	; check if "init" mode,
         bne @checkTick		; no: check other modes
         ; reserve one byte of storage
