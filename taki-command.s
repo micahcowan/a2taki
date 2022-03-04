@@ -35,6 +35,8 @@ _TakiCmdIsDelim:
         beq @IsDelim
         cmp #$A8		; '('
         beq @IsDelim
+        cmp #$BD		; '='
+        beq @IsDelim
         ; no terminator - increment and check next char
         sec
         rts
@@ -75,7 +77,7 @@ _TakiCmdSkipSpaces:
         ;
 	rts
 
-;; _TakiIoCtrlExecCmd
+;; _TakiCommandExec
 ;;
 ;; Expects ZP set up via TakiEffectDo_
 ;;
@@ -119,17 +121,23 @@ _TakiCommandExec:
         lda _TakiBuiltinEffectsTable,x
 	sta _TakiEffectInitializeFn+1
 @runInit:
+	tya
+        pha
         jsr _TakiEffectInitialize
-        lda (kZpCmdBufL),y
-        cmp #$A8 ; '('
-        bne @finalInit
-        iny
-        jsr _TakiCmdHandleConfig
-@finalInit:
+        ; Dispatch INIT event
         lda #TAKI_DSP_INIT
         sta TakiVarDispatchEvent
         jsr _TakiEffectDispatchCur
+        ; Handle any config
+        pla
+        tay
+        lda (kZpCmdBufL),y
+        cmp #$A8 ; '('
+        bne @HandleCollectMode
+        iny
+        jsr _TakiCmdHandleConfig
         
+@HandleCollectMode:
 @effMode = * + 1
 	lda #$FF ; OVERWRITTEN
 @ckMark:
@@ -202,36 +210,35 @@ _TakiCmdHandleConfigFDLY:
         
         lda (kZpCmdBufL),y
         cmp #$C6 ; 'F'
-        bne @cleanup
+        bne @nope
         iny
         lda (kZpCmdBufL),y
         cmp #$C4 ; 'D'
-        bne @cleanup
+        bne @nope
         iny
         lda (kZpCmdBufL),y
         cmp #$CC ; 'L'
-        bne @cleanup
+        bne @nope
         iny
         lda (kZpCmdBufL),y
         cmp #$D9 ; 'Y'
-        bne @cleanup
+        bne @nope
         iny
-        pla ; discard original y position
         ;
         
         jsr _TakiCmdSkipSpaces
-        cmp #$BD ; '='
-        ; XXX if not, handle error!
-        iny
+        cmp #$BD ; '=' ?
+        ; if not, handle error!
+        bne @nope
+	pla
+	iny
         jsr _TakiCmdSkipSpaces
         jsr _TakiCmdReadNumW
         tya
         pha
         rot_
         ; stack: regY numL numH (top)
-        lda _TakiVarActiveEffectsNum
-        sec
-        sbc #1
+        lda kZpCurEffect
         asl ; double for words
         tay
         iny
@@ -243,18 +250,130 @@ _TakiCmdHandleConfigFDLY:
         ;
         pla
         tay ; restore Y that points past digits
+        clc
         ;
         rts
-@cleanup:
+@nope:
 	pla
         tya
+	sec
 	rts
 
 _TakiCmdHandleConfig:
+@nextWd:
 	jsr _TakiCmdSkipSpaces
+	; Did we reach the end of config string?
+        lda (kZpCmdBufL),y
+        beq @doneBridge; NUL
+        cmp #$A9 ; ')'
+        beq @doneBridge
+        cmp #$8D ; 'CR'
         ; special handling for "FDLY"
         jsr _TakiCmdHandleConfigFDLY
+        bcc @nextWd ; this word already handled!
+        
+        ; Find the current effect's config table
+        ; XXX should cache this, instead of recalc
+        ; every iteration...
+        sty @SavedY
+        ;   Start with the dsp handler:
+        ldy kZpCurEffect
+        asl ; times 2 for words
+        lda (kZpEffDispatchTbl),y ; low byte
+        sec
+        sbc #4 ; back two words to cfg addr
+        sta kZpEffSpecial0
+        iny
+        lda (kZpEffDispatchTbl),y
+        sbc #0 ; for borrow
+        sta kZpEffSpecial1
+        ldy #1
+        lda (kZpEffSpecial0),y ; read high byte
+@doneBridge:
+        beq @done ; if it's 0, THERE IS NO CONFIG. done.
+        pha
+        dey
+        lda (kZpEffSpecial0),y ; low byte
+        ; reset zpSpecial to the cfg table
+        sta kZpEffSpecial0
+        pla
+        sta kZpEffSpecial1
+        ldy @SavedY
+        jsr _TakiCmdConfigFind
+        bcs @badWord
+        ;
+        stx @foundIdx
+        ; we found our word!
+        jsr _TakiCmdSkipSpaces
+        lda (kZpCmdBufL),y
+        cmp #$BD ; '='
+        bne @badWord
+        iny
+        jsr _TakiCmdSkipSpaces
+        nop
+        ; for NOW, we're just assuming everything's numbers.
+        ; grab a number.
+        jsr _TakiCmdReadNumW
+        sty @SavedY
+        ;
+        lda pvNumEntries ; we just saved this in the find fn,
+        		 ; might as well get it from there.
+        inc kZpEffSpecial0 ; start of var types
+        bne :+
+        inc kZpEffSpecial1
+:
+        ldy #0
+        ldx #0
+@traverseTypes:
+	; As of the time of this comment's writing,
+        ; a config var's type is also the number of
+        ; bytes it takes up!
+        cpx @foundIdx
+        beq @arrived
+        lda (kZpEffSpecial0),y
+        beq @zero
+        cmp #1
+        beq @one
+        ; two
+        iny
+@one:   iny
+@zero:  inx
+        bne @traverseTypes
+@arrived:
+        lda (kZpEffSpecial0),y ; what type is OUR config
+                               ; (/how many bytes?)
+        beq @jmpBack ; we don't handle FN type yet
+        cmp #1
+        beq @one1 ; single-byte config
+        ; word-sized config
+        pla ; high
+        iny
+        sta (kZpCurEffStorageL),y ; set up during INIT dispatch?
+        dey
+        jmp @low
+@one1:  pla
+@low:	pla
+	sta (kZpCurEffStorageL),y
+@jmpBack:
+        ldy @SavedY
+        jmp @nextWd
+@badWord:
+        ; else: this wasn't a config word, and wasn't FDLY
+        TakiDbgPrint_ pConfigJunkStr
+        tya
+        ldy kZpCmdBufH
+    	jsr TakiDbgPrint
+        ; XXX should print what effect generated this msg
+@done:
 	rts
+@SavedY:
+	.byte 0
+@foundIdx:
+	.byte 0
+
+pConfigJunkStr:
+	scrcode "CFG JUNK: "
+        .byte 0
 
 ;; _TakiCmdFind
 ;;
@@ -270,39 +389,56 @@ _TakiCmdFind:
         jsr _TakiFindCmdWordInTable
         rts
 
+_TakiCmdConfigFind:
+	sty pvSavedY
+        ; config table is in zpSpecial
+        ;  set numEntries
+        ldy #0
+        lda (kZpEffSpecial0),y
+        sta pvNumEntries
+        ;  now jump to start of config labels
+        clc
+        adc #1
+        adc kZpEffSpecial0
+        sta pvTableAddr
+        lda #0
+        adc kZpEffSpecial1 ; for carry
+        sta pvTableAddr+1
+	jmp pFindInTable
+
 .export _TakiFindCmdWordInTable
 _TakiFindCmdWordInTable:
 	; table addr is on stack, behind our return address.
-        sty @savedY
+        sty pvSavedY
         
         swapW_
 ;@tableAddr = kZpEffSpecial0
         pla ; high byte of table addr
-        sta @tableAddr+1
+        sta pvTableAddr+1
         pla ; low byte of table addr
-        sta @tableAddr
+        sta pvTableAddr
         
         ; Record number of table entries
-        jsr @getTableChar
-        sta @numEntries
-        inc @tableAddr
+        jsr pGetTableChar
+        sta pvNumEntries
+        inc pvTableAddr
         bne :+
-        inc @tableAddr+1
+        inc pvTableAddr
 :
-
+pFindInTable:
         ldx #0
-        ldy @savedY
+        ldy pvSavedY
 @CheckWord:
-	cpx @numEntries
+	cpx pvNumEntries
         bcs @EndOfTable ; reached the end of table; not found
-        jsr @getTableChar
+        jsr pGetTableChar
         beq @CheckDelim
         cmp (kZpCmdBufL),y
         bne @FindNextWord
 @NextChar:
-	inc @tableAddr ; still in the running
+	inc pvTableAddr ; still in the running
         bne :+
-        inc @tableAddr+1
+        inc pvTableAddr
 :	iny
         bne @CheckWord ; "always"
 @CheckDelim:
@@ -311,33 +447,33 @@ _TakiFindCmdWordInTable:
         jsr _TakiCmdIsDelim
         bcc @FOUND
 @FindNextWord:
-        inc @tableAddr
+        inc pvTableAddr
         bne :+
-        inc @tableAddr+1
-:	jsr @getTableChar
+        inc pvTableAddr+1
+:	jsr pGetTableChar
 @NotThisWord:
 	bne @FindNextWord
 @CheckNextWord:
-	inc @tableAddr
+	inc pvTableAddr
         bne :+
-        inc @tableAddr+1
+        inc pvTableAddr+1
 :
 	inx
         ldy #0
         beq @CheckWord ; always
 @EndOfTable:
 	sec
-        ldy @savedY
+        ldy pvSavedY
         rts
 @FOUND:
 	jsr _TakiCmdSkipSpaces
 	clc
 	rts
-@getTableChar:
-@tableAddr = * + 1
+pGetTableChar:
+pvTableAddr = * + 1
 	lda $1000 ; OVERWRITTEN
         rts
-@savedY:
+pvSavedY:
 	.byte 0
-@numEntries:
+pvNumEntries:
 	.byte 0

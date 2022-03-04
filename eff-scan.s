@@ -27,7 +27,7 @@ TAKI_EFFECT TE_Scan, "SCAN", 0, config
         bne CkColl
         ; INIT: save BASL/H and reserve two bytes
         ldy #kLocPause
-        lda #$80
+        lda #0
         sta (TAKI_ZP_EFF_STORAGE_L),y
         iny
         lda #0

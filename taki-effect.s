@@ -152,6 +152,7 @@ _TakiEffectInitialize:
 	tya
         pha
 	lda _TakiVarActiveEffectsNum
+        sta kZpCurEffect
         asl	; times 2 to count words
         tay
         
@@ -226,6 +227,8 @@ _TakiEffectInitialize:
 _TakiEffectInitializeFn:
 	.word $00
 .export _TakiEffectInitializeFn
+
+
 
 .export _TakiEffectDispatchCur
 _TakiEffectDispatchCur:
@@ -349,7 +352,7 @@ _TakiTick:
         ldy kZpCurEffect
         lda #TAKI_DSP_DRAW
 @pEffDrawJsr:
-	jsr $1000
+	jsr $1000 ; OVERWRITTEN
 
         ldy kZpCurEffect
         iny
