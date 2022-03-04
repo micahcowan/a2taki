@@ -17,7 +17,7 @@ words:
         .byte $00
 
 kLocPause	= 0
-kLocBase	= kLocPause +2
+kLocBase	= kLocPause + 2
 kLocNumChars	= kLocBase + 2
 kLocHilitePos	= kLocNumChars + 1
 kNeeded		= kLocHilitePos + 1

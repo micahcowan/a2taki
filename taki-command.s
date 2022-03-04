@@ -322,26 +322,30 @@ _TakiCmdHandleConfig:
         bne :+
         inc kZpEffSpecial1
 :
-        ldy #0
-        ldx #0
+        ldy #0 ; where in types table
+        ldx #0 ; where in alloc table
 @traverseTypes:
 	; As of the time of this comment's writing,
         ; a config var's type is also the number of
         ; bytes it takes up!
-        cpx @foundIdx
+        cpy @foundIdx
         beq @arrived
         lda (kZpEffSpecial0),y
         beq @zero
         cmp #1
         beq @one
         ; two
-        iny
-@one:   iny
-@zero:  inx
+        inx
+@one:   inx
+@zero:  iny
         bne @traverseTypes
 @arrived:
         lda (kZpEffSpecial0),y ; what type is OUR config
                                ; (/how many bytes?)
+        pha
+        txa
+        tay ; alloc -> y reg
+        pla
         beq @jmpBack ; we don't handle FN type yet
         cmp #1
         beq @one1 ; single-byte config
@@ -446,11 +450,13 @@ pFindInTable:
         lda (kZpCmdBufL),y
         jsr _TakiCmdIsDelim
         bcc @FOUND
+        bcs @NotThisWord
 @FindNextWord:
         inc pvTableAddr
         bne :+
         inc pvTableAddr+1
-:	jsr pGetTableChar
+:	ldy pvSavedY
+	jsr pGetTableChar
 @NotThisWord:
 	bne @FindNextWord
 @CheckNextWord:
@@ -459,8 +465,8 @@ pFindInTable:
         inc pvTableAddr+1
 :
 	inx
-        ldy #0
-        beq @CheckWord ; always
+        ldy pvSavedY
+        jmp @CheckWord ; always
 @EndOfTable:
 	sec
         ldy pvSavedY
