@@ -179,7 +179,9 @@ _TakiIn:
         ; until next animation frame.
         lda TakiVarCurPageBase
         sta @pbCmp+1 ; modify a comparison so we can loop
-@NoFlip:TakiEffectDo_ _TakiTick
+@NoFlip:TakiSetFlag_ flagInInput
+        TakiEffectDo_ _TakiTick
+        TakiUnsetFlag_ flagInInput
         lda TakiVarCurPageBase
 @pbCmp: cmp #$00 ; overwritten above! ...Did we flip pages?
 	beq @NoFlip ; no: do another tick
