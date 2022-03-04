@@ -310,7 +310,6 @@ _TakiCmdHandleConfig:
         bne @badWord
         iny
         jsr _TakiCmdSkipSpaces
-        nop
         ; for NOW, we're just assuming everything's numbers.
         ; grab a number.
         jsr _TakiCmdReadNumW

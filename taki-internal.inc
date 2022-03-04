@@ -72,6 +72,7 @@ flagInDebugPrint    = flagInTick << 1
 .import _TakiEffectSetupAndDo
 .import _TakiEffectSetupFn
 .import _TakiSetupForEffectY
+.import _TakiClearNoneEffect
 .import _TakiEffectInitialize
 .import _TakiEffectInitializeFn
 .import _TakiEffectDispatchCur

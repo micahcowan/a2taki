@@ -147,10 +147,33 @@ _TakiSetupForEffectY:
         lda TAKI_ZP_DSP_MODE
         rts
 
+.export _TakiClearNoneEffect
+_TakiClearNoneEffect:
+	lda _TakiVarActiveEffectsNum
+        sec
+        sbc #1
+        asl ; doubled for count-by-words
+        tay
+        ; Is the most-recent effect dispatch, the NONE
+        ; dispatch handler?
+        lda (kZpEffDispatchTbl),y
+        cmp #<TE_NONE
+        bne @done
+        iny
+        lda (kZpEffDispatchTbl),y
+        cmp #>TE_NONE
+        bne @done
+        ; Most recent effect is NONE - remove it!
+        ; (no dispatching needed, since it's NONE)
+        dec _TakiVarActiveEffectsNum
+@done:
+	rts
+
 .export _TakiEffectInitialize
 _TakiEffectInitialize:
 	tya
         pha
+        jsr _TakiClearNoneEffect
 	lda _TakiVarActiveEffectsNum
         sta kZpCurEffect
         asl	; times 2 to count words
