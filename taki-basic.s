@@ -25,7 +25,7 @@ scrcode   ":REM TAKI DEBUG MODE",$0D
 ;line "PRINT ",'"',"1234567890123456789012345678901234567890",'"',';',$0D
 line "PRINT ",'"',"HELLO, THIS IS AN EXAMPLE",'"',$0D
 line "PRINT ",'"',"OF A ",'"',';',$0D
-line "PRINT T$;",'"',"MARK SCAN(FDLY=10 PAUSE=180)",$0D
+line "PRINT T$;",'"',"MARK SCAN(FDLY=5)",$0D
 line "PRINT ",'"',"< SCANNING >",'"',";Q$;",$0D
 line "PRINT ",'"'," WORD",'"',":?",$0D
 line "PRINT ",'"',"NOTHING HAPPENS",'"',';',$0D
@@ -38,6 +38,10 @@ line "PRINT T$;",'"',"WORD SCAN(FDLY=96)",$0D
 line "PRINT ",'"',"ANOTHER SUCH WORD",'"',":?:?",$0D
 
 line "PRINT T$;",'"',"INSTANT SPINR",'"',$0D
+
+line "GET A$",$0D
+
+line "PRINT T$;",'"',"CONFIG 0 FDLY=10 PAUSE=180",'"',$0D
 
 line "REM DISABLE EXIT-ON-PROMPT",$0D
 line "POKE ",.sprintf("%d",$808D),", 0",$0D

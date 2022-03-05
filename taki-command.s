@@ -13,14 +13,18 @@ I_AM_TAKI_CMD=1
 .include "math-ca65.inc"
 
 _TakiCmdTable:
-	.byte 3		; num entries
+	.byte 4		; num entries
         tstr "INSTANT"
         tstr "WORD"
         tstr "MARK"
+        tstr "CONFIG"
 
 pvCmdInstant = 0
-pvCmdWord    = 1
-pvCmdMark    = 2
+pvCmdWord    = pvCmdInstant + 1
+pvCmdMark    = pvCmdWord + 1
+pvCmdTagNeedsInit = pvCmdMark + 1 ; commands below this number
+                                  ; require an init
+pvCmdConfig  = pvCmdTagNeedsInit
 
 ;; _TakiCmdIsDelim
 ;; returns with carry unset if acc is a delimiter,
@@ -90,8 +94,39 @@ _TakiCommandExec:
         jsr _TakiCmdFind
         bcs @NoCmdFound
         stx @effMode
+        cpx #pvCmdTagNeedsInit
+        bcs @NoInit
+        ; Needs Init (and effect name)
         jsr _TakiEffectFind
-        bcc @EffFound
+        bcs @NoEffFound ; no effect found? jump to a dummy setup
+        jmp @InitAndCollect
+@NoInit:
+        cpx #pvCmdConfig
+        beq @handled
+        jmp @unhandledOrInstant
+@handled:
+        ; CONFIG command
+        jsr _TakiCmdReadNumW ; get effect number
+        pla ; toss out high byte
+        pla
+        cmp _TakiVarActiveEffectsNum
+        bcc @DoConfig ; num we got is valid for an effect
+        ; Not a a valid effect #
+        ; XXX report the error
+        rts
+@DoConfig:
+	pha
+	tya
+        pha
+        swap_
+        pla
+        tay
+        jsr _TakiSetupForEffectY
+        pla
+        tay
+        writeWord Mon_CSWL, _TakiOut
+        jmp _TakiCmdHandleConfig
+        ; END
 @NoEffFound:
 	; Print not-found message
         TakiDbgPrint_ pEffNotFoundMsgPre
@@ -111,7 +146,7 @@ _TakiCommandExec:
         TakiDbgPrint_ pCmdNotFoundMsgPost
         writeWord Mon_CSWL, _TakiOut
         rts
-@EffFound:
+@InitAndCollect:
 	; Initialize an effect instance
         ; from the found entry
 	;   -- X is at the low byte of dispatch handler
@@ -268,6 +303,7 @@ _TakiCmdHandleConfig:
         cmp #$A9 ; ')'
         beq @doneBridge
         cmp #$8D ; 'CR'
+        beq @doneBridge
         ; special handling for "FDLY"
         jsr _TakiCmdHandleConfigFDLY
         bcc @nextWd ; this word already handled!
