@@ -262,3 +262,44 @@ _TakiDbgPrintCmdBufWordAtY:
         tay
 :
 	rts
+
+.export _TakiDbgCheckKey
+_TakiDbgCheckKey:
+	pha
+        ; exit early if debug not active
+        TakiBranchIfFlag_ flagDebugActive, @check
+        pla
+@unhandled:
+        sec
+        rts ; EXIT
+@check:
+        pla
+	cmp #$C0	; '@' ?
+        beq @DebugMode	; yes: debug mod
+        sec
+        rts ; EXIT
+@DebugMode:
+	jsr _TakiIoGetKey
+@CkAt:	cmp #$C0	; '@' ?
+	bne @CkPl
+        ; AT: flip frame
+        jsr _TakiIoPageFlip
+        jmp @DebugMode
+@CkPl:	cmp #$AB	; '+'?
+	bne @handled	; no: return, handled
+@AdvFrm:
+        ; We received a '+' - that means, proceed
+        ; until next animation frame.
+        lda TakiVarCurPageBase
+        sta @pbCmp+1 ; modify a comparison so we can loop
+@NoFlip:TakiSetFlag_ flagInInput
+        TakiEffectDo_ _TakiTick
+        TakiUnsetFlag_ flagInInput
+        lda TakiVarCurPageBase
+@pbCmp: cmp #$00 ; overwritten above! ...Did we flip pages?
+	beq @NoFlip ; no: do another tick
+        jmp @DebugMode  ; yes: go back to (paused) key processing
+@handled:
+	; Not a debug key, return (but handled)
+        clc
+        rts

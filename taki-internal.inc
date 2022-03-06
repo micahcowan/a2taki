@@ -58,6 +58,7 @@ flagInDebugPrint    = flagInTick << 1
 .import _TakiDbgUndrawBadge
 .import _TakiDbgDrawBadge
 .import _TakiDbgPrintCmdBufWordAtY
+.import _TakiDbgCheckKey
 .endif
 
 ;; taki-effect.s
@@ -88,6 +89,7 @@ flagInDebugPrint    = flagInTick << 1
 .ifndef I_AM_TAKI_IO
 .import _TakiOut
 .import _TakiIn
+.import _TakiIoGetKey
 .import _TakiIoPageTwoBasCalc
 .import _TakiIoDoubledOut
 .import _TakiIoClearPageTwo

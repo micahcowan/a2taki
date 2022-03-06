@@ -92,8 +92,6 @@ pvSavedCursor:
 	.byte $00
 pvSavedRealChar:
 	.byte $00
-pvSavedKey:
-	.byte $00
 ; Taki character input routine
 ; XXX: make this work with both text pages...
 ; XXX: does this work with //e cursors?
@@ -164,34 +162,11 @@ _TakiIn:
         ; keypress available.
 	lda     SS_KBD
         bit	SS_KBDSTRB
-        sta	pvSavedKey
-        TakiBranchUnlessFlag_ flagDebugActive, @NoAT
-        lda pvSavedKey
-        cmp	#$C0	; '@' ?
-        bne	@NoAT	; no: skip
-        TakiSetFlag_ flagTicksPaused
-        jsr	_TakiIoPageFlip
-        jmp	@KEYIN
-@NoAT:	lda pvSavedKey
-	cmp	#$AB	; '+'?
-	bne	@Resume	; no:
-        ; We received a '+' - that means, proceed
-        ; until next animation frame.
-        lda TakiVarCurPageBase
-        sta @pbCmp+1 ; modify a comparison so we can loop
-@NoFlip:TakiSetFlag_ flagInInput
-        TakiEffectDo_ _TakiTick
-        TakiUnsetFlag_ flagInInput
-        lda TakiVarCurPageBase
-@pbCmp: cmp #$00 ; overwritten above! ...Did we flip pages?
-	beq @NoFlip ; no: do another tick
-        jmp @KEYIN  ; yes: go back to (paused) key processing
-@Resume:; Any key other than @ will resume ticks
-        TakiUnsetFlag_ flagTicksPaused
-	cmp #$9B	; ESC - skip and get new keypress
-        bne @NoESC
-        jmp @KEYIN
-@NoESC:  ; If GETLN gets a CR on input, it
+        jsr _TakiDbgCheckKey
+        bcc @KEYIN
+        cmp #$9B	; ESC - skip and get new keypress
+        beq @KEYIN
+@NoESC: ; If GETLN gets a CR on input, it
 	; clears to the end of the line, but
         ; since it doesn't use CSW to do this,
         ; it'll only happen in page one.
@@ -224,6 +199,18 @@ _TakiIn:
         sta $6
         lda pvSavedCursor
 	rts
+
+.export _TakiIoGetKey
+_TakiIoGetKey:
+@KEYIN:
+	inc     Mon_RNDL
+	bne     @KEYIN2
+	inc     Mon_RNDH
+@KEYIN2:bit     SS_KBD             ;read keyboard
+	bpl     @KEYIN
+        ; keypress available.
+	lda     SS_KBD
+        bit	SS_KBDSTRB
 
 pTakiCheckForGETLN:
 	; The monitor GETLN routine, also used

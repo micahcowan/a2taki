@@ -42,7 +42,7 @@ line "PRINT T$;",'"',"INSTANT SPINR",'"',$0D
 line "FOR I=5 TO 1 STEP -1",$0D
 line "HTAB 1",$0D
 line "? I;",'"',"...",'"',';',$0D
-line "PRINT T$;",'"',"DELAY 200",'"',$0D
+line "PRINT T$;",'"',"DELAY 168",'"',$0D
 line "NEXT",$0D
 line "HTAB 1:PRINT ",'"',"      ",'"',':',"HTAB 1",$0D
 
