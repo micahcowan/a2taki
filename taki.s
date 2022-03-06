@@ -154,6 +154,9 @@ _TakiDelay:
 pWAIT2:
 	pha
 pWAIT3:	inc pvTakiDelayCounter
+	.repeat 5
+          nop
+        .endrepeat
         bne pWAIT3
         TakiEffectDo_ _TakiTick
 	pla

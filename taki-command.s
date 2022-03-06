@@ -13,11 +13,12 @@ I_AM_TAKI_CMD=1
 .include "math-ca65.inc"
 
 _TakiCmdTable:
-	.byte 4		; num entries
+	.byte 5		; num entries
         tstr "INSTANT"
         tstr "WORD"
         tstr "MARK"
         tstr "CONFIG"
+        tstr "DELAY"
 
 pvCmdInstant = 0
 pvCmdWord    = pvCmdInstant + 1
@@ -25,6 +26,7 @@ pvCmdMark    = pvCmdWord + 1
 pvCmdTagNeedsInit = pvCmdMark + 1 ; commands below this number
                                   ; require an init
 pvCmdConfig  = pvCmdTagNeedsInit
+pvCmdDelay   = pvCmdConfig + 1
 
 ;; _TakiCmdIsDelim
 ;; returns with carry unset if acc is a delimiter,
@@ -90,9 +92,12 @@ _TakiCmdSkipSpaces:
 .export _TakiCommandExec
 _TakiCommandExec:
         ; try to find the effect name
+        writeWord Mon_CSWL, _TakiOut
         ldy #0 ; set y to start of cmd buf
         jsr _TakiCmdFind
-        bcs @NoCmdFound
+        bcc @cmdFound
+        jmp @NoCmdFound
+@cmdFound:
         stx @effMode
         cpx #pvCmdTagNeedsInit
         bcs @NoInit
@@ -102,9 +107,11 @@ _TakiCommandExec:
         jmp @InitAndCollect
 @NoInit:
         cpx #pvCmdConfig
-        beq @handled
+        beq @config
+        cpx #pvCmdDelay
+        beq @delay
         jmp @unhandledOrInstant
-@handled:
+@config:
         ; CONFIG command
         jsr _TakiCmdReadNumW ; get effect number
         pla ; toss out high byte
@@ -124,9 +131,14 @@ _TakiCommandExec:
         jsr _TakiSetupForEffectY
         pla
         tay
-        writeWord Mon_CSWL, _TakiOut
         jmp _TakiCmdHandleConfig
         ; END
+@delay:
+	jsr _TakiCmdReadNumW
+        pla ; high
+        pla ; low
+        jsr _TakiDelay
+        rts
 @NoEffFound:
 	; Print not-found message
         TakiDbgPrint_ pEffNotFoundMsgPre
@@ -144,7 +156,6 @@ _TakiCommandExec:
 	TakiDbgPrint_ pCmdNotFoundMsgPre
         jsr _TakiDbgPrintCmdBufWordAtY
         TakiDbgPrint_ pCmdNotFoundMsgPost
-        writeWord Mon_CSWL, _TakiOut
         rts
 @InitAndCollect:
 	; Initialize an effect instance
@@ -194,7 +205,6 @@ _TakiCommandExec:
         lda #TAKI_DSP_COLLECT
         sta TakiVarDispatchEvent
         jsr _TakiEffectDispatchCur
-        writeWord Mon_CSWL, _TakiOut
         rts
 
 pEffModeUnhandled:
