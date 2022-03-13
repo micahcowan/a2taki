@@ -33,6 +33,8 @@ TakiPublic_ TakiInit
 .byte $60,$00,$00
 TakiPublic_ TakiExit
 
+TakiPublic_ TakiReset
+
 TakiPublic_ TakiDbgInit
 TakiPublic_ TakiDbgExit
 TakiPublic_ TakiDbgPrint
@@ -115,7 +117,22 @@ TakiVarOrigKSW:
 TakiVarExitPrompts:
 	.byte $DD
         .byte $AA
-        
+
+; READ-ONLY status flags variable that is copied from an internal one
+; when effect processing is active
+.export TakiVarStatusFlags
+TakiVarStatusFlags:
+	.byte $00
+
+.ifndef TF_BEH_DETECT_HOME
+TF_BEH_DETECT_HOME = 1
+.endif
+
+; Status flags that control Taki behaviors
+.export TakiVarBehaviorFlags
+TakiVarBehaviorFlags:
+	.byte TF_BEH_DETECT_HOME
+
 ; A convenience routine: store an address
 ; at TakiIndirectFn, then JSR to TakiIndirect.
 ; A workaround for 6502's lack of indirect JSR
@@ -138,12 +155,6 @@ TakiVarCurPageBase:
 .export TakiVarNextPageBase
 TakiVarNextPageBase:
 	.byte $08
-
-; READ-ONLY flags variable that is copied from an internal one
-; when effect processing is active
-.export TakiVarFlags
-TakiVarFlags:
-	.byte $00
 
 ; TakiVarTickNum: incrmented just prior to each tick/untick.
 ; useful for an effect to coordinate something across its

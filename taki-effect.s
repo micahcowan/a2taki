@@ -74,7 +74,7 @@ _TakiEffectSetupAndDo:
         ;  
         ;pick_ kZpEnd-kZpStart, 3
         ;  ^ ca65 doesn't like, for some reason
-        pick_ $1D, 3
+        pick_ $17, 3
         pla
         tay
         sty kZpY
@@ -86,7 +86,7 @@ _TakiEffectSetupAndDo:
         
         ; Copy status flags
         lda _TakiVarStatusFlags
-        sta TakiVarFlags
+        sta TakiVarStatusFlags
 
 .export _TakiEffectSetupFn
 _TakiEffectSetupFn = * + 1

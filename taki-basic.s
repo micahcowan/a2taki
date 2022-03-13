@@ -19,7 +19,7 @@ line "Q$=CHR$(ASC(",'"',"Q",'"',")-64)"
 scrcode ":REM CONTROL-S",$0D
 ;scrcode "50 HOME",$0D
 .if 1
-line "CALL ",.sprintf("%d",$600F)
+line "CALL ",.sprintf("%d",$6012)
 scrcode   ":REM TAKI DEBUG MODE",$0D
 .endif
 ;line "PRINT ",'"',"1234567890123456789012345678901234567890",'"',';',$0D

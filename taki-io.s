@@ -285,6 +285,7 @@ pvYSAV1:
 ; (standard PR#0 output routine)
 .export _TakiIoDoubledOut
 _TakiIoDoubledOut:
+	jsr _TakiIoCheckForHome
 	cmp     #$a0
         bcc     pCOUTZ
 	and     Mon_INVFLG
@@ -454,6 +455,65 @@ _TakiIoClearPageTwo:
         sta $06
         jsr _TakiDbgDrawBadge
 	rts
+
+_TakiIoCheckForHome:
+	pha
+        tya
+        pha
+        TF_BEH_BRANCH_UNLESS_FLG TF_BEH_DETECT_HOME, @bail2
+        
+        ; Check if we're at 0, 0 with a blank screen.
+        ; If so, the user probably executed "HOME". Clean
+        ; up the 2nd page if so.
+        lda Mon_CV
+        bne @bail2
+        ldy Mon_CH
+        bne @bail2
+        
+        ; We're at 0, 0. Check for a cleared screen!
+@ChkLp:	pha
+        jsr Mon_VTABZ
+	ldy #0 ; we assume Mon_WNDLFT == 0, else how'd we get to 0,0?
+@CkChr: lda (Mon_BASL),y
+        cmp #$A0 ; SPC
+        bne @bail
+        iny
+        cpy Mon_WNDWDTH
+        bcc @CkChr
+        pla
+        clc
+        adc #1
+        cmp Mon_WNDBTM
+        bcc @ChkLp
+
+	; Screen is clear. Assume we should reset animation
+        ; and clear p2 as well.
+        jsr _TakiReset
+        lda #0
+@ClrLp: pha
+	jsr _TakiIoPageTwoBasCalc
+        ldy #0
+        lda #$A0 ; SPC
+@ClrChr:sta (Mon_BASL),y
+	iny
+        cpy Mon_WNDWDTH
+        bcc @ClrChr
+        pla
+        clc
+        adc #1
+        cmp Mon_WNDBTM
+        bcc @ClrLp
+        .byte $24 ; skip next instr
+
+@bail:
+	pla
+        lda #0
+        jsr pVTABZ
+@bail2:
+        pla
+        tay
+        pla
+        rts
 
 .export _TakiIoPageFlip
 _TakiIoPageFlip:

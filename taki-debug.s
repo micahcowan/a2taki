@@ -48,7 +48,7 @@ _TakiDbgInit:
         ora #flagDebugActive
         sta _TakiVarStatusFlags
         ; and copy to copy-of-flags
-        sta TakiVarFlags
+        sta TakiVarStatusFlags
         ; Print start msg
         TakiDbgPrint_ pvDbgInitMsg
         rts
@@ -75,7 +75,7 @@ _TakiDbgExit:
         and #.lobyte(~(flagDebugActive))
         sta _TakiVarStatusFlags
         ; and copy to copy-of-flags
-        sta TakiVarFlags
+        sta TakiVarStatusFlags
 	rts
 
 pvDbgInitMsg:

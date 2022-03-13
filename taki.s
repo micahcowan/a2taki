@@ -67,7 +67,7 @@ _TakiInit:
         lda TakiVarEffectsAllocStartPage
         lda #$00
         sta _TakiVarStatusFlags
-        sta TakiVarFlags
+        sta TakiVarStatusFlags
         sta _TakiVarActiveEffectsNum
         
 	rts
@@ -79,6 +79,12 @@ _TakiExit:
         jsr _TakiDbgUndrawBadge
 	copyWord Mon_CSWL, TakiVarOrigCSW
         copyWord Mon_KSWL, TakiVarOrigKSW
+	rts
+
+.export _TakiReset
+_TakiReset:
+	lda #0
+        sta _TakiVarActiveEffectsNum
 	rts
 
 _TakiMemInit:

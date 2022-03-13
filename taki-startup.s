@@ -3,4 +3,6 @@
 
 .segment "STARTUP"
 TakiStartup:
-	jmp LoadAndRunBasic
+	ldx #$FF
+        txs
+        jmp LoadAndRunBasic

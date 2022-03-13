@@ -35,7 +35,7 @@ TAKI_EFFECT TE_Spinner, "SPINR", 0, 0
 @checkDraw:
 	cmp #TAKI_DSP_DRAW	; check if draw
         bne @noModesHandled
-        TF_BRANCH_UNLESS_FLG TF_IN_INPUT, @noModesHandled
+        TF_ST_BRANCH_UNLESS_FLG TF_ST_IN_INPUT, @noModesHandled
         ; DRAW!
         lda Mon_BASL
         sta @DrawSta+1

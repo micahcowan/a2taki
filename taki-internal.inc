@@ -44,6 +44,7 @@ flagInDebugPrint    = flagInTick << 1
 .import _TakiMoveASoft
 .import _TakiInit
 .import _TakiExit
+.import _TakiReset
 .import _TakiDelay
 .endif
 
@@ -132,7 +133,7 @@ maybe_import TE_Spinner
 
 .include "taki-effect.inc"
 
-kZpStart		= $60
+kZpStart		= $66
 kZpCurEffStorageL	= TAKI_ZP_EFF_STORAGE_L	; $66
 kZpCurEffStorageH	= TAKI_ZP_EFF_STORAGE_H	; $67
 kZpCurEffStorageEndL	= TAKI_ZP_EFF_STORAGE_END_L ; $68

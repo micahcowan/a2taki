@@ -3,7 +3,7 @@
 
 .macro TakiDbgPrint_ strAddr
     pha
-    TF_BRANCH_UNLESS_FLG TF_DEBUG_ACTIVE, :+
+    TF_ST_BRANCH_UNLESS_FLG TF_ST_DEBUG_ACTIVE, :+
     tya
     pha
 
