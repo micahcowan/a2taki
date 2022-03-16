@@ -16,9 +16,18 @@
 .include "taki-public.inc"
 .include "taki-debug.inc"
 
+.import _TakiIoDoubledOut
+
 .byte ""
 .byte 0
 .word 0
 .word 0
 TE_NONE:
+	cmp #TAKI_DSP_COLLECT
+        bne @gtfo
+        ; COLLECT - print with inverse
+        lda TAKI_ZP_ACC
+        and #$3F
+        jmp _TakiIoDoubledOut
+@gtfo:
 	rts

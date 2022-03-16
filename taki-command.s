@@ -153,6 +153,8 @@ _TakiCommandExec:
         sty _TakiEffectInitializeFn+1
         jmp @runInit
 @NoCmdFound:
+        lda #$21
+        jsr _TakiIoDoubledOut
 	TakiDbgPrint_ pCmdNotFoundMsgPre
         jsr _TakiDbgPrintCmdBufWordAtY
         TakiDbgPrint_ pCmdNotFoundMsgPost
