@@ -489,7 +489,7 @@ pFindInTable:
 @NextChar:
 	inc pvTableAddr ; still in the running
         bne :+
-        inc pvTableAddr
+        inc pvTableAddr+1
 :	iny
         bne @CheckWord ; "always"
 @CheckDelim:

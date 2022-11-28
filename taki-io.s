@@ -242,31 +242,6 @@ pvSaved_CV:
 	.byte $00
 pvSaved_BAS:
 	.byte $00, $00
-        
-pTakiBASCALC:
-pvBASCALCfn = pTakiBASCALC + 1
-        jmp _TakiIoPageOneBasCalc ; actual addr overwritten
-
-_TakiIoPageOneBasCalc = Mon_BASCALC
-
-; Same as monitor BASCALC, but calc for page 2 instead
-.export _TakiIoPageTwoBasCalc
-_TakiIoPageTwoBasCalc:
-	pha
-	lsr
-	and     #$03
-	ora     #$08	; page two
-	sta     Mon_BASH
-	pla
-	and     #$18
-	bcc     :+
-	adc     #$7f
-:	sta     Mon_BASL
-	asl
-        asl
-	ora     Mon_BASL
-	sta     Mon_BASL
-	rts
 
 .macro doubledStaBasl_ basl
     .repeat 2
@@ -324,7 +299,7 @@ pVIDOUT:	cmp     #$a0
         bcs     pRTS4
 	dec     Mon_CV
 	lda     Mon_CV
-	jsr     pTakiBASCALC
+	jsr     Mon_BASCALC
 	adc     Mon_WNDLFT
 	sta     Mon_BASL
 pRTS4:	rts
@@ -413,7 +388,7 @@ pCLREOL2:doubledStaBasl_ Mon_BASL
 	rts
 
 pVTAB:	lda	Mon_CV
-pVTABZ:	jsr     pTakiBASCALC
+pVTABZ:	jsr     Mon_BASCALC
 	adc     Mon_WNDLFT
 	sta     Mon_BASL
 	rts
@@ -488,7 +463,7 @@ _TakiIoCheckForHome:
         jsr _TakiReset
         lda #0
 @ClrLp: pha
-	jsr _TakiIoPageTwoBasCalc
+	jsr Mon_BASCALC
         ldy #0
         lda #$A0 ; SPC
 @ClrChr:sta (Mon_BASL),y

@@ -44,8 +44,6 @@ TakiPublic_ TakiDbgPrintCmdBufWordAtY
 TakiPublic_ TakiIn
 TakiPublic_ TakiOut
 TakiPublic_ TakiDelay
-TakiPublic_ TakiIoPageTwoBasCalc
-TakiPublic_ TakiIoClearPageTwo
 TakiPublic_ TakiIoDoubledOut
 
 TakiPublic_ TakiMySetCounter
