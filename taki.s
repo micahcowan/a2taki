@@ -61,7 +61,6 @@ _TakiInit:
         ; save away CSW, KSW
         copyWord TakiVarOrigCSW, Mon_CSWL
         copyWord TakiVarOrigKSW, Mon_KSWL
-        jsr _TakiIoSetPageOne
         writeWord Mon_KSWL, _TakiIn
         writeWord Mon_CSWL, _TakiOut
         lda TakiVarEffectsAllocStartPage
@@ -76,7 +75,6 @@ _TakiInit:
 _TakiExit:
         jsr _TakiDbgExit
         bit $C054	; force page one
-        jsr _TakiDbgUndrawBadge
 	copyWord Mon_CSWL, TakiVarOrigCSW
         copyWord Mon_KSWL, TakiVarOrigKSW
 	rts

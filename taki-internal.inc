@@ -79,6 +79,7 @@ flagInDebugPrint    = flagInTick << 1
 .import _TakiEffectInitializeFn
 .import _TakiEffectDispatchCur
 .import _TakiTick
+.import _TakiVarEffectFrameTicked
 .import _TakiEffectFind
 .import _TakiMySetCounter
 .import _TakiMyGetCounter

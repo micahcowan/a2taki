@@ -286,8 +286,6 @@ _TakiEffectDispatchCur:
 
 pvTickMode:
 	.byte TAKI_DSP_UNTICK
-pvPendingFlip:
-	.byte $00
 .export _TakiTick
 _TakiTick:
         TakiBranchUnlessFlag_ flagInTick, @NotInTick
@@ -296,11 +294,20 @@ _TakiTick:
 	TakiSetFlag_ flagInTick
         ; Run all effect ticks
         lda _TakiVarActiveEffectsNum
-        beq @SkipFlip
+        beq @TickLoopDone
         ldy #0
-        sty pvPendingFlip
         inc TakiVarTickNum
 @TickLoop:
+	; For each active effect, decrement the
+        ; effect's timing counter, and send
+        ; it a "tick" event if it should prepare
+        ; to do a new frame, and an "untick" if
+        ; it should not (the "untick" is primarily
+        ; so that a similar amount of work is done
+        ; for each effect, regardless of whether it
+        ; "ticked" or not, so that animation
+        ; jitter is mitigated.
+        
         jsr _TakiSetupForEffectY
         
         tya
@@ -327,11 +334,12 @@ _TakiTick:
         lda (kZpEffCtrInitTbl),y
         sta (kZpEffCtrValTbl),y
         dey
-        ; mark tick (vs untick), and the pending flip
-        lda #$ff
-        sta pvPendingFlip
+        ; mark tick (vs untick) event
         lda #TAKI_DSP_TICK
         sta pvTickMode
+        ; also mark internal flag that a tick
+        ;  occurred (used by '+' in frame debug)
+        sta _TakiVarEffectFrameTicked
 @NoTrip:
         
         lda (kZpEffDispatchTbl),y
@@ -353,43 +361,13 @@ _TakiTick:
 	bne @TickLoop
 
 @TickLoopDone:
-        bit pvPendingFlip
-        bpl @SkipFlip
-        
-        ; We've a pending page flip - loop
-        ; through all the effects again for drawing!ldy #0
-        ldy #$00
-@DrawLoop:
-        jsr _TakiSetupForEffectY
-        
-        tya
-        asl
-        tay ; y *= 2, for tables-of-addresses
-        
-        lda (kZpEffDispatchTbl),y
-        sta @pEffDrawJsr+1
-        iny
-        lda (kZpEffDispatchTbl),y
-        sta @pEffDrawJsr+2
-        
-        ldy kZpCurEffect
-        lda #TAKI_DSP_DRAW
-@pEffDrawJsr:
-	jsr $1000 ; OVERWRITTEN
-
-        ldy kZpCurEffect
-        iny
-	cpy _TakiVarActiveEffectsNum
-	bne @DrawLoop
-
-@DrawLoopDone:
-	jsr _TakiIoPageFlip
-@SkipFlip:
-        jsr _TakiDbgDrawBadge
-        
         TakiUnsetFlag_ flagInTick
         
         rts
+
+.export _TakiVarEffectFrameTicked
+_TakiVarEffectFrameTicked:
+	.byte 0
 
 pDbgNoWordEnd:
 	scrcode "EFFECT NAME END NOT FOUND"

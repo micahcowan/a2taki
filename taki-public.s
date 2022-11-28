@@ -39,8 +39,6 @@ TakiPublic_ TakiDbgInit
 TakiPublic_ TakiDbgExit
 TakiPublic_ TakiDbgPrint
 TakiPublic_ TakiDbgCOUT
-TakiPublic_ TakiDbgUndrawBadge
-TakiPublic_ TakiDbgDrawBadge
 TakiPublic_ TakiDbgPrintCmdBufWordAtY
 
 TakiPublic_ TakiIn
@@ -143,18 +141,6 @@ _TakiIndirect:
 .export TakiVarIndirectFn
 TakiVarIndirectFn = _TakiIndirect + 1
 	jmp $1000 ; addr overwritten by caller
-
-; TakiVarCurPageBase: contains $04 if page one is the
-; currently shown page, $08 if page two.
-; TakiVarNextPageBase: reverse of the above.
-	.byte $00
-.export TakiVarCurPageBase
-TakiVarCurPageBase:
-	.byte $04
-	.byte $00
-.export TakiVarNextPageBase
-TakiVarNextPageBase:
-	.byte $08
 
 ; TakiVarTickNum: incrmented just prior to each tick/untick.
 ; useful for an effect to coordinate something across its

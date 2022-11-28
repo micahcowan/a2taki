@@ -369,7 +369,7 @@ pSCRL1:	lda     Mon_BASL
 	pla
 	adc     #$01
 	cmp     Mon_WNDBTM
-        bcs     pBadge
+        bcs     pSCRL3
 	pha
         jsr     pVTABZ
 pSCRL2:	lda     (Mon_BASL),y
@@ -395,8 +395,6 @@ pSCRL2:	lda     (Mon_BASL),y
 	dey
         bpl     pSCRL2
         bmi     pSCRL1
-pBadge:
-        jsr _TakiDbgDrawBadge
 pSCRL3:	ldy     #$00
         jsr     pCLEOLZ
         bcs     pVTAB
@@ -453,7 +451,6 @@ _TakiIoClearPageTwo:
         sta $07
         pla
         sta $06
-        jsr _TakiDbgDrawBadge
 	rts
 
 _TakiIoCheckForHome:
@@ -513,27 +510,4 @@ _TakiIoCheckForHome:
         pla
         tay
         pla
-        rts
-
-.export _TakiIoPageFlip
-_TakiIoPageFlip:
-	lda TakiVarCurPageBase	; what's cur page?
-        cmp #$08		; p2: go handle that
-        beq _TakiIoSetPageTwo	; otherwise, handle p1 here
-.export _TakiIoSetPageOne
-_TakiIoSetPageOne:
-	lda #$08
-        sta TakiVarCurPageBase
-        lda #$04
-        sta TakiVarNextPageBase
-        bit SS_SEL_TEXT_P2	; switch to p2
-        rts
-.export _TakiIoSetPageTwo
-_TakiIoSetPageTwo:
-	lda #$04
-        sta TakiVarCurPageBase
-        lda #$08
-        sta TakiVarNextPageBase
-        bit SS_SEL_TEXT_P1	; switch to p1
-        rts
-	
+        rts	

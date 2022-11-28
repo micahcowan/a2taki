@@ -22,7 +22,7 @@ TAKI_EFFECT TE_Spinner, "SPINR", 0, 0
 @skipHi:rts
 @checkTick:
 	cmp #TAKI_DSP_TICK	; check if tick
-        bne @checkDraw		; no: check other modes
+        bne @noModesHandled
         ldy #0			; yes: DRAW
         lda (TAKI_ZP_EFF_STORAGE_L),y ; load iterator
         clc
@@ -31,17 +31,13 @@ TAKI_EFFECT TE_Spinner, "SPINR", 0, 0
         bne @Store
         lda #0
 @Store:	sta (TAKI_ZP_EFF_STORAGE_L),y
-	rts
-@checkDraw:
-	cmp #TAKI_DSP_DRAW	; check if draw
-        bne @noModesHandled
-        TF_ST_BRANCH_UNLESS_FLG TF_ST_IN_INPUT, @noModesHandled
+	TF_ST_BRANCH_UNLESS_FLG TF_ST_IN_INPUT, @noModesHandled
         ; DRAW!
         lda Mon_BASL
         sta @DrawSta+1
         lda Mon_BASH
-        and #$03
-        ora TakiVarNextPageBase ; XXX
+        ;and #$03
+        ;ora TakiVarNextPageBase ; XXX
         sta @DrawSta+2	; modify upcoming sta dest
         ldy #0
         lda (TAKI_ZP_EFF_STORAGE_L),y

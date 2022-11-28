@@ -69,7 +69,7 @@ CkColl: cmp #TAKI_DSP_COLLECT	; collect?
         jmp _TakiIoDoubledOut ; XXX
 CkTick:
 	cmp #TAKI_DSP_TICK	; tick?
-        bne CkDraw
+        bne NoModesFound
 	; TICK
         lda #$0
         sec ; so, 1
@@ -103,15 +103,12 @@ CkTick:
 @Stor:
         iny
 	sta (TAKI_ZP_EFF_STORAGE_L),y
-        rts
-CkDraw:	cmp #TAKI_DSP_DRAW	; draw?
-	bne NoModesFound
         ; DRAW!
         ; Adjust "Base" by which page is coming
         ldy #kLocBase+1
         lda (TAKI_ZP_EFF_STORAGE_L),y
-        and #$03 ; remove page info
-        ora TakiVarNextPageBase ; add it back in
+        ;and #$03 ; remove page info
+        ;ora TakiVarNextPageBase ; add it back in
         sta TAKI_ZP_EFF_SPECIAL_1
         dey ; Now copy the low byte of "Base"
         lda (TAKI_ZP_EFF_STORAGE_L),y
