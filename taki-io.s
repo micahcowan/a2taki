@@ -131,23 +131,6 @@ _TakiIn:
         			;  pre-Taki I/O processor
 @NotExited:
 	pla ; from branch-unless flagInGETLN
-        ; save $6, $7, use for BAS + $400
-        lda $6
-        pha
-        lda $7
-        pha
-        lda Mon_BASL
-        sta $6
-        lda Mon_BASH
-        ;and #($FF - $4)
-        ;ora #$08
-        eor #$0C
-        sta $7
-        
-        ; save cursor, and set it on pg 2 as well
-        lda (Mon_BASL),y
-        sta pvSavedCursor
-        sta ($06),y
 @KEYIN:	inc     Mon_RNDL
 	bne     @KEYIN2
 	inc     Mon_RNDH
@@ -191,11 +174,6 @@ _TakiIn:
         sta pvSavedCursor	; temp save read key
         lda pvSavedRealChar
         sta (Mon_BASL),y
-        sta ($6),y
-	pla
-	sta $7
-        pla
-        sta $6
         lda pvSavedCursor
 	rts
 
@@ -337,24 +315,6 @@ pSCRL1:	lda     Mon_BASL
         jsr     pVTABZ
 pSCRL2:	lda     (Mon_BASL),y
 	sta     (Mon_BAS2L),y
-        ; now do the other page
-        lda Mon_BASL+1
-        pha
-        eor #$0C
-        sta Mon_BASL+1
-        lda Mon_BAS2L+1
-        pha
-        eor #$0C
-        sta Mon_BAS2L+1
-        ;
-        lda (Mon_BASL),y
-        sta (Mon_BAS2L),y
-        ;
-        pla
-        sta Mon_BAS2L+1
-        pla
-        sta Mon_BASL+1
-        ;
 	dey
         bpl     pSCRL2
         bmi     pSCRL1

@@ -41,7 +41,6 @@ flagInDebugPrint    = flagInTick << 1
 ;; taki.s
 .ifndef I_AM_TAKI
 .import _TakiVarStatusFlags
-.import _TakiMoveASoft
 .import _TakiInit
 .import _TakiExit
 .import _TakiReset

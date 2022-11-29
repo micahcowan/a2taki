@@ -18,15 +18,14 @@ TakiStart:
 ; a routine, that will not change
 ; across releases.
 
-TakiPublic_ TakiMoveASoft
-;  TakiPublic_ takes a name like TakiMoveASoft
+TakiPublic_ TakiInit
+;  TakiPublic_ takes a name like TakiInit
 ;  and spits out code like:
 ;
-;.export TakiMoveASoft
+;.export TakiInit
 ;TakiMoveASoft:
-;	jmp _TakiMoveASoft
+;	jmp _TakiInit
 
-TakiPublic_ TakiInit
 ;TakiPublic_ TakiPause
 .byte $60,$00,$00
 ;TakiPublic_ TakiResume

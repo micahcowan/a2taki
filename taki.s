@@ -37,17 +37,6 @@ I_AM_TAKI=1
 _TakiVarStatusFlags:
 	.byte $00
 
-; Reorganize where in memory a BASIC program is
-; located (to move it out of the way of the
-; second text page - to $C01)
-.export _TakiMoveASoft
-_TakiMoveASoft:
-	lda #$0C
-        sta Mon_TEXTTAB+1
-        sta Mon_VARTAB+1
-        sta Mon_PRGEND+1
-	rts
-
 ; Initialize Taki, hijacking input and output
 ; for special processing (and to send things to both
 ; text pages)

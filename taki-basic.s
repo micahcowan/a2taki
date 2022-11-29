@@ -1,5 +1,7 @@
 .macpack apple2
 
+.include "taki-public.inc"
+
 .export ASoftProg, ASoftEnd
 
 LINE_NUMBER .set 10
@@ -10,8 +12,7 @@ LINE_NUMBER .set LINE_NUMBER+10
 .endmacro
 
 ASoftProg:
-scrcode "CALL ",.sprintf("%d",$6000),":REM  MOVE APPLESOFT",$0D
-line "CALL ",.sprintf("%d",$6003)
+line "CALL ",.sprintf("%d",$6000)
 scrcode   ":REM INIT TAKI",$0D
 line "T$=CHR$(ASC(",'"',"T",'"',")-64)"
 scrcode ":REM CONTROL-T",$0D
@@ -19,7 +20,7 @@ line "Q$=CHR$(ASC(",'"',"Q",'"',")-64)"
 scrcode ":REM CONTROL-S",$0D
 ;scrcode "50 HOME",$0D
 .if 1
-line "CALL ",.sprintf("%d",$6012)
+line "CALL ",.sprintf("%d",$600F)
 scrcode   ":REM TAKI DEBUG MODE",$0D
 .endif
 ;line "PRINT ",'"',"1234567890123456789012345678901234567890",'"',';',$0D
@@ -47,6 +48,8 @@ line "NEXT",$0D
 line "HTAB 1:PRINT ",'"',"      ",'"',':',"HTAB 1",$0D
 
 line "PRINT T$;",'"',"CONFIG 0 FDLY=5 PAUSE=180",'"',$0D
+
+line "INPUT ",'"',"INTERNAL",'"',";A$",$0D
 
 line "REM DISABLE EXIT-ON-PROMPT",$0D
 line "POKE ",.sprintf("%d",$608D),", 0",$0D

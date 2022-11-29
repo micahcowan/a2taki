@@ -63,14 +63,11 @@ maybe_import TakiVarExitPrompts
 maybe_import TakiVarStatusFlags
 maybe_import TakiVarBehaviorFlags
 maybe_import TakiVarIndirectFn
-maybe_import TakiVarCurPageBase
-maybe_import TakiVarNextPageBase
 maybe_import TakiVarTickNum
 maybe_import TakiVarDispatchEvent
 
 maybe_import TakiDbgPrint
 .ifndef TAKI_INTERNAL
-maybe_import TakiMoveASoft
 maybe_import TakiInit
 maybe_import TakiExit
 maybe_import TakiReset
