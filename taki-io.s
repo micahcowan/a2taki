@@ -21,7 +21,7 @@ _TakiOut:
         writeWord Mon_CSWL, _TakiIoCtrlReadCmd
         rts
 @RegChar:
-	jmp _TakiIoDoubledOut
+	jmp _TakiIoScreenOut
 
 _TakiIoCtrlReadCmd:
         sta pvSavedRealChar
@@ -93,7 +93,6 @@ pvSavedCursor:
 pvSavedRealChar:
 	.byte $00
 ; Taki character input routine
-; XXX: make this work with both text pages...
 ; XXX: does this work with //e cursors?
 .export _TakiIn
 _TakiIn:
@@ -243,23 +242,12 @@ pvSaved_CV:
 pvSaved_BAS:
 	.byte $00, $00
 
-.macro doubledStaBasl_ basl
-    .repeat 2
-	sta (basl),y
-        pha
-        lda basl+1
-        eor #$0C
-        sta basl+1
-        pla
-    .endrepeat
-.endmacro
-
 pvYSAV1:
 	.byte $00
 ; A modified variant of Monitor's COUT1 routine
 ; (standard PR#0 output routine)
-.export _TakiIoDoubledOut
-_TakiIoDoubledOut:
+.export _TakiIoScreenOut
+_TakiIoScreenOut:
 	jsr _TakiIoCheckForHome
 	cmp     #$a0
         bcc     pCOUTZ
@@ -272,7 +260,7 @@ pCOUTZ:  sty     pvYSAV1
 	rts
 ;
 pSTORADV:ldy     Mon_CH
-	doubledStaBasl_ Mon_BASL
+	sta (Mon_BASL),y
 pADVANCE:inc     Mon_CH
 	lda     Mon_CH
 	cmp     Mon_WNDWDTH
@@ -378,7 +366,7 @@ pCLREOL:pha
         pha
 	ldy     Mon_CH
 pCLEOLZ:	lda     #$a0
-pCLREOL2:doubledStaBasl_ Mon_BASL
+pCLREOL2:sta (Mon_BASL),y
 	iny
 	cpy     Mon_WNDWDTH
         bcc     pCLREOL2
@@ -391,41 +379,6 @@ pVTAB:	lda	Mon_CV
 pVTABZ:	jsr     Mon_BASCALC
 	adc     Mon_WNDLFT
 	sta     Mon_BASL
-	rts
-
-.export _TakiIoClearPageTwo
-_TakiIoClearPageTwo:
-	lda $06
-        pha
-        lda $07
-        pha
-        tya
-        pha
-        txa
-        pha
-        
-        lda #$00
-        sta $06
-        lda #$08
-        sta $07
-        lda #$A0
-@nextPg:ldy #0
-:	sta ($06),y
-        iny
-        bne :-
-        inc $07
-        ldx $07
-        cpx #$0C
-        bne @nextPg
-        
-        pla
-        tax
-        pla
-        tay
-        pla
-        sta $07
-        pla
-        sta $06
 	rts
 
 _TakiIoCheckForHome:

@@ -44,7 +44,7 @@ TakiPublic_ TakiDbgPrintCmdBufWordAtY
 TakiPublic_ TakiIn
 TakiPublic_ TakiOut
 TakiPublic_ TakiDelay
-TakiPublic_ TakiIoDoubledOut
+TakiPublic_ TakiIoScreenOut
 
 TakiPublic_ TakiMySetCounter
 TakiPublic_ TakiMyGetCounter

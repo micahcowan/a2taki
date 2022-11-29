@@ -154,7 +154,7 @@ _TakiCommandExec:
         jmp @runInit
 @NoCmdFound:
         lda #$21
-        jsr _TakiIoDoubledOut
+        jsr _TakiIoScreenOut
 	TakiDbgPrint_ pCmdNotFoundMsgPre
         jsr _TakiDbgPrintCmdBufWordAtY
         TakiDbgPrint_ pCmdNotFoundMsgPost

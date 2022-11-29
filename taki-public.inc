@@ -83,9 +83,7 @@ maybe_import TakiDbgPrintCmdBufWordAtY
 maybe_import TakiIn
 maybe_import TakiOut
 maybe_import TakiDelay
-maybe_import TakiIoPageTwoBasCalc
-maybe_import TakiIoClearPageTwo
-maybe_import TakiIoDoubledOut
+maybe_import TakiIoScreenOut
 maybe_import TakiMySetCounter
 maybe_import TakiMyGetCounter
 maybe_import TakiMySetCounterInit

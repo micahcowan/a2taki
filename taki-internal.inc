@@ -92,12 +92,7 @@ flagInDebugPrint    = flagInTick << 1
 .import _TakiOut
 .import _TakiIn
 .import _TakiIoGetKey
-.import _TakiIoPageTwoBasCalc
-.import _TakiIoDoubledOut
-.import _TakiIoClearPageTwo
-.import _TakiIoPageFlip
-.import _TakiIoSetPageOne
-.import _TakiIoSetPageTwo
+.import _TakiIoScreenOut
 .import _TakiIoCollectUntilCtrlQ
 .import _TakiIoCollectWord
 .endif

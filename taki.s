@@ -56,7 +56,6 @@ _TakiInit:
 	jsr _TakiMemInit
         
         jsr Mon_HOME
-	jsr _TakiIoClearPageTwo
         ;jsr _TakiDbgInit
         ; save away CSW, KSW
         copyWord TakiVarOrigCSW, Mon_CSWL
