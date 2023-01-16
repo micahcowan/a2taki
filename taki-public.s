@@ -44,6 +44,8 @@ TakiPublic_ TakiIn
 TakiPublic_ TakiOut
 TakiPublic_ TakiDelay
 TakiPublic_ TakiIoScreenOut
+TakiPublic_ TakiIoFastPrintStr
+TakiPublic_ TakiIoFastPrintSpace
 
 TakiPublic_ TakiMySetCounter
 TakiPublic_ TakiMyGetCounter

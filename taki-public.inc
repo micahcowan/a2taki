@@ -81,6 +81,8 @@ maybe_import TakiIn
 maybe_import TakiOut
 maybe_import TakiDelay
 maybe_import TakiIoScreenOut
+maybe_import TakiIoFastPrintStr
+maybe_import TakiIoFastPrintSpace
 maybe_import TakiMySetCounter
 maybe_import TakiMyGetCounter
 maybe_import TakiMySetCounterInit

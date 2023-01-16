@@ -204,7 +204,7 @@ _TakiCommandExec:
         TakiDbgPrint_ pEffModeUnhandled
 @skipUnh:
 	; immediately send ENDCOLLECT
-        lda #TAKI_DSP_COLLECT
+        lda #TAKI_DSP_ENDCOLLECT
         sta TakiVarDispatchEvent
         jsr _TakiEffectDispatchCur
         rts

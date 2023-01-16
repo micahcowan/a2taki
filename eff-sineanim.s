@@ -11,12 +11,14 @@
 .include "a2-monitor.inc"
 .include "math-ca65.inc"
 
+.import SineCalcRun, SineCalcTimersAdvance
+
 kLocMode	= 0
 kLocCH		= kLocMode + 1
 kLocCV		= kLocCH + 1
 kLocPrevBAS     = kLocCV + 1
-kLocTimersAddr  = kLocPrevBAS + 2
-kLocHAnimAddr	= kLocTimersAddr + 2 ; same as start of storage + kNeeded, but anyway
+kLocTimersAddr  = kLocPrevBAS + 2 ; same as start of storage + kNeeded, but anyway
+kLocHAnimAddr	= kLocTimersAddr + 2
 kLocVAnimAddr	= kLocHAnimAddr + 2
 kLocTextAddr	= kLocVAnimAddr + 2
 kNeeded		= kLocTextAddr + 2
@@ -39,6 +41,9 @@ TAKI_EFFECT TE_SineAnim, "SANIM", 0, 0
 	cmp #TAKI_DSP_INIT	; init?
         bne CkColl
         ;; INIT
+        ; Allocate the space we will need
+        effAllocate kNeeded
+        ;
         lda #kModeTimers
         effSetVar kLocMode
         ; save cursor X and Y
@@ -53,23 +58,28 @@ TAKI_EFFECT TE_SineAnim, "SANIM", 0, 0
         adc Mon_BASL
         effSetNext
         lda Mon_BASH
-        adc #0 ; (for carry)
+        adc #0 ; (for carry, though shouldn't be necessary)
+        effSetNext
+        ; Point timers at the end of current storage
+        lda TAKI_ZP_EFF_STORAGE_END_L
+        effSetNext
+        lda TAKI_ZP_EFF_STORAGE_END_H
         effSetNext
         ; initialize the basic timer:
-        ; 1 timer: 1,0,0,0
+        ; 1 timer: 1,1,0,0
         lda #1
-        effSetNext
-        effSetNext
+        effAppendByte
+        lda #4
+        effAppendByte
+        lda #1
+        effAppendByte
         lda #0
-        effSetNext
-        effSetNext
-        effSetNext
-        ; Allocate the space we used
-        effAllocate kNeeded
+        effAppendByte
+        effAppendByte
 	rts
 CkColl: cmp #TAKI_DSP_COLLECT	; collect?
 	beq :+
-	jmp CkTick
+	jmp CkCollectEnd
 :
         ;; COLLECT
         effGetVar kLocMode
@@ -110,12 +120,9 @@ CollectSkipToCr:
         ; If we're entering animation processing,
         ; set up anim code-start pointer, and decimal
         ; state byte
-        lda TAKI_ZP_EFF_STORAGE_L
-        clc
-        adc #kNeeded
+        lda TAKI_ZP_EFF_STORAGE_END_L
         effSetVar kLocAnimStartAddr
-        lda TAKI_ZP_EFF_STORAGE_H
-        adc #0 ; for carry
+        lda TAKI_ZP_EFF_STORAGE_END_H
         effSetNext
         ; set up decimal processing state
         ; (0 = nothing in progress), and a byte for
@@ -169,13 +176,135 @@ CollectText:
 	lda TAKI_ZP_ACC
         effAppendByte
         jmp TakiIoScreenOut
+CkCollectEnd:
+	cmp #TAKI_DSP_ENDCOLLECT
+        bne CkTick
+	lda #0 ; zero-terminate the message string
+        effAppendByte
+        rts
 CkTick:
 	cmp #TAKI_DSP_TICK	; tick?
-        bne NoModesFound
+        beq :+
+        rts ; No modes found: exit
+        :
         ;; DRAW TICK
+        ; Set up calculation structure for horiz SineCalc
+        effGetVar kLocTimersAddr
+        sta SineCalcStruct+2
+        effGetNext
+        sta SineCalcStruct+3
+        effGetNext
+        sta SineCalcStruct
+        effGetNext
+        sta SineCalcStruct+1
+        ; Tick timers
+        lda SineCalcStruct+2
+        ldy SineCalcStruct+3
+        jsr SineCalcTimersAdvance
+        ; Save BAS, CH, CV
+        lda Mon_CH
+        sta SavedCH
+        lda Mon_CV
+        sta SavedCV
+        lda Mon_BASL
+        sta SavedBAS
+        lda Mon_BASH
+        sta SavedBAS+1
+        ; Calculate new CH
+        lda #<SineCalcStruct
+        ldy #>SineCalcStruct
+        jsr SineCalcRun
+        sta Mon_CH
+        ; add our original CH
+        effGetVar kLocCH
+        clc
+        adc Mon_CH
+        sta Mon_CH
+        ; Calculate new CV
+        effGetVar kLocVAnimAddr
+        sta SineCalcStruct
+        effGetNext
+        sta SineCalcStruct+1
+        lda #<SineCalcStruct
+        ldy #>SineCalcStruct
+        jsr SineCalcRun
+        sta Mon_CV
+        ; add our original CV
+        effGetVar kLocCV
+        clc
+        adc Mon_CV
+        sta Mon_CV
+        ; Calculate BAS
+        jsr Mon_BASCALC
+        ; adjust for CH (so we can detect change)
+        lda Mon_BASL
+        clc
+        adc Mon_CH
+        sta Mon_BASL ; carry should never happen
+        lda #0
+        sta Mon_CH
+        ; Save new BAS
+        lda Mon_BASL
+        sta NewBAS
+        lda Mon_BASH
+        sta NewBAS+1
+        ; Restore old, for erase
+        effGetVar kLocPrevBAS
+        sta Mon_BASL
+        effGetNext
+        sta Mon_BASH
+        ; Set up text message ptr for fast-print
+        effGetVar kLocTextAddr
+        sta TAKI_ZP_EFF_SPECIAL_0
+        effGetNext
+        sta TAKI_ZP_EFF_SPECIAL_1
+        ; Has BAS changed from prev calculation?
+        effGetVar kLocPrevBAS
+        cmp NewBAS
+        bne @different
+        effGetNext
+        cmp NewBAS+1
+        bne @different
+@same:
+	; Reprint our message instead of erasing it,
+        ; so the timing stays roughly the same without
+        ; disrupting video
+        jsr TakiIoFastPrintStr
+        jmp @print
+@different:
+	jsr TakiIoFastPrintSpace
+@print:
+	; Set up "new" BAS for printing,
+        ; and save as "prev" BAS for next tick
+        lda NewBAS
+        sta Mon_BASL
+        effSetVar kLocPrevBAS
+        lda NewBAS+1
+        sta Mon_BASH
+        effSetNext
+        ; Print the text
+        jsr TakiIoFastPrintStr
+@finish:
+	lda SavedCH
+        sta Mon_CH
+        lda SavedCV
+        sta Mon_CV
+        lda SavedBAS
+        sta Mon_BASL
+        lda SavedBAS+1
+        sta Mon_BASH
         rts
-NoModesFound:
-	rts
+SavedCH:
+	.byte 0
+SavedCV:
+	.byte 0
+SavedBAS:
+	.word 0
+NewBAS:
+	.word 0
+SineCalcStruct:
+	.word 0
+        .word 0
 
 ProcessProgramChar:
         ; Get processing mode and number-in-progress

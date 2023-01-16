@@ -14,6 +14,8 @@
 ;#link "forthish.s"
 ;#resource "math-ca65.inc"
 ;#link "math-ca65.s"
+;#link "signlib.s"
+;#link "signcalc.s"
 
 
 ;#resource "taki.cfg"

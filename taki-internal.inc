@@ -94,6 +94,8 @@ flagInDebugPrint    = flagInTick << 1
 .import _TakiIoScreenOut
 .import _TakiIoCollectUntilCtrlQ
 .import _TakiIoCollectWord
+.import _TakiIoFastPrintStr
+.import _TakiIoFastPrintSpace
 .endif
 
 ;; taki-cmd.s

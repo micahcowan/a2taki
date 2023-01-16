@@ -34,14 +34,37 @@ scrcode   ":REM TAKI DEBUG MODE",$0D
 .endif
 ;
 line "HTAB 5:VTAB 5"
-lineP ":",';'
-lineTAKI "MARK SANIM"
+lineTAKI "MARK SANIM(FDLY=0)"
 lineP "",":REM TIMER VALUES"
-lineP "0R 4,0TSR",":REM ANIMATION CODE"
-lineP "WELCOME",":REM TEXT"
+lineP "0,2-,0TSR 4,0TSR",":REM ANIMATION CODE"
+lineP "MICAH ",";:REM TEXT"
 line "? Q$;"
-lineP
-lineP "DONE"
+;
+lineTAKI "MARK SANIM(FDLY=0)"
+lineP "",":REM TIMER VALUES"
+lineP "0,2-,0T,32+,SR 4,0T,32+,SR",":REM ANIMATION CODE"
+lineP "COWAN ",";:REM TEXT"
+line "? Q$;"
+;
+lineTAKI "MARK SANIM(FDLY=0)"
+lineP "",":REM TIMER VALUES"
+lineP "0,2-,0T,64+,SR 4,0T,64+,SR",":REM ANIMATION CODE"
+lineP "PRODUCTIONS ",";:REM TEXT"
+line "? Q$;"
+;
+lineTAKI "MARK SANIM(FDLY=0)"
+lineP "",":REM TIMER VALUES"
+lineP "0,2-,0T,96+,SR 4,0T,96+,SR",":REM ANIMATION CODE"
+lineP "PRESENTS ",";:REM TEXT"
+line "? Q$;"
+;
+line "HTAB 18:VTAB 14"
+lineTAKI "MARK SANIM(FDLY=0)"
+lineP "",":REM TIMER VALUES"
+lineP "16,0TSR 0R",":REM ANIMATION CODE"
+lineP "TAKI",";:REM TEXT"
+line "? Q$;"
+;
 scrcode "9000 ? T$;",'"',"DELAY 255",'"',$0D
 scrcode "9010 GOTO 9000",$0D
 ;

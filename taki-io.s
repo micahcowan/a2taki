@@ -398,4 +398,45 @@ _TakiIoCheckForHome:
         pla
         tay
         pla
-        rts	
+        rts
+
+.export _TakiIoFastPrintStr
+_TakiIoFastPrintStr:
+	; First adjust BAS = BAS + CH
+        lda Mon_BASL
+        clc
+        adc Mon_CH
+        sta Mon_BASL
+        pha
+	    ldy #0
+@lp:
+            lda (kZpEffSpecial0),y
+            beq @finish
+            sta (Mon_BASL),y
+            iny
+            bne @lp
+@finish:
+        pla
+        sta Mon_BASL
+	rts
+
+.export _TakiIoFastPrintSpace
+_TakiIoFastPrintSpace:
+	; First adjust BAS = BAS + CH
+        lda Mon_BASL
+        clc
+        adc Mon_CH
+        sta Mon_BASL
+        pha
+	    ldy #0
+@lp:
+            lda (kZpEffSpecial0),y
+            beq @finish
+            lda #$A0
+            sta (Mon_BASL),y
+            iny
+            bne @lp
+@finish:
+        pla
+        sta Mon_BASL
+	rts
