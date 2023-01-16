@@ -65,11 +65,14 @@ lineP "16,0TSR 0R",":REM ANIMATION CODE"
 lineP "TAKI",";:REM TEXT"
 line "? Q$;"
 ;
-scrcode "9000 ? T$;",'"',"DELAY 255",'"',$0D
-scrcode "9010 GOTO 9000",$0D
+line "?:?:?"
+line "INPUT ",'"',"CMD>",'"',";A$"
 ;
-line "REM DISABLE EXIT-ON-PROMPT"
-line "POKE ",.sprintf("%d",$608D),", 0"
+;scrcode "9000 ? T$;",'"',"DELAY 255",'"',$0D
+;scrcode "9010 GOTO 9000",$0D
+;
+;line "REM DISABLE EXIT-ON-PROMPT"
+;line "POKE ",.sprintf("%d",$608D),", 0"
 .if 0
 lineP "HELLO, THIS IS AN EXAMPLE"
 lineP "OF A ",';'

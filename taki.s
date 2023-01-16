@@ -64,10 +64,10 @@ _TakiInit:
 
 .export _TakiExit
 _TakiExit:
-        jsr _TakiDbgExit
-        bit $C054	; force page one
+        ;bit $C054	; force page one
 	copyWord Mon_CSWL, TakiVarOrigCSW
         copyWord Mon_KSWL, TakiVarOrigKSW
+        jsr _TakiDbgExit ; belongs after KSW restore
 	rts
 
 .export _TakiReset
