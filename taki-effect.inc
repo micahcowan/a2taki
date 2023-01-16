@@ -70,16 +70,53 @@ pTagEnd:
 .endscope
 .endmacro
 
+; perform some operation on an effect variable
+.macro effOpVar op, var
+	ldy #(var)
+        op (TAKI_ZP_EFF_STORAGE_L),y
+.endmacro
+
 ; set y to a variable position (constant) and fetch byte
-.macro getVar var
-	ldy #var
+.define effGetVar effOpVar lda,
+; set y to a variable position (constant) and set byte
+.define effSetVar effOpVar sta,
+
+; increment y and get byte to acc
+.macro effGetNext
+	iny
         lda (TAKI_ZP_EFF_STORAGE_L),y
 .endmacro
 
-; set y to a variable position (constant) and set byte
-.macro setVar var
-	ldy #var
+; increment y and set byte from acc
+.macro effSetNext
+	iny
         sta (TAKI_ZP_EFF_STORAGE_L),y
+.endmacro
+
+; move storage-end ptr to allocate N additional bytes
+.macro effAllocate amt
+	clc
+        lda TAKI_ZP_EFF_STORAGE_END_L
+        adc #(amt)
+        sta TAKI_ZP_EFF_STORAGE_END_L
+        bcc :+
+        inc TAKI_ZP_EFF_STORAGE_END_H
+:
+.endmacro
+
+; increment storage to accommodate an additional byte
+.macro effAllocateOne
+	inc TAKI_ZP_EFF_STORAGE_END_L
+        bne :+
+        inc TAKI_ZP_EFF_STORAGE_END_H
+:
+.endmacro
+
+; append accumulator value to end of storage space
+.macro effAppendByte
+	ldy #0
+        sta (TAKI_ZP_EFF_STORAGE_END_L),y
+        effAllocateOne
 .endmacro
 
 .endif ; _TAKI_EFFECT_INC_

@@ -85,7 +85,7 @@ CkTick:
         tya
         pha
         ; copy Pause to counter {
-        getVar kLocPause+1
+        effGetVar kLocPause+1
         pha ; high
         dey
         lda (TAKI_ZP_EFF_STORAGE_L),y

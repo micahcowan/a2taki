@@ -8,6 +8,7 @@
 ;#link "taki-public.s"
 ;#link "eff-spinner.s"
 ;#link "eff-scan.s"
+;#link "eff-sineanim.s"
 ;#link "eff-NONE.s"
 ;#link "load-and-run-basic.s"
 ;#link "forthish.s"
