@@ -252,7 +252,8 @@ pVIDWAIT:cmp     #$8d            ;check for a pause only when I have a CR
 	cpy     #$93            ;is it ctl S?
 	bne     pNOWAIT          ;no so ignore
 	bit     SS_KBDSTRB         ;clear strobe
-pKBDWAIT:TakiEffectDo_ _TakiTick
+pKBDWAIT:
+	TakiEffectDo_ _TakiTick
         ; FIXME: add some delay here to match speed at input
 	ldy     SS_KBD             ;wait till next key to resume
 	bpl     pKBDWAIT         ;wait for keypress
@@ -261,7 +262,11 @@ pKBDWAIT:TakiEffectDo_ _TakiTick
         bit     SS_KBDSTRB         ;clr strobe
 pNOWAIT:
 pVIDOUT:
-	;TakiEffectDo_ _TakiTick
+	pha
+	TakiBranchUnlessFlag_ flagAnimationActive, pSkipTick
+        TakiEffectDo_ _TakiTick
+pSkipTick:
+	pla
 	cmp     #$a0
         bcs     pSTORADV
 	tay

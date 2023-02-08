@@ -179,9 +179,6 @@ _TakiEffectInitialize:
         asl	; times 2 to count words
         tay
         
-        ; Mark "in progress" to prevent screen scrolling
-        TakiSetFlag_ flagAnimationActive
-        
         ;; Set values in tables:
         ; dispatch handler in table
         lda _TakiEffectInitializeFn
@@ -295,6 +292,8 @@ _TakiTick:
         ; Run all effect ticks
         lda _TakiVarActiveEffectsNum
         beq @TickLoopDone
+        ; Mark animations as "in progress"
+        TakiSetFlag_ flagAnimationActive
         ldy #0
         inc TakiVarTickNum
 @TickLoop:
