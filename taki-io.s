@@ -232,7 +232,7 @@ _TakiIoScreenOut:
 	and     Mon_INVFLG
 pCOUTZ:  sty     pvYSAV1
 	pha
-        jsr     pVIDOUT
+        jsr     pVIDWAIT
 	pla
         ldy     pvYSAV1
 	rts
@@ -245,7 +245,24 @@ pADVANCE:inc     Mon_CH
         bcs     pCR
 	rts
 ;
-pVIDOUT:	cmp     #$a0
+pVIDWAIT:cmp     #$8d            ;check for a pause only when I have a CR
+	bne     pNOWAIT          ;no so, do regular
+	ldy     SS_KBD             ;is key pressed?
+	bpl     pNOWAIT          ;no
+	cpy     #$93            ;is it ctl S?
+	bne     pNOWAIT          ;no so ignore
+	bit     SS_KBDSTRB         ;clear strobe
+pKBDWAIT:TakiEffectDo_ _TakiTick
+        ; FIXME: add some delay here to match speed at input
+	ldy     SS_KBD             ;wait till next key to resume
+	bpl     pKBDWAIT         ;wait for keypress
+	cpy     #$83            ;is it control C ?
+	beq     pNOWAIT          ;yes so leave it
+        bit     SS_KBDSTRB         ;clr strobe
+pNOWAIT:
+pVIDOUT:
+	;TakiEffectDo_ _TakiTick
+	cmp     #$a0
         bcs     pSTORADV
 	tay
         bpl     pSTORADV
@@ -285,6 +302,8 @@ pLF:	inc     Mon_CV
         ; but an animation has been initialized:
         ; only scroll last two lines.
         ; AlsO add a delay
+        jmp pSCROLL ; XXX skips SCROLL limiter,
+                    ; lets animations trample scrollback
         TakiBranchUnlessFlag_ flagAnimationActive, pSCROLL
         TakiBranchIfFlag_ flagInDebugPrint, pSCROLL
         ; Animations in progress: delay a bit (with animation)

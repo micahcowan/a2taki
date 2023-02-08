@@ -28,7 +28,7 @@ scrcode ":REM CONTROL-T",$0D
 line "Q$=CHR$(ASC(",'"',"Q",'"',")-64)"
 scrcode ":REM CONTROL-S",$0D
 ;scrcode "50 HOME",$0D
-.if 1
+.if 0
 line "CALL ",.sprintf("%d",$600F)
 scrcode   ":REM TAKI DEBUG MODE",$0D
 .endif
@@ -65,14 +65,20 @@ lineP "16,0TSR 0R",":REM ANIMATION CODE"
 lineP "TAKI",";:REM TEXT"
 line "? Q$;"
 ;
-line "?:?:?"
-line "INPUT ",'"',"CMD>",'"',";A$"
+lineP ""
+line "REM SET SCROLL/WNDTOP"
+line "POKE 34, PEEK(37)"
+
+;lineTAKI "INSTANT SPINR(FDLY=3)"
+;
+;line "?:?:?"
+;line "INPUT ",'"',"CMD>",'"',";A$"
 ;
 ;scrcode "9000 ? T$;",'"',"DELAY 255",'"',$0D
 ;scrcode "9010 GOTO 9000",$0D
 ;
-;line "REM DISABLE EXIT-ON-PROMPT"
-;line "POKE ",.sprintf("%d",$608D),", 0"
+line "REM DISABLE EXIT-ON-PROMPT"
+line "POKE ",.sprintf("%d",$608D),", 0"
 .if 0
 lineP "HELLO, THIS IS AN EXAMPLE"
 lineP "OF A ",';'
@@ -89,8 +95,6 @@ lineP "OH, AND ALSO YOU MAY BE INTERESTED"
 lineP "TO FIND THAT HERE IS ",';'
 lineTAKI "WORD SCAN(FDLY=96)"
 lineP "ANOTHER SUCH WORD",":?:?"
-
-lineTAKI "INSTANT SPINR"
 
 line "FOR I=5 TO 1 STEP -1"
 line "HTAB 1"
