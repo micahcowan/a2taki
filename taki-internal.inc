@@ -6,8 +6,7 @@ flagAnimationActive = 1
 flagDebugActive     = flagAnimationActive << 1
 flagInInput         = flagDebugActive << 1
 flagTicksPaused     = flagInInput << 1
-flagInGETLN         = flagTicksPaused << 1
-flagInTick          = flagInGETLN << 1
+flagInTick          = flagTicksPaused << 1
 flagInDebugPrint    = flagInTick << 1
 
 .macro TakiSetFlag_ flag
@@ -41,10 +40,15 @@ flagInDebugPrint    = flagInTick << 1
 ;; taki.s
 .ifndef I_AM_TAKI
 .import _TakiVarStatusFlags
-.import _TakiInit
+.import _TakiBareInit
 .import _TakiExit
 .import _TakiReset
 .import _TakiDelay
+.endif
+
+;; taki.s
+.ifndef I_AM_TAKI_OS_FOO
+.import _TakiInit ; NOT defined in taki.s, but taki-os-*.s
 .endif
 
 ;; taki-debug.s
@@ -110,6 +114,8 @@ flagInDebugPrint    = flagInTick << 1
 .import _TakiBuiltinEffectsTable
 
 .ifndef I_AM_TAKI_PUBLIC
+.import _TakiInFn
+.import _TakiOutFn
 .import _TakiIndirect ; taki-public.s
 .endif
 

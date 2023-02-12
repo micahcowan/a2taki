@@ -5,6 +5,7 @@
 ;#link "taki-io.s"
 ;#link "taki-command.s"
 ;#link "taki-basic.s"
+;#link "taki-os-none.s"
 ;#link "taki-public.s"
 ;#link "eff-spinner.s"
 ;#link "eff-scan.s"
@@ -43,32 +44,26 @@ _TakiVarStatusFlags:
 ; Initialize Taki, hijacking input and output
 ; for special processing (and to send things to both
 ; text pages)
-.export _TakiInit
-_TakiInit:
+.export _TakiBareInit
+_TakiBareInit:
 	jsr _TakiMemInit
         
-        jsr Mon_HOME
-        ;jsr _TakiDbgInit
-        ; save away CSW, KSW
-        copyWord TakiVarOrigCSW, Mon_CSWL
-        copyWord TakiVarOrigKSW, Mon_KSWL
-        writeWord Mon_KSWL, _TakiIn
-        writeWord Mon_CSWL, _TakiOut
-        lda TakiVarEffectsAllocStartPage
         lda #$00
         sta _TakiVarStatusFlags
         sta TakiVarStatusFlags
         sta _TakiVarActiveEffectsNum
         
+        ; Set up I/O to default fns
+        writeWord _TakiInFn, _TakiIn
+        writeWord _TakiOutFn, _TakiOut
+        
 	rts
 
 .export _TakiExit
 _TakiExit:
-        ;bit $C054	; force page one
-	copyWord Mon_CSWL, TakiVarOrigCSW
-        copyWord Mon_KSWL, TakiVarOrigKSW
-        jsr _TakiDbgExit ; belongs after KSW restore
-	rts
+	writeWord _TakiInFn, Mon_KEYIN
+        writeWord _TakiOutFn, Mon_COUT1
+        jmp _TakiDbgExit
 
 .export _TakiReset
 _TakiReset:
@@ -121,13 +116,6 @@ _TakiMemInit:
         sec
         sbc TakiVarEffectsAllocNumPages
         sta TakiVarEffectsAllocStartPage
-        
-        ; Set HIMEM
-        sta Mon_MEMSIZE+1
-        sta Mon_FRETOP+1
-        lda #0
-        sta Mon_MEMSIZE
-        sta Mon_FRETOP
         
         ; Init current number of effects
         sta _TakiVarActiveEffectsNum

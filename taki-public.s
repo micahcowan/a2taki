@@ -1,5 +1,7 @@
 .segment "PUBLIC"
 
+.include "a2-monitor.inc"
+
 I_AM_TAKI_PUBLIC=1
 .include "taki-internal.inc"
 
@@ -26,6 +28,26 @@ TakiPublic_ TakiInit
 ;TakiMoveASoft:
 ;	jmp _TakiInit
 
+TakiPublic_ TakiBareInit
+
+; Set to correct code by TakiInit/TakiBareInit
+.export TakiIn
+TakiIn:
+	cld
+.export _TakiInFn
+_TakiInFn = * + 1
+        jmp Mon_KEYIN
+
+; Set to correct code by TakiInit/TakiBareInit
+.export TakiOut
+TakiOut:
+	cld
+.export _TakiOutFn
+_TakiOutFn = * + 1
+        jmp Mon_COUT1
+        
+TakiPublic_ TakiDelay
+
 ;TakiPublic_ TakiPause
 .byte $60,$00,$00
 ;TakiPublic_ TakiResume
@@ -40,9 +62,6 @@ TakiPublic_ TakiDbgPrint
 TakiPublic_ TakiDbgCOUT
 TakiPublic_ TakiDbgPrintCmdBufWordAtY
 
-TakiPublic_ TakiIn
-TakiPublic_ TakiOut
-TakiPublic_ TakiDelay
 TakiPublic_ TakiIoScreenOut
 TakiPublic_ TakiIoFastPrintStr
 TakiPublic_ TakiIoFastPrintSpace
@@ -87,14 +106,6 @@ TakiVarCommandBufferPage:
 	.byte $00
         
 
-; Original (pre-Taki init) I/O routines
-; (could be from PR#0, more likely from a DOS)
-; saved away for restoration on exit
-.export TakiVarOrigCSW, TakiVarOrigKSW
-TakiVarOrigCSW:
-	.word $0000
-TakiVarOrigKSW:
-	.word $0000
 
 ; If Taki's input processor detects that it was
 ; called from GETLN, *and* the current PROMPT

@@ -4,6 +4,8 @@
 
 .export ASoftProg, ASoftEnd
 
+.feature string_escapes
+
 LINE_NUMBER .set 10
 
 .macro line arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9
@@ -28,8 +30,8 @@ scrcode ":REM CONTROL-T",$0D
 line "Q$=CHR$(ASC(",'"',"Q",'"',")-64)"
 scrcode ":REM CONTROL-S",$0D
 ;scrcode "50 HOME",$0D
-.if 0
-line "CALL ",.sprintf("%d",$600F)
+.if 1
+line "CALL ",.sprintf("%d",$601D)
 scrcode   ":REM TAKI DEBUG MODE",$0D
 .endif
 ;
@@ -78,7 +80,8 @@ line "POKE 34, PEEK(37)"
 ;scrcode "9010 GOTO 9000",$0D
 ;
 line "REM DISABLE EXIT-ON-PROMPT"
-line "POKE ",.sprintf("%d",$608D),", 0"
+line "POKE ",.sprintf("%d",$6089),", 0"
+
 .if 0
 lineP "HELLO, THIS IS AN EXAMPLE"
 lineP "OF A ",';'

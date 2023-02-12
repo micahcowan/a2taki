@@ -57,8 +57,6 @@ maybe_import TakiVarDefaultCountdown
 maybe_import TakiVarEffectsAllocStartPage
 maybe_import TakiVarEffectsAllocEndPage
 maybe_import TakiVarCommandBufferPage
-maybe_import TakiVarOrigCSW
-maybe_import TakiVarOrigKSW
 maybe_import TakiVarExitPrompts
 maybe_import TakiVarStatusFlags
 maybe_import TakiVarBehaviorFlags

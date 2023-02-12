@@ -161,8 +161,8 @@ pvCH:
 pvDoCrNext:
 	.byte $FF
 pPrintSetup:
-        copyWord pvSavedCSW, Mon_CSWL
-        writeWord Mon_CSWL, _TakiDbgCOUT
+        copyWord pvSavedCSW, _TakiOutFn
+        writeWord _TakiOutFn, _TakiDbgCOUT
         lda Mon_WNDBTM
         sta pvSavedWNDBTM
         lda Mon_WNDTOP
@@ -183,7 +183,7 @@ pPrintSetup:
         rts
 
 pPrintTeardown:
-	copyWord Mon_CSWL, pvSavedCSW
+	copyWord _TakiOutFn, pvSavedCSW
         lda Mon_CH
         sta pvCH
         lda pvSavedWNDBTM

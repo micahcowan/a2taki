@@ -18,7 +18,7 @@ _TakiOut:
         bne @RegChar	; No, so proceed to output
         lda #$00
         sta _TakiCmdBufCurrent
-        writeWord Mon_CSWL, _TakiIoCtrlReadCmd
+        writeWord _TakiOutFn, _TakiIoCtrlReadCmd
         rts
 @RegChar:
 	jmp _TakiIoScreenOut
@@ -62,7 +62,7 @@ _TakiIoCollectUntilCtrlQ:
 	cmp #$91	; Ctrl-Q?
         bne @Collect
         TakiEffectDoDispatchCur_ TAKI_DSP_ENDCOLLECT
-	writeWord Mon_CSWL, _TakiOut ; restore normal output
+	writeWord  _TakiOutFn, _TakiOut ; restore normal output
         rts
 @Collect:
 	TakiEffectDoDispatchCur_ TAKI_DSP_COLLECT
@@ -77,9 +77,9 @@ _TakiIoCollectWord:
 @UnCollect:
 	pha
         TakiEffectDoDispatchCur_ TAKI_DSP_ENDCOLLECT
-	writeWord Mon_CSWL, _TakiOut ; restore normal output
+	writeWord  _TakiOutFn, _TakiOut ; restore normal output
         pla ; and also write out the space or CR
-        jmp (Mon_CSWL)
+        jmp TakiOut
 @Collect:
 	TakiEffectDoDispatchCur_ TAKI_DSP_COLLECT
 	rts
@@ -98,12 +98,16 @@ pvSavedRealChar:
 _TakiIn:
         ; save real char
         sta pvSavedRealChar
-        jsr pTakiCheckForGETLN
         ; if we're not in GetLN, skip:
         pha
-        TakiBranchUnlessFlag_ flagInGETLN, @NotExited
-        cpx #00			; yes: are we in 2nd column?
+.if 1
+	cpx #0			; is x-reg zero?
+        			;  (might be pointing at INBUF)
         bne @NotExited		; no, no further checks
+        cpy #1			; is y-reg one?
+        bne @NotExited
+        cpy Mon_CH		; and is it also == CH?
+        bne @NotExited		; no: not at prompt
         lda TakiVarExitPrompts	; yes, check ] prompt
         beq @NotExited		; prompt check disabled!
         cmp Mon_PROMPT		; PROMPT = ] (or P1)?
@@ -112,7 +116,16 @@ _TakiIn:
         beq @NotExited		; 2nd prompt disabled
         cmp Mon_PROMPT		; PROMPT = * (or P2)?
         bne @NotExited		; no, not exited
-@Exited:pla ; from branch-unless flagInGETLN
+@Exited:
+	lda Mon_PROMPT		; one last check:
+        dey
+        cmp (Mon_BASL),y	; is the preceding char
+        			;  the prompt char?
+        php
+        iny			; (fix y-reg back up)
+        plp
+        bne @NotExited		; not prompt char, not prompt
+	pla ; from branch-unless flagInGETLN
 	TakiDbgPrint_ pvPromptExitStr
 	lda (Mon_BASL),y
         pha
@@ -127,8 +140,8 @@ _TakiIn:
         pla			; set flasher new spot
         sta (Mon_BASL),y
         lda pvSavedRealChar
-        jmp (Mon_KSWL)		; hand control to
-        			;  pre-Taki I/O processor
+        jmp Mon_KEYIN		; let firmware keyin handle
+.endif
 @NotExited:
 	pla ; from branch-unless flagInGETLN
 @KEYIN:	inc     Mon_RNDL
@@ -157,7 +170,6 @@ _TakiIn:
         ; and perform CLREOL in both pages if so.
 	cmp #$8D	; CR - clear to EOL...
 	bne @NoCR
-        TakiBranchUnlessFlag_ flagInGETLN, @NoCR
         jsr pCLREOL
         
         ; "Saved char" will be written to both pages,
@@ -188,30 +200,6 @@ _TakiIoGetKey:
         ; keypress available.
 	lda     SS_KBD
         bit	SS_KBDSTRB
-
-pTakiCheckForGETLN:
-	; The monitor GETLN routine, also used
-        ; by AppleSoft and assembly-language
-        ; programs, does special things we must
-        ; account for. Check to see if that's
-        ; our caller.
-        pha
-        txa
-        pha
-          tsx	; stack into X
-          lda $107,x ; check for return to $FD78
-          cmp #$77
-          bne @False
-          lda $108,x
-          cmp #$FD
-          bne @False
-          TakiSetFlag_ flagInGETLN
-          bne @Done ; always
-@False: TakiUnsetFlag_ flagInGETLN
-@Done:  pla
-        tax
-        pla
-	rts
 
 pvSaved_CH:
 	.byte $00

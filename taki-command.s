@@ -92,7 +92,7 @@ _TakiCmdSkipSpaces:
 .export _TakiCommandExec
 _TakiCommandExec:
         ; try to find the effect name
-        writeWord Mon_CSWL, _TakiOut
+        writeWord _TakiOutFn, _TakiOut
         ldy #0 ; set y to start of cmd buf
         jsr _TakiCmdFind
         bcc @cmdFound
@@ -191,11 +191,11 @@ _TakiCommandExec:
 @ckMark:
         cmp #pvCmdMark
         bne @ckWord
-	writeWord Mon_CSWL, _TakiIoCollectUntilCtrlQ
+	writeWord _TakiOutFn, _TakiIoCollectUntilCtrlQ
         rts
 @ckWord:cmp #pvCmdWord
 	bne @unhandledOrInstant
-	writeWord Mon_CSWL, _TakiIoCollectWord
+	writeWord _TakiOutFn, _TakiIoCollectWord
         rts
 @unhandledOrInstant:
 	; Is this instant, or unhandled?
