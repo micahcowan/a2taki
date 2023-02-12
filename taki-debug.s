@@ -66,9 +66,9 @@ _TakiDbgExit:
         sta Mon_CV
         jsr Mon_VTABZ
         lda #$8D
-        jsr Mon_COUT
+        jsr TakiOut ; (is COUT1)
         lda #$8D
-        jsr Mon_COUT
+        jsr TakiOut ; (is COUT1)
         ; Mark debug as inactive
         lda _TakiVarStatusFlags
         and #.lobyte(~(flagDebugActive))
@@ -100,7 +100,7 @@ _TakiDbgPrint:
 _TakiDbgVarPrintStr = * + 1
 @Loop:	lda $1000
 	beq @Done
-        jsr Mon_COUT
+        jsr TakiOut
         inc _TakiDbgVarPrintStr
         bne @Loop
         inc _TakiDbgVarPrintStr+1
