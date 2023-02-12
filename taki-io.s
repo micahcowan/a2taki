@@ -161,26 +161,6 @@ _TakiIn:
         bcc @KEYIN
         cmp #$9B	; ESC - skip and get new keypress
         beq @KEYIN
-@NoESC: ; If GETLN gets a CR on input, it
-	; clears to the end of the line, but
-        ; since it doesn't use CSW to do this,
-        ; it'll only happen in page one.
-        ; So, as a hacky workaround, we check
-        ; to see if we were called from GETLN
-        ; and perform CLREOL in both pages if so.
-	cmp #$8D	; CR - clear to EOL...
-	bne @NoCR
-        jsr pCLREOL
-        
-        ; "Saved char" will be written to both pages,
-        ; AFTER we did a CLREOL, and then GETLN
-        ; will clear again. This leaves the "saved"
-        ; char on the screen in page 2 but not page 1.
-        ; So set "saved char" to SPACE, to compensate.
-        lda #$A0
-        sta pvSavedRealChar
-        lda #$8D
-@NoCR:
 @Done:	; Restore proper char (both pages),
 	; and $6/$7
         sta pvSavedCursor	; temp save read key
@@ -291,25 +271,6 @@ pLF:	inc     Mon_CV
         jmp     pVTABZ
 @AtBottom:
 	dec     Mon_CV
-        ; TAKI - if we would scroll because of a CR,
-        ; but an animation has been initialized:
-        ; only scroll last two lines.
-        ; AlsO add a delay
-        jmp pSCROLL ; XXX skips SCROLL limiter,
-                    ; lets animations trample scrollback
-        TakiBranchUnlessFlag_ flagAnimationActive, pSCROLL
-        TakiBranchIfFlag_ flagInDebugPrint, pSCROLL
-        ; Animations in progress: delay a bit (with animation)
-        ; and scroll ONLY last two lines (unless this
-        ; is a debug print, or we're already in animation)
-        lda #$18
-        jsr _TakiDelay
-        lda Mon_CV
-        sec
-        sbc #$01
-        pha
-        jsr pVTABZ
-        bne pSCRL1 ; "always"
 pSCROLL:lda     Mon_WNDTOP
 	pha
         jsr     pVTABZ
