@@ -36,7 +36,8 @@ _TakiDbgInit:
         ldy #0
         jsr Mon_CLEOLZ
         pla
-        adc #0 ; carry is set, so "+ 1"
+        clc
+        adc #1
         jmp @ClrLoop
 @ClrDone:
 	jsr Mon_VTAB
