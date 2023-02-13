@@ -87,6 +87,12 @@ TakiVarsStart:
 TakiVarReleaseVersion:
 	.byte $FF, $FF
 
+; Init status: set to zero only if initialization
+; and allocation succeeded.
+.export TakiVarInitStatus
+TakiVarInitStatus:
+        .byte $FF
+
 .export TakiVarEffectsAllocNumPages, TakiVarMaxActiveEffects
 .export TakiVarDefaultCountdown
 TakiVarEffectsAllocNumPages:
@@ -107,8 +113,8 @@ TakiVarCommandBufferPage:
         
 
 
-; If Taki's input processor detects that it was
-; called from GETLN, *and* the current PROMPT
+; If Taki's input processor detects it is at
+; a prompt, *and* the current PROMPT
 ; is set to one of the following two values,
 ; then Taki will auto-exit and clean up.
 ;

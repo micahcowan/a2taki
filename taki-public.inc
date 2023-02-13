@@ -51,6 +51,7 @@ TF_BEH_DETECT_HOME     = 1
 
 maybe_import TakiStart
 maybe_import TakiVarReleaseVersion
+maybe_import TakiVarInitStatus
 maybe_import TakiVarEffectsAllocNumPages
 maybe_import TakiVarMaxActiveEffects
 maybe_import TakiVarDefaultCountdown

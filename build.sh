@@ -4,12 +4,14 @@
 set -e -u -C
 
 MAINFILE=taki.s
-BINROM=bin/${MAINFILE}.rom
 CA65=ca65
 LD65=ld65
 
 main() {
-    SOURCES="${MAINFILE} $(get_sources "${MAINFILE}")"
+    SOURCES="${MAINFILE} $(get_sources "${MAINFILE}" | \
+        grep -v '^taki-os' | \
+        grep -v -E '^(taki-basic|taki-startup|load-and-run-basic)\.s$')"
+    AUXSOURCES=taki-os-*.s
 
     if test "${1-}" = watch; then
         shift
@@ -18,8 +20,9 @@ main() {
     fi
     OBJECTS=$(get_objects $SOURCES)
 
-    compile $SOURCES
-    link "$BINROM" $(get_config "$MAINFILE") $OBJECTS
+    compile $SOURCES $AUXSOURCES
+    link TAKI-CASSETTE $(get_config "$MAINFILE") $OBJECTS taki-os-none.o
+    link TAKI-PRODOS   $(get_config "$MAINFILE") $OBJECTS taki-os-prodos.o
 }
 
 do_watch() {
@@ -29,7 +32,7 @@ do_watch() {
         else
             echo "Failure ($?)"
         fi
-        inotifywait -q $SOURCES
+        inotifywait -q $SOURCES $AUXSOURCES
     done
 }
 

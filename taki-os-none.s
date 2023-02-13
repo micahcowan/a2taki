@@ -27,4 +27,8 @@ _TakiInit:
         ; Set up CSW and KSW
         writeWord Mon_CSWL, TakiOut
         writeWord Mon_KSWL, TakiIn
+
+        ; Indicate success
+        lda #0
+        sta TakiVarInitStatus
 	rts
