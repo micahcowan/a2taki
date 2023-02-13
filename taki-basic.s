@@ -80,7 +80,7 @@ line "POKE 34, PEEK(37)"
 ;scrcode "9010 GOTO 9000",$0D
 ;
 line "REM DISABLE EXIT-ON-PROMPT"
-line "POKE ",.sprintf("%d",$6089),", 0"
+line "POKE ",.sprintf("%d",$608A),", 0"
 
 .if 0
 lineP "HELLO, THIS IS AN EXAMPLE"
