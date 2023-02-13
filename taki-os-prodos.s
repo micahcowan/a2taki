@@ -12,6 +12,7 @@ I_AM_TAKI_OS_FOO = 1
 
 ; ProDOS Addresses
 GETBUFR = $BEF5
+FREEBUFR= $BEF8
 VECTOUT = $BE30
 VECTIN  = $BE32
 
@@ -20,7 +21,8 @@ _TakiInit:
 	jsr _TakiBareInit
         
         ; Protect Taki from BASIC data
-        lda #$96 ; bottom of BASIC.SYSTEM, should be our top
+        jsr FREEBUFR ; Release any previous allocations
+        lda #$9A ; bottom of BASIC.SYSTEM, should be our top
         sec
         sbc TakiVarEffectsAllocStartPage
         jsr GETBUFR
