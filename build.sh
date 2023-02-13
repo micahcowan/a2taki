@@ -23,6 +23,7 @@ main() {
     compile $SOURCES $AUXSOURCES
     link TAKI-CASSETTE taki-real.cfg $OBJECTS taki-os-none.o
     link TAKI-PRODOS   taki-real.cfg $OBJECTS taki-os-prodos.o
+    link TAKI-DOS      taki-real.cfg $OBJECTS taki-os-dos33.o
 }
 
 do_watch() {
