@@ -21,8 +21,8 @@ main() {
     OBJECTS=$(get_objects $SOURCES)
 
     compile $SOURCES $AUXSOURCES
-    link TAKI-CASSETTE $(get_config "$MAINFILE") $OBJECTS taki-os-none.o
-    link TAKI-PRODOS   $(get_config "$MAINFILE") $OBJECTS taki-os-prodos.o
+    link TAKI-CASSETTE taki-real.cfg $OBJECTS taki-os-none.o
+    link TAKI-PRODOS   taki-real.cfg $OBJECTS taki-os-prodos.o
 }
 
 do_watch() {
