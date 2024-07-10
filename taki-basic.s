@@ -22,6 +22,8 @@ line "? ",'"',arg1,'"', arg2, arg3, arg4, arg5, arg6
 line "? T$;",'"',arg1,'"', arg2, arg3, arg4, arg5, arg6
 .endmacro
 
+SINEDEMO=0
+
 ASoftProg:
 line "CALL ",.sprintf("%d",$6000)
 scrcode   ":REM INIT TAKI",$0D
@@ -34,7 +36,8 @@ scrcode ":REM CONTROL-S",$0D
 line "CALL ",.sprintf("%d",$601D)
 scrcode   ":REM TAKI DEBUG MODE",$0D
 .endif
-;
+
+.if SINEDEMO
 line "HTAB 5:VTAB 5"
 lineTAKI "MARK SANIM(FDLY=0)"
 lineP "",":REM TIMER VALUES"
@@ -82,7 +85,7 @@ line "POKE 34, PEEK(37)"
 line "REM DISABLE EXIT-ON-PROMPT"
 line "POKE ",.sprintf("%d",$608A),", 0"
 
-.if 0
+.else
 lineP "HELLO, THIS IS AN EXAMPLE"
 lineP "OF A ",';'
 lineTAKI "MARK SCAN(FDLY=10)"
@@ -97,22 +100,32 @@ lineTAKI "OR HERE",":REM BAD CMD"
 lineP "OH, AND ALSO YOU MAY BE INTERESTED"
 lineP "TO FIND THAT HERE IS ",';'
 lineTAKI "WORD SCAN(FDLY=96)"
-lineP "ANOTHER SUCH WORD",":?:?"
+lineP "ANOTHER SUCH WORD",":?"
 
+line "REM SET SCROLL/WNDTOP"
+line "POKE 34, PEEK(37)"
+
+.if 0
 line "FOR I=5 TO 1 STEP -1"
 line "HTAB 1"
 line "? I;",'"',"...",'"',';'
 lineTAKI "DELAY 168"
 line "NEXT"
 line "HTAB 1:PRINT ",'"',"      ",'"',':',"HTAB 1"
+.endif
 
 lineTAKI "CONFIG 0 FDLY=5 PAUSE=180"
 
 ;line "INPUT ",'"',"INTERNAL",'"',";A$",$0D
 
 line "REM DISABLE EXIT-ON-PROMPT"
-line "POKE ",.sprintf("%d",$608D),", 0"
-line "POKE ",.sprintf("%d",$608E),", 0"
+line "POKE ",.sprintf("%d",$608A),", 0"
+;line "POKE ",.sprintf("%d",$608D),", 0"
+;line "POKE ",.sprintf("%d",$608E),", 0"
+
+line "CALL ",.sprintf("%d",$6020)
+scrcode   ":REM END TAKI DEBUG",$0D
+
 lineP "PROGRAM EXIT (ANIMATIONS REMAIN)"
 .endif
 

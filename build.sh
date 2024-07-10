@@ -12,6 +12,7 @@ main() {
         grep -v '^taki-os' | \
         grep -v -E '^(taki-basic|taki-startup|load-and-run-basic)\.s$')"
     AUXSOURCES=taki-os-*.s
+    EBWS_SOURCES='taki-basic.s taki-startup.s load-and-run-basic.s'
 
     if test "${1-}" = watch; then
         shift
@@ -19,8 +20,10 @@ main() {
         exit 0
     fi
     OBJECTS=$(get_objects $SOURCES)
+    EBWS_OBJS=$(get_objects $EBWS_SOURCES)
 
-    compile $SOURCES $AUXSOURCES
+    compile $SOURCES $AUXSOURCES $EBWS_SOURCES
+    link bin/taki.s.rom     taki.cfg $EBWS_OBJS $OBJECTS taki-os-none.o
     link TAKI-CASSETTE taki-real.cfg $OBJECTS taki-os-none.o
     link TAKI-PRODOS   taki-real.cfg $OBJECTS taki-os-prodos.o
     link TAKI-DOS      taki-real.cfg $OBJECTS taki-os-dos33.o
