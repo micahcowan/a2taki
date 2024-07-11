@@ -22,7 +22,11 @@ line "? ",'"',arg1,'"', arg2, arg3, arg4, arg5, arg6
 line "? T$;",'"',arg1,'"', arg2, arg3, arg4, arg5, arg6
 .endmacro
 
-SINEDEMO=0
+SCANDEMO=0
+SINEDEMO=1
+FLUORDEMO=2
+
+DEMO = FLUORDEMO
 
 ASoftProg:
 line "CALL ",.sprintf("%d",$6000)
@@ -37,7 +41,7 @@ line "CALL ",.sprintf("%d",$601D)
 scrcode   ":REM TAKI DEBUG MODE",$0D
 .endif
 
-.if SINEDEMO
+.if DEMO = SINEDEMO
 line "HTAB 5:VTAB 5"
 lineTAKI "MARK SANIM(FDLY=0)"
 lineP "",":REM TIMER VALUES"
@@ -85,7 +89,26 @@ line "POKE 34, PEEK(37)"
 line "REM DISABLE EXIT-ON-PROMPT"
 line "POKE ",.sprintf("%d",$608A),", 0"
 
-.else
+.elseif DEMO = FLUORDEMO
+
+;line "----------------------------------------"
+line "HOME"
+lineP " - THE BASEMENT OFFICE - "
+lineP
+lineP "YOU ARE SITTING IN A BUTT-NUMBINGLY HARD",';'
+lineP "CHAIR, AT YOUR WOOD-VENEERED PLASTIC "
+lineP "DESK, WHERE THE ",';'
+lineTAKI "MARK FLUORESCENT(FDLY=10)"
+lineP "CONSTANT SPUTTERING",";Q$;"
+lineP " OF"
+lineP "THE OVERHEAD FLUORESCENT LIGHTS IS"
+lineP "QUIETLY DRIVING YOU INSANE."
+lineP
+
+line "REM DISABLE EXIT-ON-PROMPT"
+line "POKE ",.sprintf("%d",$608A),", 0"
+
+.else ; SCANDEMO
 lineP "HELLO, THIS IS AN EXAMPLE"
 lineP "OF A ",';'
 lineTAKI "MARK SCAN(FDLY=10)"
@@ -105,7 +128,7 @@ lineP "ANOTHER SUCH WORD",":?"
 line "REM SET SCROLL/WNDTOP"
 line "POKE 34, PEEK(37)"
 
-.if 0
+.if 1
 line "FOR I=5 TO 1 STEP -1"
 line "HTAB 1"
 line "? I;",'"',"...",'"',';'

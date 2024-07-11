@@ -36,7 +36,7 @@ do_watch() {
         else
             echo "Failure ($?)"
         fi
-        inotifywait -q $SOURCES $AUXSOURCES
+        inotifywait -e modify -e close_write -q $SOURCES $AUXSOURCES $EBWS_SOURCES || true
     done
 }
 
