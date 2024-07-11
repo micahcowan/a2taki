@@ -98,24 +98,23 @@ StillCounting:
         sta Mon_CV
         jsr Mon_VTAB ; calculate new Mon_BAS
         ; Is the text visible?
+        ; print it
+        lda TAKI_ZP_EFF_STORAGE_L
+        clc
+        adc #kLocTextStart
+        sta TAKI_ZP_EFF_SPECIAL_0
+        lda TAKI_ZP_EFF_STORAGE_H
+        adc #0
+        sta TAKI_ZP_EFF_SPECIAL_1
+        effGetVar kLocTextStart
+        beq TickCleanup
         effGetVar kLocVisible
         beq PrintInvis
 PrintVis:
-        effGetVar kLocTextStart
-        beq TickCleanup
-@lo:
-        jsr TakiIoScreenOut
-        effGetNext
-        bne @lo
+        jsr TakiIoFastPrintStr
         jmp TickCleanup
 PrintInvis:
-        effGetVar kLocTextStart
-        beq TickCleanup
-@lo:
-        lda #$A0 ; space character
-        jsr TakiIoScreenOut
-        effGetNext
-        bne @lo
+        jsr TakiIoFastPrintSpace
         ; fall through
 TickCleanup:
         lda SavedCH
