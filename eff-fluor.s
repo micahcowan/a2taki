@@ -80,6 +80,14 @@ CountdownDone:
         effSetVar kLocSelect
         tay
         lda blinkTimings,y
+        .if 0
+        ; No, use random instead!
+        jsr TakiIoNextRandom
+        lda TakiVarRandomWord
+        and #$03
+        sec
+        adc #0
+        .endif
         effSetVar kLocCount
 
         ; now toggle visibility
