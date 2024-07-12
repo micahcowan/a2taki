@@ -175,7 +175,7 @@ CollectVAnim:
 CollectText:
 	lda TAKI_ZP_ACC
         effAppendByte
-        jmp TakiIoScreenOut
+        jmp TakiIoFastOut
 CkCollectEnd:
 	cmp #TAKI_DSP_ENDCOLLECT
         bne CkTick

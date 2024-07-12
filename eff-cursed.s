@@ -38,7 +38,7 @@ CkColl: cmp #TAKI_DSP_COLLECT	; collect?
         ;; COLLECT
         lda TAKI_ZP_ACC
         effAppendByte
-        jmp TakiIoScreenOut
+        jmp TakiIoFastOut
 CkCollectEnd:
 	cmp #TAKI_DSP_ENDCOLLECT
         bne CkTick
@@ -84,11 +84,11 @@ PrintLoop:
         pla
         ; Print garbage!
         jsr RandomChar
-        jsr TakiIoScreenOut
+        jsr TakiIoFastOut
         jmp PrintLoop
 @prLit:
         pla
-        jsr TakiIoScreenOut
+        jsr TakiIoFastOut
         jmp PrintLoop
 TickCleanup:
         lda SavedCH

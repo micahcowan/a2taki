@@ -81,6 +81,7 @@ maybe_import TakiIn
 maybe_import TakiOut
 maybe_import TakiDelay
 maybe_import TakiIoScreenOut
+maybe_import TakiIoFastOut
 maybe_import TakiIoFastPrintStr
 maybe_import TakiIoFastPrintSpace
 maybe_import TakiIoNextRandom

@@ -63,6 +63,7 @@ TakiPublic_ TakiDbgCOUT
 TakiPublic_ TakiDbgPrintCmdBufWordAtY
 
 TakiPublic_ TakiIoScreenOut
+TakiPublic_ TakiIoFastOut
 TakiPublic_ TakiIoFastPrintStr
 TakiPublic_ TakiIoFastPrintSpace
 TakiPublic_ TakiIoNextRandom

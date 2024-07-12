@@ -66,7 +66,7 @@ CkColl: cmp #TAKI_DSP_COLLECT	; collect?
 	adc (TAKI_ZP_EFF_STORAGE_L),y
 	sta (TAKI_ZP_EFF_STORAGE_L),y
         lda TAKI_ZP_ACC
-        jmp TakiIoScreenOut ; XXX
+        jmp TakiIoFastOut ; XXX
 CkTick:
 	cmp #TAKI_DSP_TICK	; tick?
         bne NoModesFound

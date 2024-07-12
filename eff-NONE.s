@@ -28,6 +28,6 @@ TE_NONE:
         ; COLLECT - print with inverse
         lda TAKI_ZP_ACC
         and #$3F
-        jmp TakiIoScreenOut
+        jmp TakiIoFastOut
 @gtfo:
 	rts

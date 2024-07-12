@@ -373,6 +373,65 @@ _TakiIoCheckForHome:
         pla
         rts
 
+pfovYSAV1:
+	.byte $00
+.export _TakiIoFastOut
+_TakiIoFastOut:
+pfoCOUTZ: sty     pfovYSAV1
+	pha
+        jsr     pfoNOWAIT
+	pla
+        ldy     pfovYSAV1
+	rts
+;
+pfoSTORADV:ldy     Mon_CH
+	sta (Mon_BASL),y
+pfoADVANCE:inc     Mon_CH
+	lda     Mon_CH
+	cmp     Mon_WNDWDTH
+        bcs     pfoCR
+	rts
+;
+pfoNOWAIT:
+pfoVIDOUT:
+	pha
+	pla
+	cmp     #$a0
+        bcs     pfoSTORADV
+	tay
+        bpl     pfoSTORADV
+	cmp     #$8d
+        beq     pfoCR
+	cmp     #$8a
+        beq     pfoLF
+	cmp     #$88
+        bne     pfoRTS4
+	dec     Mon_CH
+        bpl     pfoRTS4
+	lda     Mon_WNDWDTH
+	sta     Mon_CH
+	dec     Mon_CH
+	lda     Mon_WNDTOP
+	cmp     Mon_CV
+        bcs     pfoRTS4
+	dec     Mon_CV
+	lda     Mon_CV
+	jsr     Mon_BASCALC
+	adc     Mon_WNDLFT
+	sta     Mon_BASL
+pfoRTS4:	rts
+pfoCR:	lda     #$00
+	sta     Mon_CH
+pfoLF:	inc     Mon_CV
+	lda     Mon_CV
+	cmp     Mon_WNDBTM
+        bcs	@AtBottom
+        jmp     pVTABZ
+@AtBottom:
+	dec     Mon_CV
+        ; We DON'T SCROLL in fast out
+        jmp     pVTAB
+
 .export _TakiIoFastPrintStr
 _TakiIoFastPrintStr:
 	; First adjust BAS = BAS + CH
