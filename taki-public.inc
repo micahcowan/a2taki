@@ -64,6 +64,7 @@ maybe_import TakiVarBehaviorFlags
 maybe_import TakiVarIndirectFn
 maybe_import TakiVarTickNum
 maybe_import TakiVarDispatchEvent
+maybe_import TakiVarRandomWord
 
 maybe_import TakiDbgPrint
 .ifndef TAKI_INTERNAL
@@ -82,6 +83,7 @@ maybe_import TakiDelay
 maybe_import TakiIoScreenOut
 maybe_import TakiIoFastPrintStr
 maybe_import TakiIoFastPrintSpace
+maybe_import TakiIoNextRandom
 maybe_import TakiMySetCounter
 maybe_import TakiMyGetCounter
 maybe_import TakiMySetCounterInit

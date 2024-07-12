@@ -13,7 +13,8 @@ kLocSelect = 0                  ; which countdown we're on
 kLocCount  = kLocSelect + 1     ; the countdown
 kLocCH     = kLocCount + 1      ; the horiz cursor position at capture start
 kLocCV     = kLocCH    + 1      ; the vert cursor position at capture start
-kLocVisible= kLocCV + 1         ; 0 = hidden, non-0 = visible
+kLocBAS    = kLocCV + 1         ; BASL/BASH at capture start
+kLocVisible= kLocBAS + 2        ; 0 = hidden, non-0 = visible
 kNeeded    = kLocVisible + 1
 
 kLocTextStart = kNeeded
@@ -33,6 +34,10 @@ TAKI_EFFECT TE_Fluorescent, "FLUORESCENT", 0, 0
         lda Mon_CH
         effSetNext
         lda Mon_CV
+        effSetNext
+        lda Mon_BASL
+        effSetNext
+        lda Mon_BASH
         effSetNext
         lda #$FF
         effSetNext
@@ -96,7 +101,10 @@ StillCounting:
         sta Mon_CH
         effGetNext
         sta Mon_CV
-        jsr Mon_VTAB ; calculate new Mon_BAS
+        effGetNext
+        sta Mon_BASL
+        effGetNext
+        sta Mon_BASH
         ; Is the text visible?
         ; print it
         lda TAKI_ZP_EFF_STORAGE_L

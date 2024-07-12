@@ -413,3 +413,40 @@ _TakiIoFastPrintSpace:
         pla
         sta Mon_BASL
 	rts
+
+.export _TakiIoNextRandom
+_TakiIoNextRandom:
+        tya
+        pha
+            ; Make certain the number isn't zero, or we can't fold it
+            lda TakiVarRandomWord
+            bne @notZero
+            lda TakiVarRandomWord+ 1
+            bne @notZero
+            ; It's zero! Fix that.
+            lda #$71
+            sta TakiVarRandomWord
+            lda #$94
+            sta TakiVarRandomWord+1
+        pla
+        tay
+        rts
+@notZero:
+            ; Algorithm based on Woz's Integer BASIC's PRNG implementation
+            lda TakiVarRandomWord+1
+            and #$7F
+            sta TakiVarRandomWord+1
+            ldy #$11
+lp:
+            lda TakiVarRandomWord+1
+            asl
+            clc
+            adc #$40
+            asl
+            rol TakiVarRandomWord
+            rol TakiVarRandomWord+1
+            dey
+            bne lp
+        pla
+        tay
+        rts

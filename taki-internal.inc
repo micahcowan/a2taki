@@ -100,6 +100,7 @@ flagInDebugPrint    = flagInTick << 1
 .import _TakiIoCollectWord
 .import _TakiIoFastPrintStr
 .import _TakiIoFastPrintSpace
+.import _TakiIoNextRandom
 .endif
 
 ;; taki-cmd.s

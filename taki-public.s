@@ -65,6 +65,7 @@ TakiPublic_ TakiDbgPrintCmdBufWordAtY
 TakiPublic_ TakiIoScreenOut
 TakiPublic_ TakiIoFastPrintStr
 TakiPublic_ TakiIoFastPrintSpace
+TakiPublic_ TakiIoNextRandom
 
 TakiPublic_ TakiMySetCounter
 TakiPublic_ TakiMyGetCounter
@@ -174,3 +175,10 @@ TakiVarTickNum:
 .export TakiVarDispatchEvent
 TakiVarDispatchEvent:
 	.byte $00
+
+; 16-bit PRNG word. Must never be zero.
+; A new number is produced (from the old) if
+; TakiIoNextRandom is called.
+.export TakiVarRandomWord
+TakiVarRandomWord:
+        .word $9471
