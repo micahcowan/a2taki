@@ -46,21 +46,29 @@ tblPakkuSprites:
     scrcode " ##### "
     scrcode "  ###  "
 
-kOrientationSize = 4
-Orientations:
-    ; start,    step,   rowAdjust,  done
-    ; 0 = RIGHT
-    .byte 0,    1,      0,          kSpriteSize
-    ; 1 = LEFT
-    ;.byte 
-curOrientation:
-    .byte 0
-curSprite:
-    .byte 0
+kOrientationSize = 5
+tblOrientations:
+    ; RIGHT:
+    .byte 0             ; start (as offset from start of sprite)
+    .word 1             ; step (can be negative)
+    .word 0             ; amount to adjust cursor between rows (can be negative)
+    ; LEFT:
+    .byte 6             ; start (as offset from start of sprite)
+    .word (65536)-1     ; step (can be negative)
+    .word 14            ; amount to adjust cursor between rows (can be negative)
+    ; UP:
+    .byte 6             ; start (as offset from start of sprite)
+    .word 7             ; step (can be negative)
+    .word (65536)-50    ; amount to adjust cursor between rows (can be negative)
+    ; DOWN:
+    .byte 42            ; start (as offset from start of sprite)
+    .word (65536)-7     ; step (can be negative)
+    .word 50            ; amount to adjust cursor between rows (can be negative)
 
 declVar     varCH, 1
 declVar     varCV, 1
 declVar     varSprNum, 1
+declVar     varOrientation, 1
 
 TAKI_EFFECT TE_Pakku, "PAKKU", 0, 0
 	cmp #TAKI_DSP_INIT	; init?
@@ -80,10 +88,10 @@ TAKI_EFFECT TE_Pakku, "PAKKU", 0, 0
         sta SavedBAS
         lda Mon_BASH
         sta SavedBAS+1
-        lda #2
+        lda #0
         effSetNext ; varSprNum
-        sta curOrientation
-        sta curSprite
+        lda #0
+        effSetNext ; varOrientation
         jsr drawPakku
         jmp Cleanup
 UnsupportedMode:
@@ -131,14 +139,56 @@ SavedBAS:
     .word 0
 
 vSpriteCursor = TAKI_ZP_EFF_SPECIAL_0
-vCursorStop:
-    .word 0
+vOrientation  = TAKI_ZP_EFF_SPECIAL_2
+vRowsLeft: .byte 0
 drawPakku:
     ; Init
     lda #>tblPakkuSprites
     sta vSpriteCursor+1
     lda #<tblPakkuSprites
     sta vSpriteCursor
+    lda #kSpriteHeight
+    sta vRowsLeft
+    ;
+    ; Adjust values per pakku's orientation
+    ;
+    lda #<tblOrientations
+    sta vOrientation
+    lda #>tblOrientations
+    sta vOrientation+1
+    ; Now adjust for the orientation number
+    effGetVar varOrientation
+    tax
+    beq @doneOrient
+@orientLoop:
+    lda vOrientation
+    clc
+    adc #kOrientationSize
+    sta vOrientation
+    bcc :+
+    inc vOrientation+1
+    :
+    dex
+    bne @orientLoop
+@doneOrient:
+
+    ; adjust values
+    ldy #0
+    lda (vOrientation),y
+    sta @orStart+1
+    iny
+    lda (vOrientation),y
+    sta @orStepL+1
+    iny
+    lda (vOrientation),y
+    sta @orStepH+1
+    iny
+    lda (vOrientation),y
+    sta @orRowAdjL+1
+    iny
+    lda (vOrientation),y
+    sta @orRowAdjH+1
+
     ; Adjust for sprite #
     effGetVar varSprNum
     tax
@@ -154,15 +204,15 @@ drawPakku:
     dex
     bne @nextSpr
 @correctSpr:
-    ; Note expected final position of the sprite scanning cursor
+    ; Now adjust for orientation start
     lda vSpriteCursor
     clc
-    adc #kSpriteSize ; XXX orientation zero-specific
-    sta vCursorStop
-    lda vSpriteCursor+1
-    adc #0 ; + any carry
-    sta vCursorStop+1
-    ;
+@orStart:
+    adc #0  ; this op WILL BE MODIFIED for orientation
+    sta vSpriteCursor
+    bcc :+
+    inc vSpriteCursor+1
+    :
     effGetVar varCV
     pha
 @rowLoop:
@@ -178,7 +228,7 @@ drawPakku:
         inc Mon_BASH
         :
         ldy #0
-        ldx #7
+        ldx #kSpriteWidth
 @colLoop:
         ; copy "pixel" character
         lda (vSpriteCursor),y
@@ -187,30 +237,35 @@ drawPakku:
         inc Mon_BASL
         lda vSpriteCursor
         clc
-        adc #1   ; XXX specific to orientation 0
+@orStepL:
+        adc #1      ; this op WILL BE MODIFIED for orientation
         sta vSpriteCursor
-        bcc :+
-        inc vSpriteCursor+1
-        :
+        lda vSpriteCursor+1
+@orStepH:
+        adc #0      ; this op WILL BE MODIFIED for orientation
+        sta vSpriteCursor+1
+
         ;
         dex
         bne @colLoop ;END LOOP colLoop
-        ; 
-        ; Are we done? Check the cursor
-        ;
-        lda vSpriteCursor
-        cmp vCursorStop
+        ; Are we done?
+        dec vRowsLeft
         bne @notDone
-        lda vSpriteCursor+1
-        cmp vCursorStop+1
-        bcc @notDone
     ; END LOOP rowLoop
     pla
     rts
 @notDone:
         ; advance sprite cursor
-        ; XXX nothing to do for orientation 0
-        ; advance CV
+        lda vSpriteCursor
+        clc
+@orRowAdjL:
+        adc #0  ; this op WILL BE MODIFIED for orientation
+        sta vSpriteCursor
+        lda vSpriteCursor+1
+@orRowAdjH:
+        adc #0  ; this op WILL BE MODIFIED for orientation
+        sta vSpriteCursor+1
+    ; advance CV
     pla
     clc
     adc #1

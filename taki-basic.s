@@ -26,9 +26,8 @@ SCANDEMO=0
 SINEDEMO=1
 FLUORDEMO=2
 PAKKUDEMO=3
-PAKKUDEMO2=4
 
-DEMO = PAKKUDEMO2
+DEMO = PAKKUDEMO
 
 ASoftProg:
 line "CALL ",.sprintf("%d",$6000)
@@ -43,99 +42,15 @@ line "CALL ",.sprintf("%d",$601D)
 scrcode   ":REM TAKI DEBUG MODE",$0D
 .endif
 
-.if DEMO = PAKKUDEMO2
+.if DEMO = PAKKUDEMO
 
 line "POKE ",.sprintf("%d",$608A),", 0"
 line "POKE ",.sprintf("%d",$608B),", 0"
-lineTAKI "INSTANT PAKKU"
+lineTAKI "INSTANT PAKKU(FDLY=12)"
 line "VTAB 18"
 line "INPUT A$"
 line "REM DISABLE EXIT-ON-PROMPT"
 
-.elseif DEMO = PAKKUDEMO
-
-.macro PAKKUPAUSE
-line "FOR P=1 TO 80:NEXT P"
-.endmacro
-
-line "POKE 32, 10" ; set WNDLFT to 10
-
-LINE_NUMBER .set 100
-
-.if 0
-line "VTAB 10"
-lineP "   ###"
-lineP "  #   #  "
-lineP " #   #   "
-lineP " #  #    "
-lineP " #   #   "
-lineP "  #   #  "
-lineP "   ###   "
-PAKKUPAUSE
-;
-line "VTAB 11"
-lineP "  #   #"
-lineP " #    ##"
-lineP " #  ##  "
-lineP " #    ##"
-lineP "  #   # "
-PAKKUPAUSE
-;
-line "VTAB 11"
-lineP "  #   # "
-lineP " #     #"
-lineP " #  ####"
-lineP " #     #"
-lineP "  #   # "
-PAKKUPAUSE
-;
-line "VTAB 11"
-lineP "  #   #"
-lineP " #    ##"
-lineP " #  ##  "
-lineP " #    ##"
-lineP "  #   # "
-PAKKUPAUSE
-.else
-line "VTAB 10"
-lineP "   ###"
-lineP "  #####  "
-lineP " #####   "
-lineP " ####    "
-lineP " #####   "
-lineP "  #####  "
-lineP "   ###   "
-PAKKUPAUSE
-;
-line "VTAB 11"
-lineP "  #####"
-lineP " #######"
-lineP " #####  "
-lineP " #######"
-lineP "  ##### "
-PAKKUPAUSE
-;
-line "VTAB 11"
-lineP "  ##### "
-lineP " #######"
-lineP " #######"
-lineP " #######"
-lineP "  ##### "
-PAKKUPAUSE
-;
-line "VTAB 11"
-lineP "  #####"
-lineP " #######"
-lineP " #####  "
-lineP " #######"
-lineP "  ##### "
-PAKKUPAUSE
-.endif
-;
-line "GOTO 100"
-;
-lineP
-line "INPUT A$"
 .elseif DEMO = SINEDEMO
 line "HTAB 5:VTAB 5"
 lineTAKI "MARK SANIM(FDLY=0)"
