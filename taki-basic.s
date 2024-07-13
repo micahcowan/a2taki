@@ -38,16 +38,20 @@ scrcode ":REM CONTROL-T",$0D
 line "Q$=CHR$(ASC(",'"',"Q",'"',")-64)"
 scrcode ":REM CONTROL-S",$0D
 ;scrcode "50 HOME",$0D
-.if 1
+.if 0
 line "CALL ",.sprintf("%d",$601D)
 scrcode   ":REM TAKI DEBUG MODE",$0D
 .endif
 
 .if DEMO = PAKKUDEMO2
 
+line "POKE ",.sprintf("%d",$608A),", 0"
+line "POKE ",.sprintf("%d",$608B),", 0"
 lineTAKI "INSTANT PAKKU"
 line "VTAB 18"
 line "INPUT A$"
+line "REM DISABLE EXIT-ON-PROMPT"
+
 .elseif DEMO = PAKKUDEMO
 
 .macro PAKKUPAUSE

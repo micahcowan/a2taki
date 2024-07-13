@@ -60,6 +60,7 @@ curSprite:
 
 declVar     varCH, 1
 declVar     varCV, 1
+declVar     varSprNum, 1
 
 TAKI_EFFECT TE_Pakku, "PAKKU", 0, 0
 	cmp #TAKI_DSP_INIT	; init?
@@ -74,12 +75,13 @@ TAKI_EFFECT TE_Pakku, "PAKKU", 0, 0
         effSetVar varCH
         lda Mon_CV
         sta SavedCV
-        effSetNext
+        effSetNext ; varCV
         lda Mon_BASL
         sta SavedBAS
         lda Mon_BASH
         sta SavedBAS+1
-        lda #0
+        lda #2
+        effSetNext ; varSprNum
         sta curOrientation
         sta curSprite
         jsr drawPakku
@@ -89,7 +91,6 @@ UnsupportedMode:
 CkTick:
 	cmp #TAKI_DSP_TICK	; tick?
         bne UnsupportedMode
-        rts
 
         ;; TICK
         ; Save away current CH, CV, and BAS
@@ -101,33 +102,17 @@ CkTick:
         sta SavedBAS
         lda Mon_BASH
         sta SavedBAS+1
-        ; Set to our capture-start spot
-        effGetVar varCH
-        sta Mon_CH
-        effGetNext
-        sta Mon_CV
-        effGetNext
-        sta Mon_BASL
-        effGetNext
-        sta Mon_BASH
-PrintLoop:
-        effGetNext
-        beq Cleanup
-        pha
-            and #$DF    ; de-lowercase
-            ora #$80    ; ensure normal range
-            cmp #$DB    ; >  'Z'?
-            bcs @prLit  ; yes -> print literal char
-            cmp #$C1    ; >= 'A'?
-            bcc @prLit  ; no ->  print literal char
-        pla
-        ; Print garbage!
-        jsr TakiIoFastOut
-        jmp PrintLoop
-@prLit:
-        pla
-        jsr TakiIoFastOut
-        jmp PrintLoop
+        ; Increment sprite #
+        effGetVar varSprNum
+        clc
+        adc #1
+        cmp #kNumSprites
+        bne :+
+        lda #0
+        :
+        effSetVar varSprNum
+        jsr drawPakku
+        jmp Cleanup
 Cleanup:
         lda SavedCH
         sta Mon_CH
@@ -152,17 +137,31 @@ drawPakku:
     ; Init
     lda #>tblPakkuSprites
     sta vSpriteCursor+1
-    sta vCursorStop+1
     lda #<tblPakkuSprites
     sta vSpriteCursor
-    sta vCursorStop
+    ; Adjust for sprite #
+    effGetVar varSprNum
+    tax
+    beq @correctSpr
+@nextSpr:
+    lda vSpriteCursor
+    clc
+    adc #kSpriteSize
+    sta vSpriteCursor
+    bcc :+
+    inc vSpriteCursor+1
+    :
+    dex
+    bne @nextSpr
+@correctSpr:
     ; Note expected final position of the sprite scanning cursor
+    lda vSpriteCursor
     clc
     adc #kSpriteSize ; XXX orientation zero-specific
     sta vCursorStop
-    bcc :+
-    inc vCursorStop+1
-    :
+    lda vSpriteCursor+1
+    adc #0 ; + any carry
+    sta vCursorStop+1
     ;
     effGetVar varCV
     pha
@@ -191,7 +190,7 @@ drawPakku:
         adc #1   ; XXX specific to orientation 0
         sta vSpriteCursor
         bcc :+
-        inc vSpriteCursor
+        inc vSpriteCursor+1
         :
         ;
         dex
