@@ -26,8 +26,9 @@ SCANDEMO=0
 SINEDEMO=1
 FLUORDEMO=2
 PAKKUDEMO=3
+PAKKUDEMO2=4
 
-DEMO = FLUORDEMO
+DEMO = PAKKUDEMO2
 
 ASoftProg:
 line "CALL ",.sprintf("%d",$6000)
@@ -42,13 +43,18 @@ line "CALL ",.sprintf("%d",$601D)
 scrcode   ":REM TAKI DEBUG MODE",$0D
 .endif
 
-.if DEMO = PAKKUDEMO
+.if DEMO = PAKKUDEMO2
+
+lineTAKI "INSTANT PAKKU"
+line "VTAB 18"
+line "INPUT A$"
+.elseif DEMO = PAKKUDEMO
 
 .macro PAKKUPAUSE
 line "FOR P=1 TO 80:NEXT P"
 .endmacro
 
-line "POKE 32, 10"
+line "POKE 32, 10" ; set WNDLFT to 10
 
 LINE_NUMBER .set 100
 

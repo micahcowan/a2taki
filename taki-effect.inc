@@ -70,6 +70,12 @@ pTagEnd:
 .endscope
 .endmacro
 
+kVarSpaceNeeded .set 0
+.macro declVar varName, sz
+    varName = kVarSpaceNeeded
+    kVarSpaceNeeded .set sz
+.endmacro
+
 ; perform some operation on an effect variable
 .macro effOpVar op, var
 	ldy #(var)
