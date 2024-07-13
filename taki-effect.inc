@@ -73,7 +73,7 @@ pTagEnd:
 kVarSpaceNeeded .set 0
 .macro declVar varName, sz
     varName = kVarSpaceNeeded
-    kVarSpaceNeeded .set sz
+    kVarSpaceNeeded .set kVarSpaceNeeded + sz
 .endmacro
 
 ; perform some operation on an effect variable
