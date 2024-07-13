@@ -325,8 +325,9 @@ _TakiCmdHandleConfig:
         ; every iteration...
         sty @SavedY
         ;   Start with the dsp handler:
-        ldy kZpCurEffect
+        lda kZpCurEffect
         asl ; times 2 for words
+        tay
         lda (kZpEffDispatchTbl),y ; low byte
         sec
         sbc #4 ; back two words to cfg addr

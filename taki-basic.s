@@ -37,7 +37,7 @@ scrcode ":REM CONTROL-T",$0D
 line "Q$=CHR$(ASC(",'"',"Q",'"',")-64)"
 scrcode ":REM CONTROL-S",$0D
 ;scrcode "50 HOME",$0D
-.if 0
+.if 1
 line "CALL ",.sprintf("%d",$601D)
 scrcode   ":REM TAKI DEBUG MODE",$0D
 .endif
@@ -47,8 +47,12 @@ scrcode   ":REM TAKI DEBUG MODE",$0D
 line "POKE ",.sprintf("%d",$608A),", 0"
 line "POKE ",.sprintf("%d",$608B),", 0"
 lineTAKI "INSTANT PAKKU(FDLY=12)"
+kLoop = LINE_NUMBER
 line "VTAB 18"
-line "INPUT A$"
+line "INPUT A"
+line "IF A<0 OR A>3 THEN A=0"
+lineTAKI "CONFIG 0 ORIENT=",";A"
+line "GOTO ",.sprintf("%d", kLoop)
 line "REM DISABLE EXIT-ON-PROMPT"
 
 .elseif DEMO = SINEDEMO

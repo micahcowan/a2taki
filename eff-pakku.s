@@ -65,12 +65,18 @@ tblOrientations:
     .word (65536)-7     ; step (can be negative)
     .word 50            ; amount to adjust cursor between rows (can be negative)
 
+declVar     varOrientation, 1
 declVar     varCH, 1
 declVar     varCV, 1
 declVar     varSprNum, 1
-declVar     varOrientation, 1
 
-TAKI_EFFECT TE_Pakku, "PAKKU", 0, 0
+config: .byte 1
+types:  .byte TAKI_CFGTY_BYTE
+words:
+	scrcode "ORIENT"
+        .byte $00 ; terminator
+
+TAKI_EFFECT TE_Pakku, "PAKKU", 0, config
 	cmp #TAKI_DSP_INIT	; init?
         bne CkTick
         ;; INIT
@@ -78,9 +84,11 @@ TAKI_EFFECT TE_Pakku, "PAKKU", 0, 0
         effAllocate kVarSpaceNeeded
 
         ; save cursor X and Y
+        lda #0
+        effSetVar varOrientation
         lda Mon_CH
         sta SavedCH
-        effSetVar varCH
+        effSetNext ; varCH
         lda Mon_CV
         sta SavedCV
         effSetNext ; varCV
@@ -90,8 +98,6 @@ TAKI_EFFECT TE_Pakku, "PAKKU", 0, 0
         sta SavedBAS+1
         lda #0
         effSetNext ; varSprNum
-        lda #0
-        effSetNext ; varOrientation
         jsr drawPakku
         jmp Cleanup
 UnsupportedMode:
