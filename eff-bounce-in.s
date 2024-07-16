@@ -401,9 +401,7 @@ CkTick:
         pla
         sec
         sbc #1
-        bne @keepGoing
-        rts ; SUBROUTINE EXIT CONDITION
-@keepGoing:
+        beq @animIterDone
         pha
             ; Advance to next animator
             lda TAKI_ZP_EFF_SPECIAL_0
@@ -416,6 +414,16 @@ CkTick:
             sta TAKI_ZP_EFF_SPECIAL_1
             :
         bne @animLoop ; always
+@animIterDone:
+        ; Decrement the countdown
+        effGetVar vCountdown
+        sec
+        sbc #1
+        beq @startNew
+        effSetCur
+        rts
+@startNew:
+        jmp StartAnAnimation
 
 HandleFakeAnim:
         ; The purpose of this routine is to waste a similar amount of time,
