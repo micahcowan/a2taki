@@ -85,6 +85,7 @@ maybe_import TakiIoFastOut
 maybe_import TakiIoFastPrintStr
 maybe_import TakiIoFastPrintSpace
 maybe_import TakiIoNextRandom
+maybe_import TakiIoRandWithinAY
 maybe_import TakiMySetCounter
 maybe_import TakiMyGetCounter
 maybe_import TakiMySetCounterInit

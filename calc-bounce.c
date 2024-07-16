@@ -3,9 +3,9 @@
 
 int
 main(void) {
-    double start=24.;
+    double start=40.;
         // bounce-in line starts outside the view, all the way to the
-        // right (so, "25th" column).
+        // right (so, "41st" column).
     double adur=.5;
         // time to hit the left wall first time (must be less than dur,
         // and > 0.5 * dur)

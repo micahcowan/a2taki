@@ -120,6 +120,17 @@ kVarSpaceNeeded .set 0
 :
 .endmacro
 
+; move storage-end ptr to allocate a number of addt'l bytes
+;  specified in the accumulator
+.macro effAllocateA
+	clc
+        adc TAKI_ZP_EFF_STORAGE_END_L
+        sta TAKI_ZP_EFF_STORAGE_END_L
+        bcc :+
+        inc TAKI_ZP_EFF_STORAGE_END_H
+:
+.endmacro
+
 ; increment storage to accommodate an additional byte
 .macro effAllocateOne
 	inc TAKI_ZP_EFF_STORAGE_END_L

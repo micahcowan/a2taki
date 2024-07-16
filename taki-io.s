@@ -6,6 +6,9 @@ TAKI_INTERNAL=1
 I_AM_TAKI_IO=1
 .include "taki-internal.inc"
 
+DIVISION_WORK_AREA=RandomDivWorkspace
+.include "division.inc"
+
 .macpack apple2
 
 _TakiCmdBufCurrent:
@@ -509,3 +512,36 @@ lp:
         pla
         tay
         rts
+
+.export _TakiIoRandWithinAY
+_TakiIoRandWithinAY:
+        sta locDivisor+1
+        sty locDivisor
+        jsr _TakiIoNextRandom
+        lda TakiVarRandomWord
+        sta locDividend+1
+        lda TakiVarRandomWord+1
+        sta locDividend
+        jsr div16
+        .if 0
+        ldx #0
+@lo:
+        lda RandomDivWorkspace,x
+        jsr Mon_PRBYTE
+        inx
+        cpx #20
+        bne @lo
+        ;
+        lda #$8D
+        jsr Mon_COUT
+    .endif
+        ;
+        lda locRemainder+1
+        ldy locRemainder
+        rts
+
+div16:
+    makeDivisionRoutine 2
+
+RandomDivWorkspace:
+        .res 20

@@ -67,6 +67,7 @@ TakiPublic_ TakiIoFastOut
 TakiPublic_ TakiIoFastPrintStr
 TakiPublic_ TakiIoFastPrintSpace
 TakiPublic_ TakiIoNextRandom
+TakiPublic_ TakiIoRandWithinAY
 
 TakiPublic_ TakiMySetCounter
 TakiPublic_ TakiMyGetCounter
