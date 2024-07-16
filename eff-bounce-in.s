@@ -488,14 +488,16 @@ HandleRealAnim:
             ldy #0
             tax
             beq @donePrSp
-@loopPrSp:
             lda #$A0 ; SPC
+@loopPrSp:
             sta (Mon_BASL),y
+            iny
             dex
             bne @loopPrSp
 @donePrSp:
             ; Next, print our line.
             ; Advance our ZP to the start of text.
+            ;brk
             lda TAKI_ZP_EFF_SPECIAL_2
             clc
             adc #2
@@ -507,6 +509,7 @@ HandleRealAnim:
             tya
             clc
             adc Mon_BASL
+            sta Mon_BASL
             bcc :+
             inc Mon_BASH
             :
@@ -538,7 +541,7 @@ HandleRealAnim:
         ldy #avFrameNum
         lda (TAKI_ZP_EFF_SPECIAL_0),y
         clc
-        adc #0
+        adc #1
         sta (TAKI_ZP_EFF_SPECIAL_0),y
         ; Make sure animation's not done
         tax

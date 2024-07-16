@@ -108,7 +108,7 @@ line "POKE ",.sprintf("%d",$608A),", 0"
 
 ;line "----------------------------------------"
 line "HOME"
-lineTAKI "MARK BOUNCE-IN(FBTW=16)"
+lineTAKI "MARK BOUNCE-IN(FDLY=8 FBTW=16)"
 lineP " - THE BASEMENT OFFICE - "
 lineP
 lineP "YOU ARE SITTING IN A BUTT-NUMBINGLY HARD",';'
