@@ -143,7 +143,7 @@ CkColl: cmp #TAKI_DSP_COLLECT	; collect?
         dey ; + 2 - 1 = +1 for advancing Mon_CH value
 @checkCH:
         ; Did CH just exceed the line length? (XXX: ignores WNDLFT/WNDWDTH)
-        cpy #(kCharsInRow + 1)
+        cpy #kCharsInRow
         bcs @cr             ; yes -> finish this line
         ; CH is fine, so just store and return.
         sty Mon_CH
