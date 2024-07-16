@@ -99,6 +99,16 @@ kVarSpaceNeeded .set 0
         sta (TAKI_ZP_EFF_STORAGE_L),y
 .endmacro
 
+; leave y where it is and get byte from acc
+.macro effGetCur
+        lta (TAKI_ZP_EFF_STORAGE_L),y
+.endmacro
+
+; leave y where it is and set byte from acc
+.macro effSetCur
+        sta (TAKI_ZP_EFF_STORAGE_L),y
+.endmacro
+
 ; move storage-end ptr to allocate N additional bytes
 .macro effAllocate amt
 	clc

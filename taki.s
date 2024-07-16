@@ -7,6 +7,7 @@
 ;#link "taki-basic.s"
 ;#link "taki-os-none.s"
 ;#link "taki-public.s"
+;#link "eff-bounce-in.s"
 ;#link "eff-cursed.s"
 ;#link "eff-fluor.s"
 ;#link "eff-pakku.s"

@@ -302,7 +302,7 @@ _TakiCmdHandleConfigFDLY:
         rts
 @nope:
 	pla
-        tya
+        tay
 	sec
 	rts
 
