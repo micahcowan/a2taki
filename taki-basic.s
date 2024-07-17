@@ -38,7 +38,7 @@ scrcode ":REM CONTROL-T",$0D
 line "Q$=CHR$(ASC(",'"',"Q",'"',")-64)"
 scrcode ":REM CONTROL-S",$0D
 ;scrcode "50 HOME",$0D
-.if 1
+.if 0
 line "CALL ",.sprintf("%d",$601D)
 scrcode   ":REM TAKI DEBUG MODE",$0D
 .endif
@@ -108,23 +108,7 @@ line "POKE ",.sprintf("%d",$608A),", 0"
 
 ;line "----------------------------------------"
 line "HOME"
-lineTAKI "MARK BOUNCE-IN(FDLY=12 FBTW=6)"
-.if 0
-lineP " - THE BASEMENT OFFICE - "
-lineP
-lineP "YOU ARE SITTING IN A BUTT-NUMBINGLY HARD",';'
-lineP "CHAIR, AT YOUR WOOD-VENEERED PLASTIC "
-lineP "DESK, WHERE THE ",';'
-lineP "CONSTANT SPUTTERING",';'
-lineP " OF"
-lineP "THE OVERHEAD FLUORESCENT LIGHTS IS"
-lineP "SLOWLY DRIVING YOU INSANE."
-lineP
-lineP "UPON YOUR DESK RESTS THE MAGIC ",';'
-lineP "STAPLER"
-lineP "FROM YESTERDAY, QUIETLY MOCKING YOUR"
-lineP "PREVIOUS ATTEMPTS AT PICKING IT UP."
-.else
+lineTAKI "MARK BOUNCE-IN(FDLY=4 FBTW=17)"
 lineP " - THE TABLE TENNIS LOUNGE - "
 lineP
 lineP "AS YOU ENTER THE ROOM, YOU SEE TWO"
@@ -144,12 +128,11 @@ lineP "THE FLOOR."
 lineP
 lineP "THERE IS AN OPEN TABLE WITH AN"
 lineP "UNUSED PADDLE UPON IT." 
-.endif
 lineP
 line  "PRINT Q$;"
 
-line "REM SET SCROLL/WNDTOP"
-line "POKE 34, PEEK(37)"
+;line "REM SET SCROLL/WNDTOP"
+;line "POKE 34, PEEK(37)"
 line "REM DISABLE EXIT-ON-PROMPT"
 line "POKE ",.sprintf("%d",$608A),", 0"
 
