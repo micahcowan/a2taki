@@ -1,0 +1,2 @@
+2  PRINT "LOADING..."
+5  PRINT  CHR$ (4);"BLOAD TAKI"
