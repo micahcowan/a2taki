@@ -159,7 +159,7 @@ _TakiIn:
 	bpl     @KEYIN
         ; keypress available.
 	lda     SS_KBD
-        bit	SS_KBDSTRB
+        sta	SS_KBDSTRB
         jsr _TakiDbgCheckKey
         bcc @KEYIN
         cmp #$9B	; ESC - skip and get new keypress
@@ -182,7 +182,7 @@ _TakiIoGetKey:
 	bpl     @KEYIN
         ; keypress available.
 	lda     SS_KBD
-        bit	SS_KBDSTRB
+        sta	SS_KBDSTRB
 
 pvSaved_CH:
 	.byte $00
@@ -222,7 +222,7 @@ pVIDWAIT:cmp     #$8d            ;check for a pause only when I have a CR
 	bpl     pNOWAIT          ;no
 	cpy     #$93            ;is it ctl S?
 	bne     pNOWAIT          ;no so ignore
-	bit     SS_KBDSTRB         ;clear strobe
+        sta     SS_KBDSTRB         ;clear strobe
 pKBDWAIT:
 	TakiEffectDo_ _TakiTick
         ; FIXME: add some delay here to match speed at input
@@ -230,7 +230,7 @@ pKBDWAIT:
 	bpl     pKBDWAIT         ;wait for keypress
 	cpy     #$83            ;is it control C ?
 	beq     pNOWAIT          ;yes so leave it
-        bit     SS_KBDSTRB         ;clr strobe
+        sta     SS_KBDSTRB         ;clr strobe
 pNOWAIT:
 pVIDOUT:
 	pha
