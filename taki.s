@@ -9,6 +9,7 @@
 ;#link "taki-public.s"
 ;#link "eff-bounce-in.s"
 ;#link "eff-cursed.s"
+;#link "eff-door.s"
 ;#link "eff-fluor.s"
 ;#link "eff-pakku.s"
 ;#link "eff-spinner.s"
