@@ -9,14 +9,19 @@
 .include "taki-public.inc"
 .include "a2-monitor.inc"
 
-config: .byte 1
+config: .byte 2
 types:  .byte TAKI_CFGTY_BYTE
+        .byte TAKI_CFGTY_BYTE
 words:
+        scrcode "SHUF"  ; Sets whether bounced lines are shuffled first,
+                        ; 0=no, 1=yes (default=yes)
+        .byte $00 ; terminator
         scrcode "FBTW"  ; Sets how many frames to wait between starting a
                         ; bounce-in for the next line. ONLY read
                         ; from INIT; ignored in CONFIG
         .byte $00 ; terminator
 
+declVar vShuffle,   1
 declVar vUsrFbtw,   1
 declVar vFbtw,      1
 declVar vSimul,     1   ; Max number of lines drawn at a time. frames / fbtw
@@ -48,6 +53,8 @@ TAKI_EFFECT TE_BounceIn, "BOUNCE-IN", 0, config
         ; Allocate the space we will need
         effAllocate kVarSpaceNeeded
 
+        lda #1
+        effSetVar vShuffle
         lda #0
         effSetVar vFbtw
         effSetVar vNumLine; (skip vFtbw, vSimul and vLineAnims for now)
@@ -260,6 +267,8 @@ CkCollectEnd:
 @indexMkDone:
         ; shuffle them!
         ; ...pick a random remaining card
+        effGetVar vShuffle
+        beq @doneShuffle
         ldy #0
         lda TAKI_ZP_EFF_SPECIAL_2
         beq @doneShuffle

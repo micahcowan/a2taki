@@ -39,24 +39,27 @@ scrcode   ":REM TAKI DEBUG MODE",$0D
 
 ;line "POKE ",.sprintf("%d",$608A),", 0"
 ;line "POKE ",.sprintf("%d",$608B),", 0"
+line "POKE 34,0"
 line "HOME"
-lineP
-lineP
-lineTAKI "WORD DOOR"
-lineP "DOOR"
-lineP
-lineP
-lineP
-lineP
-myLoop = LINE_NUMBER
-line "HTAB 1:VTAB 12"
-line "GET A$"
-line "IF ASC(A$) = 3 THEN END"
-line "DO=NOT DO"
-line "IF DO<>0 THEN DO=1"
-lineP "DO: ",";DO"
-lineTAKI "CONFIG 0 OPEN=",";DO"
-line .concat("GOTO ",.sprintf("%d",myLoop))
+lineTAKI "MARK BOUNCE-IN(FDLY=7 FBTW=50 SHUF=0)"
+line "VTAB 8:HTAB 14"
+lineP "MICAH COWAN"
+line "HTAB 16"
+lineP "PRESENTS"
+line "PRINT Q$;"
+rptCnt = 5
+.repeat rptCnt, I
+vert   .set <(I * (256/rptCnt))
+horiz  .set <(192 + (I * (256/rptCnt)))
+line "VTAB 9:HTAB 18"
+lineTAKI "MARK SANIM"
+lineP "",": REM  TIMER VALUES"
+lineP .sprintf("0,12-,0T%u+SR 4,0T%u+SR",horiz,vert),": REM  ANIMATION CODE"
+lineP "TAKI",";: REM  TEXT"
+line "PRINT Q$;"
+.endrepeat
+line "VTAB 20:HTAB 1"
+line "INPUT \">\";A$"
 .endif
 
 scrcode "RUN",$0D
