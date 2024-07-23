@@ -1,6 +1,7 @@
 10  CALL 24576
 20 T$ =  CHR$ ( ASC ("T") - 64)
 30 Q$ =  CHR$ ( ASC ("Q") - 64)
+35  POKE 34,0
 40  HOME 
 50  PRINT " - THE BASEMENT OFFICE - "
 60  PRINT "
