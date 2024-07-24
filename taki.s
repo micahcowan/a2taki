@@ -74,6 +74,7 @@ _TakiExit:
 _TakiReset:
 	lda #0
         sta _TakiVarActiveEffectsNum
+        TakiUnsetFlag_ flagAnimationActive
 	rts
 
 _TakiMemInit:
