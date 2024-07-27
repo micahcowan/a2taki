@@ -7,101 +7,105 @@
 ;;   Y-reg: DESTROYED
 ;;   RETURNS: A * sine( X-reg * PI / 128 )
 Sine:
-	tay
-        ; First, get sine value 0 - 255
-        lda SineTable, x
-        jsr ScaleFrac
-        rts
+    tay
+    ; First, get sine value 0 - 255
+    lda SineTable, x
+    jsr ScaleFrac
+    rts
 
 ScaleFrac:
-	pha
-	tya
-        
-        cpy #0
-        bmi @handleNeg
-        pla
-	jmp ScaleFracUns
+    pha
+    tya
+    
+    cpy #0
+    bmi @handleNeg
+    pla
+    jmp ScaleFracUns
 
 @handleNeg:
-	; reverse scale 
-        sec
-        sbc #1
-        eor #$FF
-        tay
-        pla
-        jsr ScaleFracUns
-        sta @tmp
-        lda #0
-        sec
-        sbc @tmp
-@out:   rts
+    ; reverse scale 
+    sec
+    sbc #1
+    eor #$FF
+    tay
+    pla
+    jsr ScaleFracUns
+    sta @tmp
+    lda #0
+    sec
+    sbc @tmp
+@out:
+    rts
 @tmp:
-	.byte 0
-        
+    .byte 0
+    
 ;; Sets A to Y * A/256, where
 ScaleFracUns:
-        ;
-        sta SineFracL
-        lda #0
-        sta SineFracH
+    ;
+    sta SineFracL
+    lda #0
+    sta SineFracH
+    sta ScaledL
+    sta ScaledH
+    lda #$80 ; loop guard
+    sta @loopGuard
+    tya ; move scale to A-reg
+    sta SineScale
+    asl ; multiply scale * 2
+        ; because afterward we'll subtract
+        ; to go from twice the range, unsigned,
+        ; to pos/neg signed, at correct range
+@loop:
+    lsr
+    pha
+        ; Do we have a set bit?
+        bcc @noAdd ; No: don't add current fraction
+        ; Yes: add current fraction
+        clc
+        lda SineFracL
+        adc ScaledL
         sta ScaledL
+        lda SineFracH
+        adc ScaledH
         sta ScaledH
-        lda #$80 ; loop guard
+@noAdd: ; rotate the fraction and the loop guard
+        ; fraction:
+        lda SineFracL
+        asl
+        sta SineFracL
+        lda SineFracH
+        rol
+        sta SineFracH
+        ; loop guard:
+        lda @loopGuard
+        lsr
         sta @loopGuard
-        tya ; move scale to A-reg
-        sta SineScale
-        asl ; multiply scale * 2
-            ; because afterward we'll subtract
-            ; to go from twice the range, unsigned,
-            ; to pos/neg signed, at correct range
-@loop:  lsr
-	pha
-            ; Do we have a set bit?
-            bcc @noAdd ; No: don't add current fraction
-            ; Yes: add current fraction
-            clc
-            lda SineFracL
-            adc ScaledL
-            sta ScaledL
-            lda SineFracH
-            adc ScaledH
-            sta ScaledH
-@noAdd:     ; rotate the fraction and the loop guard
-	    ; fraction:
-            lda SineFracL
-            asl
-            sta SineFracL
-            lda SineFracH
-            rol
-            sta SineFracH
-            ; loop guard:
-            lda @loopGuard
-            lsr
-            sta @loopGuard
-        pla
-    	bcc @loop
-        ; Round to nearest
-        lda ScaledL
-        bpl @roundDone
-        inc ScaledH
+    pla
+    bcc @loop
+    ; Round to nearest
+    lda ScaledL
+    bpl @roundDone
+    inc ScaledH
 @roundDone:
-        ; Adjust back down to pos/neg
-        lda ScaledH
-        sec
-        sbc SineScale
-	rts
+    ; Adjust back down to pos/neg
+    lda ScaledH
+    sec
+    sbc SineScale
+    rts
 @loopGuard:
-	.byte 0
+    .byte 0
 SineScale:
-	.byte 0
-SineFracL: ; fractional value we got from SineTable
-	.byte 0
+    .byte 0
+SineFracL:
+    ; fractional value we got from SineTable
+    .byte 0
 SineFracH:
-	.byte 0
-ScaledL: ; the value we're constructing
-	.byte 0
+    .byte 0
+ScaledL:
+    ; the value we're constructing
+    .byte 0
 ScaledH:
-	.byte 0
+    .byte 0
 
 SineTable:
 .byte $80, $83, $86, $89, $8C, $8F, $92, $95

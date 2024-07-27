@@ -32,7 +32,7 @@ FORTHISH_NO_IMPORT=1
 .export roll1, roll1A
 roll1:
     ; on stack: number of items to roll
-    ;		<16-bit return address>
+    ;           <16-bit return address>
     rotb_ ; get N past return address
     pla
 roll1A:
@@ -61,7 +61,7 @@ roll1A:
 .export rollb1, rollb1A
 rollb1:
     ; on stack: number of items to roll
-    ;		<16-bit return address>
+    ;           <16-bit return address>
     rotb_ ; get N past return address
     pla
 rollb1A:

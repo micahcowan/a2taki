@@ -20,128 +20,129 @@ kNeeded    = kLocVisible + 1
 kLocTextStart = kNeeded
 
 TAKI_EFFECT TE_Fluorescent, "FLUORESCENT", 0, 0
-	cmp #TAKI_DSP_INIT	; init?
-        bne CkColl
-        ;; INIT
-        ; Allocate the space we will need
-        effAllocate kNeeded
+    cmp #TAKI_DSP_INIT      ; init?
+    bne CkColl
+    ;; INIT
+    ; Allocate the space we will need
+    effAllocate kNeeded
 
-        lda #0
-        effSetVar kLocSelect
-        lda blinkTimings
-        effSetNext
-        ; save cursor X and Y
-        lda Mon_CH
-        effSetNext
-        lda Mon_CV
-        effSetNext
-        lda Mon_BASL
-        effSetNext
-        lda Mon_BASH
-        effSetNext
-        lda #$FF
-        effSetNext
-	rts
-CkColl: cmp #TAKI_DSP_COLLECT	; collect?
-        bne CkCollectEnd
+    lda #0
+    effSetVar kLocSelect
+    lda blinkTimings
+    effSetNext
+    ; save cursor X and Y
+    lda Mon_CH
+    effSetNext
+    lda Mon_CV
+    effSetNext
+    lda Mon_BASL
+    effSetNext
+    lda Mon_BASH
+    effSetNext
+    lda #$FF
+    effSetNext
+    rts
+CkColl:
+    cmp #TAKI_DSP_COLLECT   ; collect?
+    bne CkCollectEnd
 
-        ;; COLLECT
-        lda TAKI_ZP_ACC
-        effAppendByte
-        jmp TakiIoFastOut
+    ;; COLLECT
+    lda TAKI_ZP_ACC
+    effAppendByte
+    jmp TakiIoFastOut
 CkCollectEnd:
-	cmp #TAKI_DSP_ENDCOLLECT
-        bne CkTick
+    cmp #TAKI_DSP_ENDCOLLECT
+    bne CkTick
 
-        ;; END COLLECT
-        lda #0
-        effAppendByte
+    ;; END COLLECT
+    lda #0
+    effAppendByte
 UnsupportedMode:
-        rts
+    rts
 CkTick:
-	cmp #TAKI_DSP_TICK	; tick?
-        bne UnsupportedMode
+    cmp #TAKI_DSP_TICK      ; tick?
+    bne UnsupportedMode
 
-        ;; TICK
-        effGetVar kLocCount
-        sec
-        sbc #1                  ; countdown over?
-        sta (TAKI_ZP_EFF_STORAGE_L), y ;effSetVar kLocCount
-        bne StillCounting       ; no: just print for current state
+    ;; TICK
+    effGetVar kLocCount
+    sec
+    sbc #1                  ; countdown over?
+    sta (TAKI_ZP_EFF_STORAGE_L), y ;effSetVar kLocCount
+    bne StillCounting       ; no: just print for current state
 CountdownDone:
-        effGetVar kLocSelect
-        clc
-        adc #1                  ; increment to next timer
-        cmp #blinkTimingsSize
-        bne :+
-        ; out of timers, start at first again
-        lda #0
+    effGetVar kLocSelect
+    clc
+    adc #1                  ; increment to next timer
+    cmp #blinkTimingsSize
+    bne :+
+    ; out of timers, start at first again
+    lda #0
 :
-        effSetVar kLocSelect
-        tay
-        lda blinkTimings,y
-        .if 0
-        ; No, use random instead!
-        jsr TakiIoNextRandom
-        lda TakiVarRandomWord
-        and #$03
-        sec
-        adc #0
-        .endif
-        effSetVar kLocCount
+    effSetVar kLocSelect
+    tay
+    lda blinkTimings,y
+    .if 0
+    ; No, use random instead!
+    jsr TakiIoNextRandom
+    lda TakiVarRandomWord
+    and #$03
+    sec
+    adc #0
+    .endif
+    effSetVar kLocCount
 
-        ; now toggle visibility
-        effGetVar kLocVisible
-        eor #$FF
-        effSetVar kLocVisible
+    ; now toggle visibility
+    effGetVar kLocVisible
+    eor #$FF
+    effSetVar kLocVisible
 StillCounting:
-        ; Save away current CH, CV, and BAS
-        lda Mon_CH
-        sta SavedCH
-        lda Mon_CV
-        sta SavedCV
-        lda Mon_BASL
-        sta SavedBAS
-        lda Mon_BASH
-        sta SavedBAS+1
-        ; Set to our capture-start spot
-        effGetVar kLocCH
-        sta Mon_CH
-        effGetNext
-        sta Mon_CV
-        effGetNext
-        sta Mon_BASL
-        effGetNext
-        sta Mon_BASH
-        ; Is the text visible?
-        ; print it
-        lda TAKI_ZP_EFF_STORAGE_L
-        clc
-        adc #kLocTextStart
-        sta TAKI_ZP_EFF_SPECIAL_0
-        lda TAKI_ZP_EFF_STORAGE_H
-        adc #0
-        sta TAKI_ZP_EFF_SPECIAL_1
-        effGetVar kLocTextStart
-        beq TickCleanup
-        effGetVar kLocVisible
-        beq PrintInvis
+    ; Save away current CH, CV, and BAS
+    lda Mon_CH
+    sta SavedCH
+    lda Mon_CV
+    sta SavedCV
+    lda Mon_BASL
+    sta SavedBAS
+    lda Mon_BASH
+    sta SavedBAS+1
+    ; Set to our capture-start spot
+    effGetVar kLocCH
+    sta Mon_CH
+    effGetNext
+    sta Mon_CV
+    effGetNext
+    sta Mon_BASL
+    effGetNext
+    sta Mon_BASH
+    ; Is the text visible?
+    ; print it
+    lda TAKI_ZP_EFF_STORAGE_L
+    clc
+    adc #kLocTextStart
+    sta TAKI_ZP_EFF_SPECIAL_0
+    lda TAKI_ZP_EFF_STORAGE_H
+    adc #0
+    sta TAKI_ZP_EFF_SPECIAL_1
+    effGetVar kLocTextStart
+    beq TickCleanup
+    effGetVar kLocVisible
+    beq PrintInvis
 PrintVis:
-        jsr TakiIoFastPrintStr
-        jmp TickCleanup
+    jsr TakiIoFastPrintStr
+    jmp TickCleanup
 PrintInvis:
-        jsr TakiIoFastPrintSpace
-        ; fall through
+    jsr TakiIoFastPrintSpace
+    ; fall through
 TickCleanup:
-        lda SavedCH
-        sta Mon_CH
-        lda SavedCV
-        sta Mon_CV
-        lda SavedBAS
-        sta Mon_BASL
-        lda SavedBAS+1
-        sta Mon_BASH
-        rts
+    lda SavedCH
+    sta Mon_CH
+    lda SavedCV
+    sta Mon_CV
+    lda SavedBAS
+    sta Mon_BASL
+    lda SavedBAS+1
+    sta Mon_BASH
+    rts
 SavedCH:
     .byte 0
 SavedCV:

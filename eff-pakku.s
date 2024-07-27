@@ -73,70 +73,70 @@ declVar     varSprNum, 1
 config: .byte 1
 types:  .byte TAKI_CFGTY_BYTE
 words:
-	scrcode "ORIENT"
+        scrcode "ORIENT"
         .byte $00 ; terminator
 
 TAKI_EFFECT TE_Pakku, "PAKKU", 0, config
-	cmp #TAKI_DSP_INIT	; init?
-        bne CkTick
-        ;; INIT
-        ; Allocate the space we will need
-        effAllocate kVarSpaceNeeded
+    cmp #TAKI_DSP_INIT      ; init?
+    bne CkTick
+    ;; INIT
+    ; Allocate the space we will need
+    effAllocate kVarSpaceNeeded
 
-        ; save cursor X and Y
-        lda #0
-        effSetVar varOrientation
-        lda Mon_CH
-        sta SavedCH
-        effSetNext ; varCH
-        lda Mon_CV
-        sta SavedCV
-        effSetNext ; varCV
-        lda Mon_BASL
-        sta SavedBAS
-        lda Mon_BASH
-        sta SavedBAS+1
-        lda #0
-        effSetNext ; varSprNum
-        jsr drawPakku
-        jmp Cleanup
+    ; save cursor X and Y
+    lda #0
+    effSetVar varOrientation
+    lda Mon_CH
+    sta SavedCH
+    effSetNext ; varCH
+    lda Mon_CV
+    sta SavedCV
+    effSetNext ; varCV
+    lda Mon_BASL
+    sta SavedBAS
+    lda Mon_BASH
+    sta SavedBAS+1
+    lda #0
+    effSetNext ; varSprNum
+    jsr drawPakku
+    jmp Cleanup
 UnsupportedMode:
-        rts
+    rts
 CkTick:
-	cmp #TAKI_DSP_TICK	; tick?
-        bne UnsupportedMode
+    cmp #TAKI_DSP_TICK      ; tick?
+    bne UnsupportedMode
 
-        ;; TICK
-        ; Save away current CH, CV, and BAS
-        lda Mon_CH
-        sta SavedCH
-        lda Mon_CV
-        sta SavedCV
-        lda Mon_BASL
-        sta SavedBAS
-        lda Mon_BASH
-        sta SavedBAS+1
-        ; Increment sprite #
-        effGetVar varSprNum
-        clc
-        adc #1
-        cmp #kNumSprites
-        bne :+
-        lda #0
-        :
-        effSetVar varSprNum
-        jsr drawPakku
-        jmp Cleanup
+    ;; TICK
+    ; Save away current CH, CV, and BAS
+    lda Mon_CH
+    sta SavedCH
+    lda Mon_CV
+    sta SavedCV
+    lda Mon_BASL
+    sta SavedBAS
+    lda Mon_BASH
+    sta SavedBAS+1
+    ; Increment sprite #
+    effGetVar varSprNum
+    clc
+    adc #1
+    cmp #kNumSprites
+    bne :+
+    lda #0
+    :
+    effSetVar varSprNum
+    jsr drawPakku
+    jmp Cleanup
 Cleanup:
-        lda SavedCH
-        sta Mon_CH
-        lda SavedCV
-        sta Mon_CV
-        lda SavedBAS
-        sta Mon_BASL
-        lda SavedBAS+1
-        sta Mon_BASH
-        rts
+    lda SavedCH
+    sta Mon_CH
+    lda SavedCV
+    sta Mon_CV
+    lda SavedBAS
+    sta Mon_BASL
+    lda SavedBAS+1
+    sta Mon_BASH
+    rts
 SavedCH:
     .byte 0
 SavedCV:

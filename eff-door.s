@@ -65,86 +65,87 @@ declVar     varSprNum, 1
 config: .byte 1
 types:  .byte TAKI_CFGTY_BYTE
 words:
-	scrcode "OPEN"
-        .byte $00 ; terminator
+    scrcode "OPEN"
+    .byte $00 ; terminator
 
 TAKI_EFFECT TE_Door, "DOOR", 0, config
-	cmp #TAKI_DSP_INIT	; init?
-        bne CkColl
-        ;; INIT
-        ; Allocate the space we will need
-        effAllocate kVarSpaceNeeded
+    cmp #TAKI_DSP_INIT      ; init?
+    bne CkColl
+    ;; INIT
+    ; Allocate the space we will need
+    effAllocate kVarSpaceNeeded
 
-        ; save cursor X and Y
-        lda #0
-        effSetVar varOpen
-        lda Mon_CH
-        sta SavedCH
-        effSetNext ; varCH
-        lda Mon_CV
-        sta SavedCV
-        effSetNext ; varCV
-        lda Mon_BASL
-        sta SavedBAS
-        lda Mon_BASH
-        sta SavedBAS+1
-        lda #0
-        effSetNext ; varSprNum
-        jsr drawDoor
-        jmp Cleanup
+    ; save cursor X and Y
+    lda #0
+    effSetVar varOpen
+    lda Mon_CH
+    sta SavedCH
+    effSetNext ; varCH
+    lda Mon_CV
+    sta SavedCV
+    effSetNext ; varCV
+    lda Mon_BASL
+    sta SavedBAS
+    lda Mon_BASH
+    sta SavedBAS+1
+    lda #0
+    effSetNext ; varSprNum
+    jsr drawDoor
+    jmp Cleanup
 UnsupportedMode:
-        rts
-CkColl: cmp #TAKI_DSP_COLLECT	; collect?
-	bne CkTick
-	; COLLECT
-        lda TAKI_ZP_ACC
-        jmp TakiIoFastOut ; XXX
+    rts
+CkColl:
+    cmp #TAKI_DSP_COLLECT   ; collect?
+    bne CkTick
+    ; COLLECT
+    lda TAKI_ZP_ACC
+    jmp TakiIoFastOut ; XXX
 CkTick:
-	cmp #TAKI_DSP_TICK	; tick?
-        bne UnsupportedMode
+    cmp #TAKI_DSP_TICK      ; tick?
+    bne UnsupportedMode
 
-        ;; TICK
-        ; Save away current CH, CV, and BAS
-        lda Mon_CH
-        sta SavedCH
-        lda Mon_CV
-        sta SavedCV
-        lda Mon_BASL
-        sta SavedBAS
-        lda Mon_BASH
-        sta SavedBAS+1
-        ; Are we opening or closing a door?
-        effGetVar varOpen
-        bne @openDoor
+    ;; TICK
+    ; Save away current CH, CV, and BAS
+    lda Mon_CH
+    sta SavedCH
+    lda Mon_CV
+    sta SavedCV
+    lda Mon_BASL
+    sta SavedBAS
+    lda Mon_BASH
+    sta SavedBAS+1
+    ; Are we opening or closing a door?
+    effGetVar varOpen
+    bne @openDoor
 @closeDoor:
-        ; Decrement sprite #
-        effGetVar varSprNum
-        beq @drawDoor
-        sec
-        sbc #1
-        effSetCur
-        jmp @drawDoor
+    ; Decrement sprite #
+    effGetVar varSprNum
+    beq @drawDoor
+    sec
+    sbc #1
+    effSetCur
+    jmp @drawDoor
 @openDoor:
-        ; Increment sprite #
-        effGetVar varSprNum
-        cmp #(kNumSprites-1)
-        beq @drawDoor
-        clc
-        adc #1
-        effSetCur
+    ; Increment sprite #
+    effGetVar varSprNum
+    cmp #(kNumSprites-1)
+    beq @drawDoor
+    clc
+    adc #1
+    effSetCur
 @drawDoor:
-        jsr drawDoor
-        jmp Cleanup
+    jsr drawDoor
+    jmp Cleanup
 Cleanup:
-        lda SavedCH
-        sta Mon_CH
-        lda SavedCV
-        sta Mon_CV
-        lda SavedBAS
-        sta Mon_BASL
-        lda SavedBAS+1
-        sta Mon_BASH
-        rts
+    lda SavedCH
+    sta Mon_CH
+    lda SavedCV
+    sta Mon_CV
+    lda SavedBAS
+    sta Mon_BASL
+    lda SavedBAS+1
+    sta Mon_BASH
+    rts
 SavedCH:
     .byte 0
 SavedCV:
@@ -154,7 +155,8 @@ SavedBAS:
 
 vSpriteCursor = TAKI_ZP_EFF_SPECIAL_0
 vOrientation  = TAKI_ZP_EFF_SPECIAL_2
-vRowsLeft: .byte 0
+vRowsLeft:
+    .byte 0
 drawDoor:
     ; Init
     lda #>tblSprites

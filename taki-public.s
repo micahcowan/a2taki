@@ -9,9 +9,9 @@ I_AM_TAKI_PUBLIC=1
 TakiStart:
 
 .macro TakiPublic_ subname
-        .export subname
-        subname:
-        jmp .ident(.concat("_", .string(subname)))
+    .export subname
+    subname:
+    jmp .ident(.concat("_", .string(subname)))
 .endmacro
 
 ;;;;; PUBLIC FUNCTION ENTRY POINTS
@@ -26,26 +26,26 @@ TakiPublic_ TakiInit
 ;
 ;.export TakiInit
 ;TakiMoveASoft:
-;	jmp _TakiInit
+;       jmp _TakiInit
 
 TakiPublic_ TakiBareInit
 
 ; Set to correct code by TakiInit/TakiBareInit
 .export TakiIn
 TakiIn:
-	cld
+    cld
 .export _TakiInFn
 _TakiInFn = * + 1
-        jmp Mon_KEYIN
+    jmp Mon_KEYIN
 
 ; Set to correct code by TakiInit/TakiBareInit
 .export TakiOut
 TakiOut:
-	cld
+    cld
 .export _TakiOutFn
 _TakiOutFn = * + 1
-        jmp Mon_COUT1
-        
+    jmp Mon_COUT1
+    
 TakiPublic_ TakiDelay
 
 ;TakiPublic_ TakiPause
@@ -88,32 +88,32 @@ TakiVarsStart:
 ; set, this is an unstable/unreleased version
 .export TakiVarReleaseVersion
 TakiVarReleaseVersion:
-	.byte $FF, $FF
+    .byte $FF, $FF
 
 ; Init status: set to zero only if initialization
 ; and allocation succeeded.
 .export TakiVarInitStatus
 TakiVarInitStatus:
-        .byte $FF
+    .byte $FF
 
 .export TakiVarEffectsAllocNumPages, TakiVarMaxActiveEffects
 .export TakiVarDefaultCountdown
 TakiVarEffectsAllocNumPages:
-	.byte $10	; default value
+    .byte $10       ; default value
 TakiVarMaxActiveEffects:
-	.byte 32	; default value
+    .byte 32        ; default value
 TakiVarDefaultCountdown:
-	.word $0012
+    .word $0012
 
 .export TakiVarEffectsAllocStartPage, TakiVarEffectsAllocEndPage
 .export TakiVarCommandBufferPage
 TakiVarEffectsAllocStartPage:
-	.byte $00
+    .byte $00
 TakiVarEffectsAllocEndPage:
-	.byte $00
+    .byte $00
 TakiVarCommandBufferPage:
-	.byte $00
-        
+    .byte $00
+    
 
 
 ; If Taki's input processor detects it is at
@@ -132,14 +132,14 @@ TakiVarCommandBufferPage:
 ; to disable prompt checks.
 .export TakiVarExitPrompts
 TakiVarExitPrompts:
-	.byte $DD
-        .byte $AA
+    .byte $DD
+    .byte $AA
 
 ; READ-ONLY status flags variable that is copied from an internal one
 ; when effect processing is active
 .export TakiVarStatusFlags
 TakiVarStatusFlags:
-	.byte $00
+    .byte $00
 
 .ifndef TF_BEH_DETECT_HOME
 TF_BEH_DETECT_HOME = 1
@@ -148,7 +148,7 @@ TF_BEH_DETECT_HOME = 1
 ; Status flags that control Taki behaviors
 .export TakiVarBehaviorFlags
 TakiVarBehaviorFlags:
-	.byte TF_BEH_DETECT_HOME
+    .byte TF_BEH_DETECT_HOME
 
 ; A convenience routine: store an address
 ; at TakiIndirectFn, then JSR to TakiIndirect.
@@ -159,14 +159,14 @@ TakiVarBehaviorFlags:
 _TakiIndirect:
 .export TakiVarIndirectFn
 TakiVarIndirectFn = _TakiIndirect + 1
-	jmp $1000 ; addr overwritten by caller
+    jmp $1000 ; addr overwritten by caller
 
 ; TakiVarTickNum: incrmented just prior to each tick/untick.
 ; useful for an effect to coordinate something across its
 ; multiple instances (like the XXX flasher)
 .export TakiVarTickNum
 TakiVarTickNum:
-	.byte $00
+    .byte $00
 
 ; TakiVarDispatchEvent: set before calling an effect
 ; dispatch handler, to designate what the event is.
@@ -176,11 +176,11 @@ TakiVarTickNum:
 ; and exposed here publicly for convenience
 .export TakiVarDispatchEvent
 TakiVarDispatchEvent:
-	.byte $00
+    .byte $00
 
 ; 16-bit PRNG word. Must never be zero.
 ; A new number is produced (from the old) if
 ; TakiIoNextRandom is called.
 .export TakiVarRandomWord
 TakiVarRandomWord:
-        .word $9471
+    .word $9471

@@ -47,7 +47,7 @@ div10w_AY:
     sta markerH
 @Lp:
     .if DEBUG
-      jsr print_state_div10w_AY
+        jsr print_state_div10w_AY
     .endif
     lda dividendH
     bne @NotZero
@@ -89,7 +89,7 @@ div10w_AY:
     jmp @shiftR
 @divHZero:
     .if DEBUG
-      jsr print_state_div10w_AY
+         jsr print_state_div10w_AY
     .endif
     ; with some prep code before, could jump here for an
     ; 8-bit division...
@@ -107,7 +107,7 @@ div10w_AY:
     ldy quotientL
     ldx dividendL ; remainder/modulus
     .if DEBUG
-      jmp print_state_cleanup_div10w_AY
+        jmp print_state_cleanup_div10w_AY
     .endif
     rts
 @Mk8:
@@ -189,9 +189,9 @@ productH:
 .macro prstate code, name
     lda #.strat(code,0) | $80
     jsr Mon_COUT1
-    lda #$BA	; ':'
+    lda #$BA    ; ':'
     jsr Mon_COUT1
-    lda #$A0	; SPC
+    lda #$A0    ; SPC
     jsr Mon_COUT1
     lda .ident(.concat(.string(name),"H"))
     ldy .ident(.concat(.string(name),"L"))
@@ -232,9 +232,9 @@ print_state_cleanup_div10w_AY:
     lda #$0
     sta Mon_CH
     .repeat 4
-      jsr Mon_CLREOL
-      inc Mon_CV
-      jsr Mon_VTAB
+        jsr Mon_CLREOL
+        inc Mon_CV
+        jsr Mon_VTAB
     .endrepeat
     ; jump back to the line we were at
     ;

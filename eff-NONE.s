@@ -23,11 +23,11 @@
 .word 0
 .word 0
 TE_NONE:
-	cmp #TAKI_DSP_COLLECT
-        bne @gtfo
-        ; COLLECT - print with inverse
-        lda TAKI_ZP_ACC
-        and #$3F
-        jmp TakiIoFastOut
+    cmp #TAKI_DSP_COLLECT
+    bne @gtfo
+    ; COLLECT - print with inverse
+    lda TAKI_ZP_ACC
+    and #$3F
+    jmp TakiIoFastOut
 @gtfo:
-	rts
+    rts

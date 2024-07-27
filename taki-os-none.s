@@ -13,22 +13,22 @@ I_AM_TAKI_OS_FOO = 1
 
 .export _TakiInit
 _TakiInit:
-	jsr _TakiBareInit
-        
-        ; Protect Taki from BASIC data
-        lda TakiVarEffectsAllocStartPage
-        ; Set HIMEM
-        sta Mon_MEMSIZE+1
-        sta Mon_FRETOP+1
-        lda #0
-        sta Mon_MEMSIZE
-        sta Mon_FRETOP
-        
-        ; Set up CSW and KSW
-        writeWord Mon_CSWL, TakiOut
-        writeWord Mon_KSWL, TakiIn
+    jsr _TakiBareInit
+    
+    ; Protect Taki from BASIC data
+    lda TakiVarEffectsAllocStartPage
+    ; Set HIMEM
+    sta Mon_MEMSIZE+1
+    sta Mon_FRETOP+1
+    lda #0
+    sta Mon_MEMSIZE
+    sta Mon_FRETOP
+    
+    ; Set up CSW and KSW
+    writeWord Mon_CSWL, TakiOut
+    writeWord Mon_KSWL, TakiIn
 
-        ; Indicate success
-        lda #0
-        sta TakiVarInitStatus
-	rts
+    ; Indicate success
+    lda #0
+    sta TakiVarInitStatus
+    rts
