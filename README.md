@@ -1,6 +1,6 @@
 # TAKI - Text Animation KIt (for the Apple \]\[)
 
-[Open this project in 8bitworkshop](http://8bitworkshop.com/dev/?platform=apple2&githubURL=https%3A%2F%2Fgithub.com%2Fmicahcowan%2Fa2taki&file=taki.s)
+[Try it out in an in-browser Apple II emulator!](http://micah.cowan.name/apple2js/apple2jse.html#taki) The ADVENTURE.DEMO program is particularly recommended.
 
 **Taki** aims to provide a facility for various animated text effects
 on the screen of your Apple \]\[.
