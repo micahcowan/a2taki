@@ -1,7 +1,7 @@
 ;; Forthish.inc
 ;;   minimal Forth-like stack operation macros for 6502
 ;;
-;; Copyright © 2022  Micah J Cowan
+;; Copyright © 2022-2024  Micah J Cowan
 ;; All rights reserved
 ;;
 ;; Permission is hereby granted, free of charge, to any
