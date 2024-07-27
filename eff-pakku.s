@@ -238,6 +238,13 @@ drawPakku:
 @colLoop:
         ; copy "pixel" character
         lda (vSpriteCursor),y
+.if 1
+        ; Transform for lores colors
+        cmp #$A0 ; Space?
+        beq @doneColor
+        lda #$DD ; yellow
+@doneColor:
+.endif
         sta (Mon_BASL),y
         ; advance cursors
         inc Mon_BASL
