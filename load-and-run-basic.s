@@ -60,5 +60,9 @@ ProgMarker = InputASoftProg + 1
     sta ProgMarker+1
 @done:
     pla
+    ora #$80        ; Convert ASCII to Apple II codes, if necessary
+    cmp #$8A        ; Convert NL to CR
+    bne MyRTS
+    lda #$8D
 MyRTS:
     rts

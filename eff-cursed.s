@@ -9,22 +9,22 @@
 .include "taki-public.inc"
 .include "a2-monitor.inc"
 
-kLocCH     = 0                  ; the horiz cursor position at capture start
-kLocCV     = kLocCH    + 1      ; the vert cursor position at capture start
-kLocBAS    = kLocCV + 1         ; BASL/BASH at capture start
-kNeeded    = kLocBAS + 2
-kLocTextStart = kNeeded
+declVar varCH, 1               ; the horiz cursor position at capture start
+declVar varCV, 1               ; the vert cursor position at capture start
+declVar varBAS, 2              ; BASL/BASH at capture start
+
+vTextStart = kVarSpaceNeeded
 
 TAKI_EFFECT TE_Cursed, "CURSED", 0, 0
     cmp #TAKI_DSP_INIT  ; init?
     bne CkColl
     ;; INIT
     ; Allocate the space we will need
-    effAllocate kNeeded
+    effAllocate kVarSpaceNeeded
 
     ; save cursor X and Y
     lda Mon_CH
-    effSetVar kLocCH
+    effSetVar varCH
     lda Mon_CV
     effSetNext
     lda Mon_BASL
@@ -64,7 +64,7 @@ CkTick:
     lda Mon_BASH
     sta SavedBAS+1
     ; Set to our capture-start spot
-    effGetVar kLocCH
+    effGetVar varCH
     sta Mon_CH
     effGetNext
     sta Mon_CV

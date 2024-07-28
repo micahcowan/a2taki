@@ -9,25 +9,24 @@
 .include "taki-public.inc"
 .include "a2-monitor.inc"
 
-kLocSelect = 0                  ; which countdown we're on
-kLocCount  = kLocSelect + 1     ; the countdown
-kLocCH     = kLocCount + 1      ; the horiz cursor position at capture start
-kLocCV     = kLocCH    + 1      ; the vert cursor position at capture start
-kLocBAS    = kLocCV + 1         ; BASL/BASH at capture start
-kLocVisible= kLocBAS + 2        ; 0 = hidden, non-0 = visible
-kNeeded    = kLocVisible + 1
+declVar varSelect, 1          ; which countdown we're on
+declVar varCount, 1           ; the countdown
+declVar varCH, 1              ; the horiz cursor position at capture start
+declVar varCV, 1              ; the vert cursor position at capture start
+declVar varBAS, 2             ; BASL/BASH at capture start
+declVar varVisible, 1         ; 0 = hidden, non-0 = visible
 
-kLocTextStart = kNeeded
+varTextStart = kVarSpaceNeeded
 
 TAKI_EFFECT TE_Fluorescent, "FLUORESCENT", 0, 0
     cmp #TAKI_DSP_INIT      ; init?
     bne CkColl
     ;; INIT
     ; Allocate the space we will need
-    effAllocate kNeeded
+    effAllocate kVarSpaceNeeded
 
     lda #0
-    effSetVar kLocSelect
+    effSetVar varSelect
     lda blinkTimings
     effSetNext
     ; save cursor X and Y
@@ -64,13 +63,13 @@ CkTick:
     bne UnsupportedMode
 
     ;; TICK
-    effGetVar kLocCount
+    effGetVar varCount
     sec
     sbc #1                  ; countdown over?
-    sta (TAKI_ZP_EFF_STORAGE_L), y ;effSetVar kLocCount
+    sta (TAKI_ZP_EFF_STORAGE_L), y ;effSetVar varCount
     bne StillCounting       ; no: just print for current state
 CountdownDone:
-    effGetVar kLocSelect
+    effGetVar varSelect
     clc
     adc #1                  ; increment to next timer
     cmp #blinkTimingsSize
@@ -78,7 +77,7 @@ CountdownDone:
     ; out of timers, start at first again
     lda #0
 :
-    effSetVar kLocSelect
+    effSetVar varSelect
     tay
     lda blinkTimings,y
     .if 0
@@ -89,12 +88,12 @@ CountdownDone:
     sec
     adc #0
     .endif
-    effSetVar kLocCount
+    effSetVar varCount
 
     ; now toggle visibility
-    effGetVar kLocVisible
+    effGetVar varVisible
     eor #$FF
-    effSetVar kLocVisible
+    effSetVar varVisible
 StillCounting:
     ; Save away current CH, CV, and BAS
     lda Mon_CH
@@ -106,7 +105,7 @@ StillCounting:
     lda Mon_BASH
     sta SavedBAS+1
     ; Set to our capture-start spot
-    effGetVar kLocCH
+    effGetVar varCH
     sta Mon_CH
     effGetNext
     sta Mon_CV
@@ -118,14 +117,14 @@ StillCounting:
     ; print it
     lda TAKI_ZP_EFF_STORAGE_L
     clc
-    adc #kLocTextStart
+    adc #varTextStart
     sta TAKI_ZP_EFF_SPECIAL_0
     lda TAKI_ZP_EFF_STORAGE_H
     adc #0
     sta TAKI_ZP_EFF_SPECIAL_1
-    effGetVar kLocTextStart
+    effGetVar varTextStart
     beq TickCleanup
-    effGetVar kLocVisible
+    effGetVar varVisible
     beq PrintInvis
 PrintVis:
     jsr TakiIoFastPrintStr

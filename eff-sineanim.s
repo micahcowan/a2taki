@@ -13,22 +13,22 @@
 
 .import SineCalcRun, SineCalcTimersAdvance
 
-kLocMode        = 0
-kLocCH          = kLocMode + 1
-kLocCV          = kLocCH + 1
-kLocPrevBAS     = kLocCV + 1
-kLocTimersAddr  = kLocPrevBAS + 2 ; same as start of storage + kNeeded, but anyway
-kLocHAnimAddr   = kLocTimersAddr + 2
-kLocVAnimAddr   = kLocHAnimAddr + 2
-kLocTextAddr    = kLocVAnimAddr + 2
-kNeeded         = kLocTextAddr + 2
+declVar varMode, 1
+declVar varCH, 1
+declVar varCV, 1
+declVar varPrevBAS, 2
+declVar varTimersAddr, 2    ; same as start of storage + kVarSpaceNeeded,
+                            ;  but anyway
+declVar varHAnimAddr, 2
+declVar varVAnimAddr, 2
+declVar varTextAddr, 2
 
 ; When we're processing animation code (during
 ; collection), regardless of whether it's going
 ; to be horizontal or vertical coordinate animation,
-; we use kLocVAnimAddr to point at the start of
+; we use varVAnimAddr to point at the start of
 ; the processed code
-kLocAnimStartAddr = kLocVAnimAddr
+varAnimStartAddr = varVAnimAddr
 
 kModeText       = 0
 kModeTimers     = 1
@@ -42,10 +42,10 @@ TAKI_EFFECT TE_SineAnim, "SANIM", 0, 0
     bne CkColl
     ;; INIT
     ; Allocate the space we will need
-    effAllocate kNeeded
+    effAllocate kVarSpaceNeeded
     ;
     lda #kModeTimers
-    effSetVar kLocMode
+    effSetVar varMode
     ; save cursor X and Y
     lda Mon_CH
     pha
@@ -83,7 +83,7 @@ CkColl:
     jmp CkCollectEnd
 :
     ;; COLLECT
-    effGetVar kLocMode
+    effGetVar varMode
     bne :+
     jmp CollectText
 :
@@ -113,7 +113,7 @@ CollectSkipToCr:
     cmp #$8D ; carriage return?
     bne @rts ; nope, check next one
     ; bump mode to the next one
-    effGetVar kLocMode
+    effGetVar varMode
     clc
     adc #1
     sta (TAKI_ZP_EFF_STORAGE_L),y ; Y set from effGetVar: "mode"
@@ -123,7 +123,7 @@ CollectSkipToCr:
     ; set up anim code-start pointer, and decimal
     ; state byte
     lda TAKI_ZP_EFF_STORAGE_END_L
-    effSetVar kLocAnimStartAddr
+    effSetVar varAnimStartAddr
     lda TAKI_ZP_EFF_STORAGE_END_H
     effSetNext
     ; set up decimal processing state
@@ -146,20 +146,20 @@ CollectVAnim:
     beq @handleR ; char == 'R'? -> handle it
     rts
 @handleR:
-    effGetVar kLocMode
+    effGetVar varMode
     cmp #kModeVAnim
     beq @vDone
 @hDone:
     ; We're exiting horizontal animation code.
     ; Copy the start addr for hAnim
-    effGetVar kLocAnimStartAddr+1
-    effSetVar kLocHAnimAddr+1
-    effGetVar kLocAnimStartAddr
-    effSetVar kLocHAnimAddr
+    effGetVar varAnimStartAddr+1
+    effSetVar varHAnimAddr+1
+    effGetVar varAnimStartAddr
+    effSetVar varHAnimAddr
     ; And set the start addr for vAnim to current
     ; end of storage
     lda TAKI_ZP_EFF_STORAGE_END_L
-    effSetVar kLocAnimStartAddr
+    effSetVar varAnimStartAddr
     lda TAKI_ZP_EFF_STORAGE_END_H
     effSetNext
     jmp @nextMode
@@ -167,12 +167,12 @@ CollectVAnim:
     ; We're exiting vertical animation code.
     ; Copy current end of storage as start of text
     lda TAKI_ZP_EFF_STORAGE_END_L
-    effSetVar kLocTextAddr
+    effSetVar varTextAddr
     lda TAKI_ZP_EFF_STORAGE_END_H
     effSetNext
 @nextMode:
     ; bump mode to the next mode
-    effGetVar kLocMode
+    effGetVar varMode
     clc
     adc #1
     sta (TAKI_ZP_EFF_STORAGE_L),y ; Y set from effGetVar: "mode"
@@ -195,7 +195,7 @@ CkTick:
     :
     ;; DRAW TICK
     ; Set up calculation structure for horiz SineCalc
-    effGetVar kLocTimersAddr
+    effGetVar varTimersAddr
     sta SineCalcStruct+2
     effGetNext
     sta SineCalcStruct+3
@@ -222,12 +222,12 @@ CkTick:
     jsr SineCalcRun
     sta Mon_CH
     ; add our original CH
-    effGetVar kLocCH
+    effGetVar varCH
     clc
     adc Mon_CH
     sta Mon_CH
     ; Calculate new CV
-    effGetVar kLocVAnimAddr
+    effGetVar varVAnimAddr
     sta SineCalcStruct
     effGetNext
     sta SineCalcStruct+1
@@ -236,7 +236,7 @@ CkTick:
     jsr SineCalcRun
     sta Mon_CV
     ; add our original CV
-    effGetVar kLocCV
+    effGetVar varCV
     clc
     adc Mon_CV
     sta Mon_CV
@@ -255,17 +255,17 @@ CkTick:
     lda Mon_BASH
     sta NewBAS+1
     ; Restore old, for erase
-    effGetVar kLocPrevBAS
+    effGetVar varPrevBAS
     sta Mon_BASL
     effGetNext
     sta Mon_BASH
     ; Set up text message ptr for fast-print
-    effGetVar kLocTextAddr
+    effGetVar varTextAddr
     sta TAKI_ZP_EFF_SPECIAL_0
     effGetNext
     sta TAKI_ZP_EFF_SPECIAL_1
     ; Has BAS changed from prev calculation?
-    effGetVar kLocPrevBAS
+    effGetVar varPrevBAS
     cmp NewBAS
     bne @different
     effGetNext
@@ -284,7 +284,7 @@ CkTick:
     ; and save as "prev" BAS for next tick
     lda NewBAS
     sta Mon_BASL
-    effSetVar kLocPrevBAS
+    effSetVar varPrevBAS
     lda NewBAS+1
     sta Mon_BASH
     effSetNext

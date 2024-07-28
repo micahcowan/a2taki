@@ -16,44 +16,33 @@ words:
     scrcode "PAUSE"
     .byte $00
 
-kLocPause       = 0
-kLocBase        = kLocPause + 2
-kLocNumChars    = kLocBase + 2
-kLocHilitePos   = kLocNumChars + 1
-kNeeded         = kLocHilitePos + 1
+declVar varPause, 2
+declVar varBase, 2
+declVar varNumChars, 1
+declVar varHilitePos, 1
 
 TAKI_EFFECT TE_Scan, "SCAN", 0, config
     cmp #TAKI_DSP_INIT      ; init?
     bne CkColl
+
+    effAllocate kVarSpaceNeeded
+
     ; INIT: save BASL/H and reserve two bytes
-    ldy #kLocPause
     lda #0
-    sta (TAKI_ZP_EFF_STORAGE_L),y
-    iny
+    effSetVar varPause
     lda #0
-    sta (TAKI_ZP_EFF_STORAGE_L),y
+    effSetNext
     iny
     clc
     lda Mon_BASL
     adc Mon_CH ; add current horiz. pos.
-    sta (TAKI_ZP_EFF_STORAGE_L),y
-    iny
+    effSetVar varBase
     lda Mon_BASH
     adc #$0 ; for carry bit
-    sta (TAKI_ZP_EFF_STORAGE_L),y
-    iny
+    effSetNext
     lda #$0
-    sta (TAKI_ZP_EFF_STORAGE_L),y
-    iny
-    sta (TAKI_ZP_EFF_STORAGE_L),y
-    clc
-    ; mark the storage used
-    lda TAKI_ZP_EFF_STORAGE_END_L
-    adc #kNeeded
-    sta TAKI_ZP_EFF_STORAGE_END_L
-    bcc @NoHigh
-    inc TAKI_ZP_EFF_STORAGE_END_H
-@NoHigh:
+    effSetVar varNumChars
+    effSetVar varHilitePos
     rts
 CkColl:
     cmp #TAKI_DSP_COLLECT   ; collect?
@@ -63,21 +52,18 @@ CkColl:
     ; increment numChars by 1
     lda #$0
     sec ; so, 1
-    ldy #kLocNumChars
-    adc (TAKI_ZP_EFF_STORAGE_L),y
-    sta (TAKI_ZP_EFF_STORAGE_L),y
+    effOpVar adc, varNumChars
+    effSetCur
     lda TAKI_ZP_ACC
-    jmp TakiIoFastOut ; XXX
+    jmp TakiIoFastOut
 CkTick:
     cmp #TAKI_DSP_TICK      ; tick?
     bne NoModesFound
     ; TICK
     lda #$0
     sec ; so, 1
-    ldy #kLocHilitePos
-    adc (TAKI_ZP_EFF_STORAGE_L),y
-    dey ; kLocNumChars
-    cmp (TAKI_ZP_EFF_STORAGE_L),y
+    effOpVar adc, varHilitePos
+    effOpVar cmp, varNumChars
     bne @NotEq ; y != numChars? skip to @notEq
 @Eq:
     ; if we get here, we're "at" numChars.
@@ -86,10 +72,9 @@ CkTick:
     tya
     pha
     ; copy Pause to counter {
-    effGetVar kLocPause+1
+    effGetVar varPause+1
     pha ; high
-    dey
-    lda (TAKI_ZP_EFF_STORAGE_L),y
+    effGetVar varPause
     tay; low
     pla; high
     jsr TakiMySetCounter
@@ -103,25 +88,19 @@ CkTick:
     lda #0 ; reset hilitePos if past numChars
 @InWord:
 @Stor:
-    iny
-    sta (TAKI_ZP_EFF_STORAGE_L),y
+    effSetVar varHilitePos
     ; DRAW!
-    ; Adjust "Base" by which page is coming
-    ldy #kLocBase+1
-    lda (TAKI_ZP_EFF_STORAGE_L),y
-    ;and #$03 ; remove page info
-    ;ora TakiVarNextPageBase ; add it back in
-    sta TAKI_ZP_EFF_SPECIAL_1
-    dey ; Now copy the low byte of "Base"
-    lda (TAKI_ZP_EFF_STORAGE_L),y
+    effGetVar varBase
     sta TAKI_ZP_EFF_SPECIAL_0
+    effGetNext
+    sta TAKI_ZP_EFF_SPECIAL_1
+
     ; DRAW: loop over the characters, setting
     ; to "plain"
     ; XXX: should really just be able to update
     ; the last couple positions instead, but
     ; anyhoo
-    ldy #kLocNumChars
-    lda (TAKI_ZP_EFF_STORAGE_L),y
+    effGetVar varNumChars
     tay
 @Loop:
     dey ; start with rightmost char first
@@ -133,11 +112,9 @@ CkTick:
     sta (TAKI_ZP_EFF_SPECIAL_0),y
     jmp @Loop
 @Done:  ; Now set inverse on the char we're interested in
-    ldy #kLocNumChars
-    lda (TAKI_ZP_EFF_STORAGE_L),y
+    effGetVar varNumChars
     sta TAKI_ZP_EFF_SPECIAL_2
-    ldy #kLocHilitePos
-    lda (TAKI_ZP_EFF_STORAGE_L),y
+    effGetVar varHilitePos
     cmp TAKI_ZP_EFF_SPECIAL_2
     beq @rts ; hilitePos == numChars, hilite nothing
     tay

@@ -23,21 +23,21 @@ words:
                     ; from INIT; ignored in CONFIG
     .byte $00 ; terminator
 
-declVar vShuffle,   1
-declVar vUsrFbtw,   1
-declVar vFbtw,      1
-declVar vSimul,     1   ; Max number of lines drawn at a time. frames / fbtw
-declVar vCountdown, 1   ; Countdown to start next line animation (init'd
-                        ;  to vFbtw)
-declVar vLinesDeck, 2   ; Address of shuffled line indices
-declVar vLineAnims, 2   ; Address of per-line-animation variables,
-                        ;  allocated when collection is finished.
-declVar vNumLine,   1   ; Index into currently-updating line in vLineNums
-declVar vLineNums,  25  ; Which lines have been written to/need the bounce
-declVar vBufBAS,    2   ; Address of the start of the current line,
-                        ;  in our lines buffer
-declVar vLinesBuf,  0   ; Start of lines buffer (allocated piecemeal as
-                        ;  needed)
+declVar varShuffle,   1
+declVar varUsrFbtw,   1
+declVar varFbtw,      1
+declVar varSimul,     1   ; Max number of lines drawn at a time. frames / fbtw
+declVar varCountdown, 1   ; Countdown to start next line animation (init'd
+                          ;  to varFbtw)
+declVar varLinesDeck, 2   ; Address of shuffled line indices
+declVar varLineAnims, 2   ; Address of per-line-animation variables,
+                          ;  allocated when collection is finished.
+declVar varNumLine,   1   ; Index into currently-updating line in vLineNums
+declVar varLineNums,  25  ; Which lines have been written to/need the bounce
+declVar varBufBAS,    2   ; Address of the start of the current line,
+                          ;  in our lines buffer
+declVar varLinesBuf,  0   ; Start of lines buffer (allocated piecemeal as
+                          ;  needed)
 
 kNumLines = 24
 kCharsInRow = 40
@@ -56,21 +56,21 @@ TAKI_EFFECT TE_BounceIn, "BOUNCE-IN", 0, config
     effAllocate kVarSpaceNeeded
 
     lda #1
-    effSetVar vShuffle
+    effSetVar varShuffle
     lda #0
-    effSetVar vFbtw
-    effSetVar vNumLine; (skip vFtbw, vSimul and vLineAnims for now)
+    effSetVar varFbtw
+    effSetVar varNumLine; (skip varFtbw, varSimul and varLineAnims for now)
 @initLineNums:
     effSetNext
-    cpy #(vBufBAS-1)
+    cpy #(varBufBAS-1)
     bne @initLineNums
 
-    ; set vBufBAS - right now, actually, it'll be identical to
+    ; set varBufBAS - right now, actually, it'll be identical to
     ;  TAKI_ZP_EFF_STORAGE_END;
     lda TAKI_ZP_EFF_STORAGE_END_L
-    effSetNext ; vBufBAS
+    effSetNext ; varBufBAS
     lda TAKI_ZP_EFF_STORAGE_END_H
-    effSetNext ; vBufBAS + 1
+    effSetNext ; varBufBAS + 1
     
     rts
 CkColl:
@@ -81,16 +81,16 @@ CkColl:
 
     ;; COLLECT
     ; Set up a pointer to the current line number
-    effGetVar vNumLine
+    effGetVar varNumLine
     clc
-    adc #vLineNums  ; add offset to where the line indicess are.
+    adc #varLineNums  ; add offset to where the line indicess are.
                     ; Too small to set carry.
     adc TAKI_ZP_EFF_STORAGE_L
     sta TAKI_ZP_EFF_SPECIAL_0
     lda TAKI_ZP_EFF_STORAGE_H
     adc #0 ; for carry
     sta TAKI_ZP_EFF_SPECIAL_1
-    effGetVar vBufBAS
+    effGetVar varBufBAS
     sta TAKI_ZP_EFF_SPECIAL_2
     effGetNext
     sta TAKI_ZP_EFF_SPECIAL_3
@@ -108,7 +108,7 @@ CkColl:
 @regChar:
     lda (TAKI_ZP_EFF_SPECIAL_0),y
                     ; are we currently in a recorded line?
-    beq @recordLine ; no -> record this line and set up vBufBAS
+    beq @recordLine ; no -> record this line and set up varBufBAS
     ; yes. Does the recorded line match current CV?
     sec
     sbc #1 ; We store as +1 for null termination
@@ -122,7 +122,7 @@ CkColl:
     ; has actually been written to. To avoid "bouncing" in
     ; blank lines.
 
-    ; store CV+1 at the current spot in vLineNums
+    ; store CV+1 at the current spot in varLineNums
     lda Mon_CV
     clc
     adc #1 ; stored as +1 so null termination still works when CV = 0
@@ -173,27 +173,27 @@ CkColl:
 @notTooHigh:
     ; recalculate Mon_BASL
     jsr Mon_VTAB
-    ; If current line isn't recorded, bail without advancing vNumLine
+    ; If current line isn't recorded, bail without advancing varNumLine
     lda (TAKI_ZP_EFF_SPECIAL_0),y
                     ; are we currently in a recorded line?
     beq @advRts     ; no -> skip advancing the line then
 @advNumLine:
-    ; advance vNumLine (onto a null)
-    effGetVar vNumLine
+    ; advance varNumLine (onto a null)
+    effGetVar varNumLine
     clc
     adc #1
-    effSetCur ; vNumLine
+    effSetCur ; varNumLine
     inc TAKI_ZP_EFF_SPECIAL_0
     bne :+
     inc TAKI_ZP_EFF_SPECIAL_1
     :
-    ; advance vBufBAS past the end of the current buffer
-    lda TAKI_ZP_EFF_SPECIAL_2 ; vBufBASL
+    ; advance varBufBAS past the end of the current buffer
+    lda TAKI_ZP_EFF_SPECIAL_2 ; varBufBASL
     clc
     adc #kBufLineSz
     sta TAKI_ZP_EFF_SPECIAL_2
-    effSetVar vBufBAS
-    lda TAKI_ZP_EFF_SPECIAL_3 ; vBufBASH
+    effSetVar varBufBAS
+    lda TAKI_ZP_EFF_SPECIAL_3 ; varBufBASH
     adc #0 ; for carry
     sta TAKI_ZP_EFF_SPECIAL_3
     effSetNext
@@ -208,15 +208,15 @@ CkCollectEnd:
     ;; END COLLECT
     ; Copy user-specified frames-between value at INIT, to our
     ;  non-user-accessible var (so it won't be impacted by a later CONFIG)
-    effGetVar vUsrFbtw
-    effSetNext ; vFbtw
+    effGetVar varUsrFbtw
+    effSetNext ; varFbtw
 
-    ; Calculate vSimul
+    ; Calculate varSimul
     ldx #0
-    effGetVar vFbtw
+    effGetVar varFbtw
     bne :+
     lda AnimFrames ; if it's zero, substitute exactly the # anim frames
-    effSetCur ; store back into vFbtw
+    effSetCur ; store back into varFbtw
     :
     sta TAKI_ZP_EFF_SPECIAL_0
     lda AnimFrames
@@ -237,19 +237,19 @@ CkCollectEnd:
     inx
 @fine:
     txa
-    effSetVar vSimul
+    effSetVar varSimul
 
-    ; allocate a "deck" of indices into vLinesBuf
+    ; allocate a "deck" of indices into varLinesBuf
     ; ...first write the start of this deck in a var
     lda TAKI_ZP_EFF_STORAGE_END_L
     sta TAKI_ZP_EFF_SPECIAL_0
-    effSetVar vLinesDeck
+    effSetVar varLinesDeck
     lda TAKI_ZP_EFF_STORAGE_END_H
     sta TAKI_ZP_EFF_SPECIAL_1
     effSetNext
 
     ; Now allocate space for the deck
-    effGetVar vNumLine
+    effGetVar varNumLine
     sta TAKI_ZP_EFF_SPECIAL_2
     clc
     adc #1 ; for null term
@@ -270,7 +270,7 @@ CkCollectEnd:
 @indexMkDone:
     ; shuffle them!
     ; ...pick a random remaining card
-    effGetVar vShuffle
+    effGetVar varShuffle
     beq @doneShuffle
     ldy #0
     lda TAKI_ZP_EFF_SPECIAL_2
@@ -301,15 +301,15 @@ CkCollectEnd:
     bne @shuffle
 @doneShuffle:
 
-    ; Set up vSimul # of animation variables, and start one off
+    ; Set up varSimul # of animation variables, and start one off
     lda TAKI_ZP_EFF_STORAGE_END_L
     sta TAKI_ZP_EFF_SPECIAL_0
-    effSetVar vLineAnims
+    effSetVar varLineAnims
     lda TAKI_ZP_EFF_STORAGE_END_H
     sta TAKI_ZP_EFF_SPECIAL_1
     effSetNext
 
-    effGetVar vSimul
+    effGetVar varSimul
     pha
         effAllocateA
     pla
@@ -326,7 +326,7 @@ CkCollectEnd:
 @animVarsDone:
     ; Fall through
 StartAnAnimation:
-    effGetVar vLinesDeck
+    effGetVar varLinesDeck
     sta TAKI_ZP_EFF_SPECIAL_2
     effGetNext
     sta TAKI_ZP_EFF_SPECIAL_3
@@ -340,11 +340,11 @@ StartAnAnimation:
     sbc #1  ; subtract one from (+1) indices,
             ; for proper storage into animator
     sta TAKI_ZP_EFF_SPECIAL_2
-    effGetVar vLineAnims
+    effGetVar varLineAnims
     sta TAKI_ZP_EFF_SPECIAL_0
     effGetNext
     sta TAKI_ZP_EFF_SPECIAL_1
-    effGetVar vSimul
+    effGetVar varSimul
     tax
     ldy #0
 @findAnim:
@@ -360,7 +360,7 @@ StartAnAnimation:
     ; XXX should probably complain about inner error?
     ; set the countdown so it triggers again and searches next frame
     lda #1
-    effSetVar vCountdown
+    effSetVar varCountdown
     rts
 @useThisAnim:
     ; Found our animator.
@@ -373,10 +373,10 @@ StartAnAnimation:
     lda TAKI_ZP_EFF_SPECIAL_2
     sta (TAKI_ZP_EFF_SPECIAL_0),y
     ; Reset the countdown
-    effGetVar vFbtw
-    effSetVar vCountdown
+    effGetVar varFbtw
+    effSetVar varCountdown
     ; Finally, discard this line from the shuffled "deck"
-    effGetVar vLinesDeck
+    effGetVar varLinesDeck
     clc
     adc #1
     effSetCur
@@ -393,11 +393,11 @@ CkTick:
 
     ;; TICK
     ; Set up ZP vars
-    effGetVar vLineAnims
+    effGetVar varLineAnims
     sta TAKI_ZP_EFF_SPECIAL_0
     effGetNext
     sta TAKI_ZP_EFF_SPECIAL_1
-    effGetVar vSimul
+    effGetVar varSimul
     pha
 @animLoop:
         ; Iterate over the animators, and handle each
@@ -428,7 +428,7 @@ CkTick:
     bne @animLoop ; always
 @animIterDone:
     ; Decrement the countdown
-    effGetVar vCountdown
+    effGetVar varCountdown
     sec
     sbc #1
     beq @startNew
@@ -462,7 +462,7 @@ HandleRealAnim:
         ; Start by setting up the overall buffer start, in ZP
         lda TAKI_ZP_EFF_STORAGE_L
         clc
-        adc #vLinesBuf
+        adc #varLinesBuf
         sta TAKI_ZP_EFF_SPECIAL_2
         lda TAKI_ZP_EFF_STORAGE_H
         adc #0 ; carry

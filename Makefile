@@ -36,4 +36,4 @@ TAKI-CASSETTE TAKI-PRODOS: *.s *.inc Makefile
 
 .PHONY: clean
 clean:
-	rm -f TAKI-PRODOS.dsk TAKI-DOS.dsk TAKI-CASSETTE TAKI-PRODOS calc-bounce *.o
+	rm -f TAKI-PRODOS.dsk TAKI-DOS.dsk TAKI-CASSETTE TAKI-PRODOS calc-bounce bin/taki.s.rom *.o
