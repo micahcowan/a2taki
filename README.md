@@ -2,6 +2,10 @@
 
 [Try it out in an in-browser Apple II emulator!](http://micah.cowan.name/apple2js/apple2jse.html#taki) The ADVENTURE.DEMO program is particularly recommended.
 
+Or see [the below video overview](https://www.youtube.com/watch?v=N5SPFUlo1SY).
+
+![Taki overview video](https://img.youtube.com/vi/N5SPFUlo1SY/0.jpg)
+
 **Taki** aims to provide a facility for various animated text effects
 on the screen of your Apple \]\[.
 
