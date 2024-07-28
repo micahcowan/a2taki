@@ -23,6 +23,7 @@ main() {
     EBWS_OBJS=$(get_objects $EBWS_SOURCES)
 
     compile $SOURCES $AUXSOURCES $EBWS_SOURCES
+    mkdir -p bin
     link bin/taki.s.rom     taki.cfg $EBWS_OBJS $OBJECTS taki-os-none.o
     link TAKI-CASSETTE taki-real.cfg $OBJECTS taki-os-none.o
     link TAKI-PRODOS   taki-real.cfg $OBJECTS taki-os-prodos.o
