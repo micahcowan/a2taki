@@ -12,7 +12,6 @@
 ;#link "eff-door.s"
 ;#link "eff-fluor.s"
 ;#link "eff-pakku.s"
-;#link "eff-spinner.s"
 ;#link "eff-scan.s"
 ;#link "eff-sineanim.s"
 ;#link "eff-NONE.s"
