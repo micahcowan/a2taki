@@ -147,6 +147,13 @@ _TakiIn:
     jmp Mon_KEYIN           ; let firmware keyin handle
 .endif
 @NotExited:
+    sta $C00E               ; ensure alt charset is off
+    lda #$5F                ; force flasher char (for //c).
+                            ; Underscore, not "char under cursor",
+                            ;  bc we can't handle lowercase like that.
+                            ; ...and because flashing space looks
+                            ;  hollow.
+    sta (Mon_BASL),y
     pla ; from branch-unless flagInGETLN
 @KEYIN:
     inc     Mon_RNDL
