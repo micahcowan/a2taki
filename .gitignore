@@ -4,5 +4,6 @@ TAKI-PRODOS.dsk
 TAKI-DOS
 TAKI-DOS.dsk
 *.o
+*.lst
 calc-bounce
 bin

@@ -46,6 +46,12 @@ get_sources() {
     sed -n -e 's/^;#link *"\(.*\)" *$/\1/p' < "$file"
 }
 
+get_listing() {
+    for arg; do
+        echo "${arg%.s}.lst"
+    done
+}
+
 get_objects() {
     for arg; do
         echo "${arg%.s}.o"
@@ -54,7 +60,7 @@ get_objects() {
 
 compile() {
     for arg; do
-        cmd="$CA65 -o $(get_objects $arg) $arg"
+        cmd="$CA65 -o $(get_objects $arg) --listing $(get_listing "$arg") $arg"
         printf ': %s\n' "$cmd"
         $cmd
     done
